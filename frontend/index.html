@@ -4,41 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PotterShop — Магазин волшебных товаров</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../styles/style.css">
 </head>
 <body>
 
-    <template id="header-template">
-        <div class="header-content">
-            <div class="logo">DA <span class="logo-sub">Logo</span></div>
-            <div class="search-container">
-                <input type="text" placeholder="ПОИСК..." class="search-input">
-                <span class="search-arrow">🔍</span>
-            </div>
-            <div class="header-icons">
-                <button class="icon-btn" title="Фильтр">⏳</button>
-                <button class="icon-btn" title="Корзина">🛒</button>
-                <button class="icon-btn" title="Профиль">🧙‍♂️</button>
-                <button class="icon-btn" title="Уведомления">🔔</button>
-            </div>
-        </div>
-    </template>
-
-    <header class="main-header" id="header-container">
-        <div class="header-content">
-            <div class="logo">DA <span class="logo-sub">Logo</span></div>
-            <div class="search-container">
-                <input type="text" placeholder="ПОИСК..." class="search-input">
-                <span class="search-arrow">🔍</span>
-            </div>
-            <div class="header-icons">
-                <button class="icon-btn">⏳</button>
-                <button class="icon-btn">🛒</button>
-                <button class="icon-btn">🧙‍♂️</button>
-                <button class="icon-btn">🔔</button>
-            </div>
-        </div>
-    </header>
+    <header class="main-header" id="header-container"></header>
 
     <div class="page-container">
         
@@ -106,6 +76,35 @@
 
         </main>
     </div>
+
+    <script>
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) throw new Error('Блокировка браузера');
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+            })
+            .catch(err => {
+                // Если твой компьютер заблокировал файл с диска, скрипт подставит код сам!
+                document.getElementById('header-container').innerHTML = `
+                    <div class="header-content">
+                        <div class="logo">DA <span class="logo-sub">Logo</span></div>
+                        <div class="search-container">
+                            <input type="text" placeholder="ПОИСК..." class="search-input">
+                            <span class="search-arrow">🔍</span>
+                        </div>
+                        <div class="header-icons">
+                            <button class="icon-btn" title="Фильтр">⏳</button>
+                            <button class="icon-btn" title="Корзина">🛒</button>
+                            <button class="icon-btn" title="Профиль">🧙‍♂️</button>
+                            <button class="icon-btn" title="Уведомления">🔔</button>
+                        </div>
+                    </div>
+                `;
+            });
+    </script>
 
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* ПОДКЛЮЧЕНИЕ ТВОЕГО TTF ФАЙЛА ГАРРИ ПОТТЕРА */
+/* Путь настроен под папку styles */
 @font-face {
     font-family: 'HarryPotter';
     src: url('Harry Potter.ttf') format('truetype');
@@ -24,7 +24,6 @@ body {
     font-family: 'HarryPotter', sans-serif;
     color: #ffffff;
     background-color: var(--bg-dark);
-    /* Космический звездный фон */
     background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920');
     background-size: cover;
     background-attachment: fixed;
@@ -43,6 +42,7 @@ body {
     top: 0;
     z-index: 100;
     border-bottom: 2px solid var(--gold-glow);
+    min-height: 80px; /* Чтобы шапка не сжималась, пока пустая */
 }
 
 .header-content {
@@ -54,7 +54,6 @@ body {
     padding: 0 40px;
 }
 
-/* Логотип */
 .logo {
     font-size: 54px;
     color: var(--gold-bright);
@@ -68,7 +67,6 @@ body {
     text-shadow: none;
 }
 
-/* Строка поиска */
 .search-container {
     flex-grow: 1;
     max-width: 500px;
@@ -88,16 +86,6 @@ body {
     letter-spacing: 2px;
     outline: none;
     box-shadow: 0 0 10px rgba(201, 160, 84, 0.2);
-    transition: all 0.3s ease;
-}
-
-.search-input:focus {
-    box-shadow: 0 0 20px var(--gold-glow);
-    border-color: var(--gold-bright);
-}
-
-.search-input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
 }
 
 .search-arrow {
@@ -106,11 +94,9 @@ body {
     top: 50%;
     transform: translateY(-50%);
     color: var(--gold-glow);
-    cursor: pointer;
     font-size: 18px;
 }
 
-/* Иконки в шапке */
 .header-icons {
     display: flex;
     gap: 15px;
@@ -135,7 +121,6 @@ body {
 .icon-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 0 15px var(--gold-bright);
-    background: rgba(201, 160, 84, 0.2);
 }
 
 /* ==========================================================================
@@ -150,7 +135,6 @@ body {
     padding: 0 40px;
 }
 
-/* Левая колонка (Sidebar) */
 .sidebar {
     background: rgba(14, 18, 27, 0.65);
     backdrop-filter: blur(8px);
@@ -160,20 +144,17 @@ body {
     border: 1px solid rgba(201, 160, 84, 0.25);
 }
 
-/* Заголовок Категории */
 .sidebar-title {
     font-size: 46px;
     color: var(--gold-bright);
     margin-bottom: 25px;
     text-shadow: 0 0 10px var(--gold-glow);
-    letter-spacing: 2px;
 }
 
 .categories-menu {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 25px;
 }
 
 .menu-link {
@@ -183,34 +164,25 @@ body {
     padding: 4px 0;
     display: block;
     border-bottom: 1px solid rgba(255,255,255,0.05);
-    transition: all 0.2s ease;
 }
 
 .menu-link:hover {
     color: var(--gold-bright);
     padding-left: 8px;
-    text-shadow: 0 0 8px var(--gold-glow);
 }
 
-/* Заголовок Магазины */
 .shops-dropdown {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
     padding-top: 15px;
     border-top: 2px solid var(--gold-glow);
+    margin-top: 25px;
 }
 
 .shops-dropdown span {
     font-size: 42px;
     color: var(--gold-bright);
-    text-shadow: 0 0 10px var(--gold-glow);
-}
-
-.arrow {
-    color: var(--gold-glow);
-    font-size: 14px;
 }
 
 /* ==========================================================================
@@ -233,7 +205,7 @@ body {
     overflow: hidden;
     position: relative;
     box-shadow: 0 0 15px rgba(201, 160, 84, 0.15);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
 }
 
 .product-card:hover {
@@ -261,14 +233,8 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 55px;
-    transition: transform 0.3s ease;
 }
 
-.product-card:hover .card-image-area {
-    transform: scale(1.1); 
-}
-
-/* Нижняя закрашенная плашка карточки */
 .card-footer {
     background: rgba(10, 13, 20, 0.9);
     padding: 12px 10px;
@@ -277,27 +243,14 @@ body {
     align-items: center;
     gap: 2px;
     border-top: 1px solid rgba(201, 160, 84, 0.25);
-    transition: background 0.2s;
 }
 
-.product-card:hover .card-footer {
-    background: rgba(161, 36, 219, 0.35);
-}
-
-/* Названия товаров */
 .product-name {
     font-size: 26px; 
     color: #ffffff;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
 }
 
-/* Цены */
 .product-price {
     font-size: 28px; 
     color: var(--gold-bright);
-    text-shadow: 0 0 5px rgba(201, 160, 84, 0.3);
 }
