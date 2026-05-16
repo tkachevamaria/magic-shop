@@ -1,0 +1,304 @@
+/* ПОДКЛЮЧЕНИЕ ТВОЕГО TTF ФАЙЛА ГАРРИ ПОТТЕРА */
+@font-face {
+    font-family: 'HarryPotter';
+    src: url('Harry Potter.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --gold-glow: #c9a054;       
+    --gold-bright: #ffdf9e;     
+    --bg-dark: #090b10;
+    --card-bg: rgba(22, 27, 38, 0.55); 
+    --wb-purple: #a124db;       
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    /* ТЕПЕРЬ СТРОГО ВСЕМУ САЙТУ ЗАДАЕМ ЭТОТ ШРИФТ */
+    font-family: 'HarryPotter', sans-serif;
+    color: #ffffff;
+    background-color: var(--bg-dark);
+    /* Космический звездный фон */
+    background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   ШАПКА САЙТА
+   ========================================================================== */
+.main-header {
+    background-color: rgba(9, 11, 16, 0.8);
+    backdrop-filter: blur(12px);
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--gold-glow);
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+}
+
+/* Логотип */
+.logo {
+    font-size: 54px;
+    color: var(--gold-bright);
+    text-shadow: 0 0 15px var(--gold-glow);
+    letter-spacing: 2px;
+    line-height: 1;
+}
+.logo-sub {
+    font-size: 36px;
+    color: #ffffff;
+    text-shadow: none;
+}
+
+/* Строка поиска */
+.search-container {
+    flex-grow: 1;
+    max-width: 500px;
+    margin: 0 40px;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    background: rgba(20, 24, 33, 0.9);
+    border: 2px solid var(--gold-glow);
+    border-radius: 15px;
+    padding: 14px 20px 8px 20px; /* Увеличили верхний отступ для центровки букв ГП */
+    color: #ffffff;
+    font-family: 'HarryPotter', sans-serif;
+    font-size: 24px; /* Шрифт ГП мелкий, поэтому увеличили размер */
+    letter-spacing: 2px;
+    outline: none;
+    box-shadow: 0 0 10px rgba(201, 160, 84, 0.2);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    box-shadow: 0 0 20px var(--gold-glow);
+    border-color: var(--gold-bright);
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.search-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold-glow);
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* Иконки в шапке */
+.header-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.icon-btn {
+    background: rgba(20, 24, 33, 0.6);
+    border: 1px solid var(--gold-glow);
+    color: var(--gold-bright);
+    font-size: 18px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px rgba(201, 160, 84, 0.2);
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--gold-bright);
+    background: rgba(201, 160, 84, 0.2);
+}
+
+/* ==========================================================================
+   КОНТЕЙНЕРЫ СТРАНИЦЫ
+   ========================================================================== */
+.page-container {
+    max-width: 1400px;
+    margin: 40px auto;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 40px;
+    padding: 0 40px;
+}
+
+/* Левая колонка (Sidebar) */
+.sidebar {
+    background: rgba(14, 18, 27, 0.65);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    padding: 30px 25px;
+    height: fit-content;
+    border: 1px solid rgba(201, 160, 84, 0.25);
+}
+
+/* Заголовок Категории */
+.sidebar-title {
+    font-size: 46px;
+    color: var(--gold-bright);
+    margin-bottom: 25px;
+    text-shadow: 0 0 10px var(--gold-glow);
+    letter-spacing: 2px;
+}
+
+.categories-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+.menu-link {
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 28px; /* Сильно увеличили, чтобы русские буквы ГП шикарно читались */
+    padding: 4px 0;
+    display: block;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.2s ease;
+}
+
+.menu-link:hover {
+    color: var(--gold-bright);
+    padding-left: 8px;
+    text-shadow: 0 0 8px var(--gold-glow);
+}
+
+/* Заголовок Магазины */
+.shops-dropdown {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding-top: 15px;
+    border-top: 2px solid var(--gold-glow);
+}
+
+.shops-dropdown span {
+    font-size: 42px;
+    color: var(--gold-bright);
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.arrow {
+    color: var(--gold-glow);
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   КАРТОЧКИ ТОВАРОВ
+   ========================================================================== */
+.products-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 25px;
+}
+
+.product-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 2px solid var(--gold-glow); 
+    border-radius: 24px;                 
+    height: 340px; /* Слегка увеличили высоту под размер шрифта */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 15px rgba(201, 160, 84, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 25px var(--gold-glow);
+}
+
+.badge-sale {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: var(--wb-purple);
+    color: #ffffff;
+    padding: 6px 14px 2px 14px; /* Отцентровали шрифт ГП внутри плашки */
+    font-size: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px var(--wb-purple);
+    z-index: 2;
+}
+
+.card-image-area {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 55px;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .card-image-area {
+    transform: scale(1.1); 
+}
+
+/* Нижняя закрашенная плашка карточки */
+.card-footer {
+    background: rgba(10, 13, 20, 0.9);
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border-top: 1px solid rgba(201, 160, 84, 0.25);
+    transition: background 0.2s;
+}
+
+.product-card:hover .card-footer {
+    background: rgba(161, 36, 219, 0.35);
+}
+
+/* Названия товаров */
+.product-name {
+    font-size: 26px; 
+    color: #ffffff;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Цены */
+.product-price {
+    font-size: 28px; 
+    color: var(--gold-bright);
+    text-shadow: 0 0 5px rgba(201, 160, 84, 0.3);
+}
