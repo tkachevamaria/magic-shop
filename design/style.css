@@ -21,7 +21,6 @@
 }
 
 body {
-    /* ТЕПЕРЬ СТРОГО ВСЕМУ САЙТУ ЗАДАЕМ ЭТОТ ШРИФТ */
     font-family: 'HarryPotter', sans-serif;
     color: #ffffff;
     background-color: var(--bg-dark);
@@ -82,10 +81,10 @@ body {
     background: rgba(20, 24, 33, 0.9);
     border: 2px solid var(--gold-glow);
     border-radius: 15px;
-    padding: 14px 20px 8px 20px; /* Увеличили верхний отступ для центровки букв ГП */
+    padding: 14px 20px 8px 20px;
     color: #ffffff;
     font-family: 'HarryPotter', sans-serif;
-    font-size: 24px; /* Шрифт ГП мелкий, поэтому увеличили размер */
+    font-size: 24px;
     letter-spacing: 2px;
     outline: none;
     box-shadow: 0 0 10px rgba(201, 160, 84, 0.2);
@@ -180,7 +179,7 @@ body {
 .menu-link {
     color: #e2e8f0;
     text-decoration: none;
-    font-size: 28px; /* Сильно увеличили, чтобы русские буквы ГП шикарно читались */
+    font-size: 28px;
     padding: 4px 0;
     display: block;
     border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -228,7 +227,7 @@ body {
     backdrop-filter: blur(10px);
     border: 2px solid var(--gold-glow); 
     border-radius: 24px;                 
-    height: 340px; /* Слегка увеличили высоту под размер шрифта */
+    height: 340px; 
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -249,7 +248,7 @@ body {
     left: 15px;
     background: var(--wb-purple);
     color: #ffffff;
-    padding: 6px 14px 2px 14px; /* Отцентровали шрифт ГП внутри плашки */
+    padding: 6px 14px 2px 14px; 
     font-size: 20px;
     border-radius: 12px;
     box-shadow: 0 0 10px var(--wb-purple);
