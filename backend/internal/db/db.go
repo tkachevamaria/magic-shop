@@ -2,26 +2,24 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
-	_ "github.com/mattn/go-sqlite3" // SQLite-драйвер
+	_ "modernc.org/sqlite"
 )
 
-// Открывает или создаёт БД, при первом запуске применяет схему и сиды
 func InitDB(cfg Config) (*sql.DB, error) {
-	// PRAGMA foreign_keys=1 включает проверки связей внутри БД между таблицами
-	// journal_mode=WAL разрешает параллельное чтение/запись без блокировок
-	dsn := "file:" + cfg.DBPath + "?_foreign_keys=1&journal_mode=WAL&busy_timeout=5000"
+	// Для modernc.org/sqlite PRAGMA задаются через параметры DSN
+	dsn := "file:" + cfg.DBPath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
 	
-	db, err := sql.Open("sqlite3", dsn)
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	// Если файла нет -> создаём структуру и заполняем данными
 	if _, err := os.Stat(cfg.DBPath); os.IsNotExist(err) {
-		log.Println("? БД не найдена. Запускаем инициализацию...")
+		log.Println("🪄 БД не найдена. Запускаем инициализацию...")
 		if err := runSQL(db, "db/schema.sql"); err != nil {
 			return nil, err
 		}
@@ -35,10 +33,24 @@ func InitDB(cfg Config) (*sql.DB, error) {
 }
 
 func runSQL(db *sql.DB, filename string) error {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return err
+	searchPaths := []string{
+		filename,
+		"../" + filename,
+		"backend/" + filename,
 	}
+
+	var data []byte
+	var err error
+	for _, p := range searchPaths {
+		data, err = os.ReadFile(p)
+		if err == nil {
+			break
+		}
+	}
+	if err != nil {
+		return fmt.Errorf("файл %s не найден ни в одном из ожидаемых путей", filename)
+	}
+
 	_, err = db.Exec(string(data))
 	return err
 }
