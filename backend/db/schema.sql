@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS Users (
 CREATE TABLE IF NOT EXISTS Products (
     ProductID INTEGER PRIMARY KEY,
     ProductName TEXT,
-    Brand TEXT,
     Price REAL,
     CategoryID INTEGER,
     RequiredLevel INTEGER,
