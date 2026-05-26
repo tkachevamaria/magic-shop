@@ -9,7 +9,6 @@ const products = [
     category_id: 8,
     image_url: "/images/wand.png",
     shop_id: 1,
-    emoji: "🪄"
   },
   {
     id: 2,
@@ -21,7 +20,6 @@ const products = [
     category_id: 1,
     image_url: "/images/potion.png",
     shop_id: 2,
-    emoji: "🔮"
   },
   {
     id: 3,
@@ -33,7 +31,6 @@ const products = [
     category_id: 3,
     image_url: "/images/book.png",
     shop_id: 3,
-    emoji: "📚"
   },
   {
     id: 4,
@@ -45,7 +42,6 @@ const products = [
     category_id: 5,
     image_url: "/images/broom.png",
     shop_id: 4,
-    emoji: "🧹"
   },
   {
     id: 5,
@@ -57,7 +53,6 @@ const products = [
     category_id: 7,
     image_url: "/images/owl.png",
     shop_id: 5,
-    emoji: "🦉"
   },
   {
     id: 6,
@@ -69,6 +64,5 @@ const products = [
     category_id: 6,
     image_url: "/images/cloak.png",
     shop_id: 6,
-    emoji: "👻"
   }
 ];
