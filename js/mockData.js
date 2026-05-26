@@ -2,7 +2,6 @@ const products = [
   {
     id: 1,
     name: "Бузинная палочка",
-    brand: "Олливандер",
     price: 5000,
     required_level: 3,
     delivery_type: "OWL",
@@ -13,7 +12,6 @@ const products = [
   {
     id: 2,
     name: "Амортенция",
-    brand: "Слагхорн",
     price: 700,
     required_level: 5,
     delivery_type: "OWL",
@@ -24,7 +22,6 @@ const products = [
   {
     id: 3,
     name: "Учебник заклинаний",
-    brand: "Флитвик",
     price: 300,
     required_level: 1,
     delivery_type: "PIGEON",
@@ -35,7 +32,6 @@ const products = [
   {
     id: 4,
     name: "Нимбус 2000",
-    brand: "Нимбус",
     price: 400,
     required_level: 2,
     delivery_type: "OWL",
@@ -46,7 +42,6 @@ const products = [
   {
     id: 5,
     name: "Сова-почтальон",
-    brand: "Совы Хогвартса",
     price: 200,
     required_level: 1,
     delivery_type: "OWL",
@@ -57,7 +52,6 @@ const products = [
   {
     id: 6,
     name: "Мантия-невидимка",
-    brand: "Дара Смерти",
     price: 10000,
     required_level: 7,
     delivery_type: "PHOENIX",
