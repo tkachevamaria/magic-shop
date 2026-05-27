@@ -14,6 +14,7 @@ func NewProductRepo(db *sql.DB) *ProductRepo {
 	return &ProductRepo{db: db}
 }
 
+// GetProducts возвращает пагинированный список товаров
 func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error) {
 	baseQuery := `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel, p.DeliveryType,
@@ -38,7 +39,9 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]
 	if len(conditions) > 0 {
 		baseQuery += " WHERE " + strings.Join(conditions, " AND ")
 	}
-	baseQuery += " ORDER BY RANDOM()"
+	// ⚠️ Для пагинации используем ProductID, иначе страницы "будут прыгать" при каждом запросе
+	baseQuery += " ORDER BY p.ProductID LIMIT ? OFFSET ?"
+	args = append(args, filter.Pagination.Limit, (filter.Pagination.Page-1)*filter.Pagination.Limit)
 
 	rows, err := r.db.QueryContext(ctx, baseQuery, args...)
 	if err != nil {
@@ -46,21 +49,50 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]
 	}
 	defer rows.Close()
 
-	// ✅ Инициализируем срез, чтобы JSON возвращал [] вместо null
 	products := make([]Product, 0)
-
 	for rows.Next() {
 		var p Product
-		// Заглушка для изображения (позже можно мапить по category_id)
 		p.ImageURL = "/images/product_placeholder.png"
-
-		if err := rows.Scan(
-			&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryType,
-			&p.CategoryID, &p.ShopID, &p.CategoryName, &p.ShopName,
-		); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryType, &p.CategoryID, &p.ShopID, &p.CategoryName, &p.ShopName); err != nil {
 			return nil, err
 		}
 		products = append(products, p)
 	}
 	return products, rows.Err()
+}
+
+// GetProductByID возвращает товар со всеми его вариантами (цвет/размер/остаток)
+func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetail, error) {
+	var p ProductDetail
+	err := r.db.QueryRowContext(ctx, `
+		SELECT ProductID, ProductName, Price, RequiredLevel, DeliveryType, CategoryID, ShopID
+		FROM Products WHERE ProductID=?`, id).
+		Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryType, &p.CategoryID, &p.ShopID)
+
+	if err == sql.ErrNoRows {
+		return nil, nil // товар не найден
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	p.Description = "Волшебный артефакт высокого качества, прошедший проверку Министерством Магии."
+	p.ImageURL = "/images/product_placeholder.png"
+	p.Items = make([]ItemVariant, 0)
+
+	// Загружаем варианты (items)
+	rows, err := r.db.QueryContext(ctx, `SELECT ItemID, Color, Size, StockQuantity FROM Items WHERE ProductID=?`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item ItemVariant
+		if err := rows.Scan(&item.ItemID, &item.Color, &item.Size, &item.StockQuantity); err != nil {
+			return nil, err
+		}
+		p.Items = append(p.Items, item)
+	}
+	return &p, rows.Err()
 }

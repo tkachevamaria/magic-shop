@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type ProductHandler struct {
@@ -18,14 +20,24 @@ func NewProductHandler(service *ProductService) *ProductHandler {
 func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	var filter ProductFilter
+	filter.Pagination.Page = 1
+	filter.Pagination.Limit = 12 // дефолт
 
-	// Парсим ?category=1
+	if p := q.Get("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			filter.Pagination.Page = v
+		}
+	}
+	if l := q.Get("limit"); l != "" {
+		if v, err := strconv.Atoi(l); err == nil && v > 0 {
+			filter.Pagination.Limit = v
+		}
+	}
 	if cat := q.Get("category"); cat != "" {
 		if id, err := strconv.Atoi(cat); err == nil {
 			filter.CategoryID = &id
 		}
 	}
-	// Парсим ?shop=2
 	if shop := q.Get("shop"); shop != "" {
 		if id, err := strconv.Atoi(shop); err == nil {
 			filter.ShopID = &id
@@ -34,14 +46,34 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 
 	products, err := h.service.GetProducts(r.Context(), filter)
 	if err != nil {
-		log.Printf("❌ Ошибка получения товаров: %v", err)
+		log.Printf("❌ Ошибка списка товаров: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(products); err != nil {
-		log.Printf("❌ Ошибка кодирования JSON: %v", err)
-		http.Error(w, "Encoding Error", http.StatusInternalServerError)
+	json.NewEncoder(w).Encode(products)
+}
+
+func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid product ID", http.StatusBadRequest)
+		return
 	}
+
+	product, err := h.service.GetProductByID(r.Context(), id)
+	if err != nil {
+		log.Printf("❌ Ошибка получения товара %d: %v", id, err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	if product == nil {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product)
 }

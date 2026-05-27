@@ -48,6 +48,7 @@ func main() {
 	})
 
 	r.Get("/api/products", productHandler.GetProducts)
+	r.Get("/api/products/{id}", productHandler.GetProductByID)
 
 	// 3. Запуск сервера
 	addr := ":8080"

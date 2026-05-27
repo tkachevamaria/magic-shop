@@ -4,6 +4,7 @@ import "context"
 
 type ProductRepoInterface interface {
 	GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error)
+	GetProductByID(ctx context.Context, id int) (*ProductDetail, error)
 }
 
 type ProductService struct {
@@ -16,4 +17,8 @@ func NewProductService(repo ProductRepoInterface) *ProductService {
 
 func (s *ProductService) GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error) {
 	return s.repo.GetProducts(ctx, filter)
+}
+
+func (s *ProductService) GetProductByID(ctx context.Context, id int) (*ProductDetail, error) {
+	return s.repo.GetProductByID(ctx, id)
 }
