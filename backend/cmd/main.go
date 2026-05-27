@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"magic-shop/internal/auth"
 	"magic-shop/internal/db"
 	"net/http"
 
@@ -9,21 +10,30 @@ import (
 )
 
 func main() {
-	// 1. Инициализация БД
+	// Инициализация БД
 	cfg := db.DefaultConfig()
 	database, err := db.InitDB(cfg)
 	if err != nil {
-		log.Fatalf("❌ Ошибка инициализации БД: %v", err)
+		log.Fatalf("Ошибка инициализации БД: %v", err)
 	}
 	defer database.Close()
-	log.Println("🟢 Подключение к БД установлено")
+	log.Println("Подключение к БД установлено")
 
-	// 2. Настройка роутера
+	// Настройка роутера
 	r := chi.NewRouter()
 
-	// Тестовые маршруты (проверка работоспособности)
+	//регистрация маршрутов для аутентификации
+	authRepo := auth.NewRepo(database)
+	authService := auth.NewService(authRepo)
+	authHandler := auth.NewHandler(authService)
+
+	r.Post("/auth/register", authHandler.Register)
+	r.Post("/auth/login", authHandler.Login)
+	r.Delete("/auth/user/{id}", authHandler.DeleteUser)
+
+	// Тестовые маршруты
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("🪄 Magic Market API is running!"))
+		w.Write([]byte("Magic Market API is running!"))
 	})
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -32,8 +42,8 @@ func main() {
 
 	// 3. Запуск сервера
 	addr := ":8080"
-	log.Printf("🚀 Сервер запущен на http://localhost%s", addr)
+	log.Printf("Сервер запущен на http://localhost%s", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {
-		log.Fatalf("❌ Ошибка запуска сервера: %v", err)
+		log.Fatalf("Ошибка запуска сервера: %v", err)
 	}
 }
