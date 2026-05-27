@@ -44,7 +44,7 @@ type PaginationParams struct {
 
 // ProductFilter - фильтры + пагинация
 type ProductFilter struct {
-	CategoryID *int
+	CategoryIDs []int
 	ShopID     *int
 	Pagination PaginationParams
 }

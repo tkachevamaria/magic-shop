@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -21,26 +22,31 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	var filter ProductFilter
 	filter.Pagination.Page = 1
-	filter.Pagination.Limit = 12 // дефолт
+	filter.Pagination.Limit = 12
 
-	if p := q.Get("page"); p != "" {
-		if v, err := strconv.Atoi(p); err == nil && v > 0 {
-			filter.Pagination.Page = v
+	if catStr := q.Get("category"); catStr != "" {
+		parts := strings.Split(catStr, ",")
+		for _, part := range parts {
+			part = strings.TrimSpace(part)
+			if id, err := strconv.Atoi(part); err == nil {
+				filter.CategoryIDs = append(filter.CategoryIDs, id)
+			}
 		}
 	}
-	if l := q.Get("limit"); l != "" {
-		if v, err := strconv.Atoi(l); err == nil && v > 0 {
-			filter.Pagination.Limit = v
-		}
-	}
-	if cat := q.Get("category"); cat != "" {
-		if id, err := strconv.Atoi(cat); err == nil {
-			filter.CategoryID = &id
-		}
-	}
-	if shop := q.Get("shop"); shop != "" {
-		if id, err := strconv.Atoi(shop); err == nil {
+
+	if shopStr := q.Get("shop"); shopStr != "" {
+		if id, err := strconv.Atoi(shopStr); err == nil {
 			filter.ShopID = &id
+		}
+	}
+	if pageStr := q.Get("page"); pageStr != "" {
+		if page, err := strconv.Atoi(pageStr); err == nil && page > 0 {
+			filter.Pagination.Page = page
+		}
+	}
+	if limitStr := q.Get("limit"); limitStr != "" {
+		if limit, err := strconv.Atoi(limitStr); err == nil && limit > 0 {
+			filter.Pagination.Limit = limit
 		}
 	}
 
