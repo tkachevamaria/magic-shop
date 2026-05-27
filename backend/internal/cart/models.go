@@ -1,14 +1,5 @@
 package cart
 
-type AddItemRequest struct {
-	ItemID   int `json:"item_id"`
-	Quantity int `json:"quantity"`
-}
-
-type UpdateItemRequest struct {
-	Quantity int `json:"quantity"`
-}
-
 type CartItem struct {
 	CartItemID  int     `json:"cart_item_id"`
 	ItemID      int     `json:"item_id"`

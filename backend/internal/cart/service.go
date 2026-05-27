@@ -1,5 +1,7 @@
 package cart
 
+import "context"
+
 type Service struct {
 	repo *Repo
 }
@@ -8,30 +10,33 @@ func NewService(repo *Repo) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) GetCart(userID int) (*Cart, error) {
-	return s.repo.GetCartItems(userID)
+func (s *Service) GetCart(ctx context.Context, userID int) (*Cart, error) {
+	return s.repo.GetCart(ctx, userID)
 }
 
-func (s *Service) IncrementItem(userID, itemID int) error {
-	cartID, err := s.repo.GetOrCreateCart(userID)
+func (s *Service) IncrementItem(ctx context.Context, userID, itemID int) error {
+	cartID, err := s.repo.GetOrCreateCart(ctx, userID)
 	if err != nil {
 		return err
 	}
-	return s.repo.IncrementItem(cartID, itemID)
+
+	return s.repo.IncrementItem(ctx, cartID, itemID)
 }
 
-func (s *Service) DecrementItem(userID, itemID int) error {
-	cartID, err := s.repo.GetOrCreateCart(userID)
+func (s *Service) DecrementItem(ctx context.Context, userID, itemID int) error {
+	cartID, err := s.repo.GetOrCreateCart(ctx, userID)
 	if err != nil {
 		return err
 	}
-	return s.repo.DecrementItem(cartID, itemID)
+
+	return s.repo.DecrementItem(ctx, cartID, itemID)
 }
 
-func (s *Service) DeleteItem(userID, itemID int) error {
-	cartID, err := s.repo.GetOrCreateCart(userID)
+func (s *Service) DeleteItem(ctx context.Context, userID, itemID int) error {
+	cartID, err := s.repo.GetOrCreateCart(ctx, userID)
 	if err != nil {
 		return err
 	}
-	return s.repo.DeleteItem(cartID, itemID)
+
+	return s.repo.DeleteItem(ctx, cartID, itemID)
 }
