@@ -32,14 +32,7 @@ func main() {
 	}
 	fmt.Println("DB connection OK\n")
 
-	checkShops(db)
-	checkCategories(db)
-	checkProducts(db)
-	checkUsers(db)
-	checkItems(db)
-	checkCartWithItems(db)
-	testInsertOrder(db)
-	checkOrders(db)
+	checkUsersAll(db)
 }
 
 func checkShops(db *sql.DB) {
@@ -199,6 +192,25 @@ func checkOrders(db *sql.DB) {
 		rows.Scan(&OrderID, &UserID, &FirstName, &Surname, &ItemID, &Status, &DeliveryType, &DeliveryAddress, &OrderDate)
 		fmt.Printf("  OrderID=%-3d  UserID=%-3d  FirstName=%-10s  Surname=%-12s  ItemID=%-10s  Status=%-10s  DeliveryType=%-15s  DeliveryAddress=%-30s  OrderDate=%s\n",
 			OrderID, UserID, FirstName, Surname, ItemID, Status, DeliveryType, DeliveryAddress, OrderDate)
+	}
+	fmt.Println()
+}
+
+func checkUsersAll(db *sql.DB) {
+	fmt.Println("Users:")
+	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, PasswordHash, AccessLevel, TotalSpent FROM Users")
+	if err != nil {
+		log.Printf("  error: %v", err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var UserID, AccessLevel int
+		var FirstName, Surname, Email, PasswordHash string
+		var TotalSpent float64
+		rows.Scan(&UserID, &FirstName, &Surname, &Email, &PasswordHash, &AccessLevel, &TotalSpent)
+		fmt.Printf("  UserID=%-3d | FirstName=%-10s | Surname=%-12s | Email=%-25s | AccessLevel=%d | TotalSpent=%-6.1f | PasswordHash=%s\n",
+			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, PasswordHash)
 	}
 	fmt.Println()
 }
