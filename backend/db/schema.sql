@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS Products (
     ProductID INTEGER PRIMARY KEY,
     ProductName TEXT,
     Price REAL,
+    Description TEXT DEFAULT '',
+    ImageURL TEXT DEFAULT '',
     CategoryID INTEGER,
     RequiredLevel INTEGER,
     DeliveryType TEXT,
