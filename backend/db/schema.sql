@@ -51,7 +51,8 @@ CREATE TABLE IF NOT EXISTS CartItems (
     ItemID INTEGER,
     Quantity INTEGER,
     FOREIGN KEY (CartID) REFERENCES Cart(CartID) ON DELETE CASCADE,
-    FOREIGN KEY (ItemID) REFERENCES Items(ItemID)
+    FOREIGN KEY (ItemID) REFERENCES Items(ItemID),
+    UNIQUE(CartID, ItemID)
 );
 
 CREATE TABLE IF NOT EXISTS Orders (
@@ -63,15 +64,4 @@ CREATE TABLE IF NOT EXISTS Orders (
     DeliveryType TEXT,
     DeliveryAddress TEXT,
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS Ratings (
-    RatingID INTEGER PRIMARY KEY,
-    UserID INTEGER,
-    ProductID INTEGER,
-    Score INTEGER,
-    Comment TEXT,
-    CreatedAt DATETIME DEFAULT (datetime('now')),
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
