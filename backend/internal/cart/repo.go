@@ -58,24 +58,41 @@ func (r *Repo) GetCartItems(userID int) (*Cart, error) {
 	return &cart, nil
 }
 
-func (r *Repo) AddItem(cartID, itemID, quantity int) error {
-	// если такой item уже есть — увеличиваем количество
+func (r *Repo) IncrementItem(cartID, itemID int) error {
 	_, err := r.db.Exec(`
         INSERT INTO CartItems (CartID, ItemID, Quantity)
-        VALUES (?, ?, ?)
-        ON CONFLICT(CartID, ItemID) DO UPDATE SET Quantity = Quantity + excluded.Quantity`,
-		cartID, itemID, quantity)
+        VALUES (?, ?, 1)
+        ON CONFLICT(CartID, ItemID) DO UPDATE SET Quantity = Quantity + 1`,
+		cartID, itemID)
 	return err
 }
 
-func (r *Repo) UpdateItem(cartID, itemID, quantity int) error {
-	_, err := r.db.Exec(`
-        UPDATE CartItems SET Quantity = ? WHERE CartID = ? AND ItemID = ?`,
-		quantity, cartID, itemID)
+func (r *Repo) DecrementItem(cartID, itemID int) error {
+	// Пытаемся уменьшить
+	result, err := r.db.Exec(`
+        UPDATE CartItems 
+        SET Quantity = Quantity - 1 
+        WHERE CartID = ? AND ItemID = ? AND Quantity > 1`,
+		cartID, itemID)
+	if err != nil {
+		return err
+	}
+
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		// Если Quantity было 1, удаляем запись
+		_, err = r.db.Exec(`
+            DELETE FROM CartItems 
+            WHERE CartID = ? AND ItemID = ? AND Quantity = 1`,
+			cartID, itemID)
+	}
 	return err
 }
 
 func (r *Repo) DeleteItem(cartID, itemID int) error {
-	_, err := r.db.Exec("DELETE FROM CartItems WHERE CartID = ? AND ItemID = ?", cartID, itemID)
+	_, err := r.db.Exec(`
+        DELETE FROM CartItems 
+        WHERE CartID = ? AND ItemID = ?`,
+		cartID, itemID)
 	return err
 }
