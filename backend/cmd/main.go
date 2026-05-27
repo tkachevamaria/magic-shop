@@ -47,7 +47,7 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/api/products", productHandler.GetAll)
+	r.Get("/api/products", productHandler.GetProducts)
 
 	// 3. Запуск сервера
 	addr := ":8080"

@@ -2,9 +2,8 @@ package catalog
 
 import "context"
 
-// Интерфейс нужен для тестирования и гибкости
 type ProductRepoInterface interface {
-	GetAll(ctx context.Context) ([]Product, error)
+	GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error)
 }
 
 type ProductService struct {
@@ -15,6 +14,6 @@ func NewProductService(repo ProductRepoInterface) *ProductService {
 	return &ProductService{repo: repo}
 }
 
-func (s *ProductService) GetAllProducts(ctx context.Context) ([]Product, error) {
-	return s.repo.GetAll(ctx)
+func (s *ProductService) GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error) {
+	return s.repo.GetProducts(ctx, filter)
 }

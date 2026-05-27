@@ -10,3 +10,9 @@ type Product struct {
 	DeliveryType  string  `json:"delivery_type"`
 	ShopName      string  `json:"shop_name"`
 }
+
+// ProductFilter хранит опциональные параметры фильтрации (nil = не фильтровать)
+type ProductFilter struct {
+	CategoryID *int
+	ShopID     *int
+}
