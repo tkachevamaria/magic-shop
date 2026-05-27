@@ -10,12 +10,12 @@ INSERT INTO Categories (CategoryID, CategoryName) VALUES
 (4, 'Канцелярия');
 
 
-INSERT INTO Products (ProductID, ProductName, Brand, Price, CategoryID, RequiredLevel, DeliveryType, ShopID) VALUES
-(1, 'Набор перьев', 'Hogwarts Basics', 5.0, 4, 1, 'OWL', 1),
-(2, 'Мантия Невидимости', 'Peverell Craft', 5000.0, 2, 2, 'DELIVERY_GUY', 3),
-(3, 'Феликс Фелицис', 'Slughorn Selections', 1500.0, 1, 3, 'OWL', 1),
-(4, 'Бомбы-пердёжки', 'Weasley', 15.0, 3, 1, 'FIREPLACE', 2),
-(5, 'Книга Запретных Заклинаний', 'Dark Arts Publishing', 999.0, 3, 4, 'DELIVERY_GUY', 1);
+INSERT INTO Products (ProductID, ProductName, Price, CategoryID, RequiredLevel, DeliveryType, ShopID) VALUES
+(1, 'Набор перьев', 5.0, 4, 1, 'OWL', 1),
+(2, 'Мантия Невидимости', 5000.0, 2, 2, 'DELIVERY_GUY', 3),
+(3, 'Феликс Фелицис', 1500.0, 1, 3, 'OWL', 1),
+(4, 'Бомбы-пердёжки', 15.0, 3, 1, 'FIREPLACE', 2),
+(5, 'Книга Запретных Заклинаний', 999.0, 3, 4, 'DELIVERY_GUY', 1);
 
 INSERT INTO Items (ItemID, ProductID, Color, Size, StockQuantity) VALUES
 (1, 1, 'Чёрный', '10шт', 100),
