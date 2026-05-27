@@ -14,11 +14,10 @@ func NewProductRepo(db *sql.DB) *ProductRepo {
 	return &ProductRepo{db: db}
 }
 
-// GetProducts возвращает товары с учётом фильтров и случайным порядком
 func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error) {
 	baseQuery := `
-		SELECT p.ProductID, p.ProductName, p.Price,
-			   c.CategoryName, p.RequiredLevel, p.DeliveryType, s.ShopName
+		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel, p.DeliveryType,
+			   p.CategoryID, p.ShopID, c.CategoryName, s.ShopName
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
@@ -47,10 +46,18 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]
 	}
 	defer rows.Close()
 
-	var products []Product
+	// ✅ Инициализируем срез, чтобы JSON возвращал [] вместо null
+	products := make([]Product, 0)
+
 	for rows.Next() {
 		var p Product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Category, &p.RequiredLevel, &p.DeliveryType, &p.ShopName); err != nil {
+		// Заглушка для изображения (позже можно мапить по category_id)
+		p.ImageURL = "/images/product_placeholder.png"
+
+		if err := rows.Scan(
+			&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryType,
+			&p.CategoryID, &p.ShopID, &p.CategoryName, &p.ShopName,
+		); err != nil {
 			return nil, err
 		}
 		products = append(products, p)
