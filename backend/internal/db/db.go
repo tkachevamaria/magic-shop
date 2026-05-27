@@ -10,15 +10,19 @@ import (
 )
 
 func InitDB(cfg Config) (*sql.DB, error) {
-	// Для modernc.org/sqlite PRAGMA задаются через параметры DSN
+	// Проверяем ДО открытия соединения — иначе SQLite создаст файл сам
+	isNew := false
+	if _, err := os.Stat(cfg.DBPath); os.IsNotExist(err) {
+		isNew = true
+	}
+
 	dsn := "file:" + cfg.DBPath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
-	
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	if _, err := os.Stat(cfg.DBPath); os.IsNotExist(err) {
+	if isNew {
 		log.Println("🪄 БД не найдена. Запускаем инициализацию...")
 		if err := runSQL(db, "db/schema.sql"); err != nil {
 			return nil, err

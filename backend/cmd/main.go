@@ -2,9 +2,8 @@ package main
 
 import (
 	"log"
-	"net/http"
-
 	"magic-shop/internal/db"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
