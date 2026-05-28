@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"magic-shop/internal/auth"
-	"magic-shop/internal/cart"
 	"magic-shop/internal/catalog"
 	"magic-shop/internal/db"
 	"net/http"
@@ -27,6 +26,7 @@ func main() {
 	productService := catalog.NewProductService(productRepo)
 	productHandler := catalog.NewProductHandler(productService)
 
+
 	// Настройка роутера
 	r := chi.NewRouter()
 
@@ -47,16 +47,6 @@ func main() {
 	r.Post("/auth/login", authHandler.Login)
 	r.Delete("/auth/user/{id}", authHandler.DeleteUser)
 
-	//регистрация маршрутов для корзины
-	cartRepo := cart.NewRepo(database)
-	cartService := cart.NewService(cartRepo)
-	cartHandler := cart.NewHandler(cartService)
-
-	r.Get("/cart/{userID}", cartHandler.GetCart)
-	r.Post("/cart/{userID}/items/{itemID}/increment", cartHandler.IncrementItem)
-	r.Post("/cart/{userID}/items/{itemID}/decrement", cartHandler.DecrementItem)
-	r.Delete("/cart/{userID}/items/{itemID}", cartHandler.DeleteItem)
-
 	// Тестовые маршруты
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Magic Market API is running!"))
@@ -66,9 +56,10 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/api/products", productHandler.GetProducts)          // Каталог
+	r.Get("/api/products", productHandler.GetProducts) // Каталог
 	r.Get("/api/products/dark", productHandler.GetDarkProducts) // Запретные товары
-	r.Get("/api/products/{id}", productHandler.GetProductByID)  // Для карточек конкретных товаров
+	r.Get("/api/products/{id}", productHandler.GetProductByID) // Для карточек конкретных товаров
+	r.Get("/api/products/search", productHandler.SearchProducts) // Поисковая строка
 
 	// 3. Запуск сервера
 	addr := ":8080"
