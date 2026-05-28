@@ -1,16 +1,18 @@
 package catalog
 
 type Product struct {
-	ID            int     `json:"id"`
-	Name          string  `json:"name"`
-	Price         float64 `json:"price"`
-	RequiredLevel int     `json:"required_level"`
-	DeliveryType  string  `json:"delivery_type"`
-	CategoryID    int     `json:"category_id"`
-	ShopID        int     `json:"shop_id"`
-	CategoryName  string  `json:"category_name,omitempty"`
-	ShopName      string  `json:"shop_name,omitempty"`
-	ImageURL      string  `json:"image_url"`
+	ID               int     `json:"id"`
+	Name             string  `json:"name"`
+	Price            float64 `json:"price"`
+	RequiredLevel    int     `json:"required_level"`
+	DeliveryMethodID int     `json:"delivery_method_id"`
+	DeliveryName     string  `json:"delivery_name"`
+	DeliveryDays     int     `json:"delivery_days"`
+	CategoryID       int     `json:"category_id"`
+	ShopID           int     `json:"shop_id"`
+	CategoryName     string  `json:"category_name,omitempty"`
+	ShopName         string  `json:"shop_name,omitempty"`
+	ImageURL         string  `json:"image_url"`
 }
 
 type ItemVariant struct {
@@ -21,16 +23,18 @@ type ItemVariant struct {
 }
 
 type ProductDetail struct {
-	ID            int           `json:"id"`
-	Name          string        `json:"name"`
-	Description   string        `json:"description"`
-	Price         float64       `json:"price"`
-	RequiredLevel int           `json:"required_level"`
-	DeliveryType  string        `json:"delivery_type"`
-	CategoryID    int           `json:"category_id"`
-	ShopID        int           `json:"shop_id"`
-	ImageURL      string        `json:"image_url"`
-	Items         []ItemVariant `json:"items"`
+	ID               int           `json:"id"`
+	Name             string        `json:"name"`
+	Description      string        `json:"description"`
+	Price            float64       `json:"price"`
+	RequiredLevel    int           `json:"required_level"`
+	DeliveryMethodID int           `json:"delivery_method_id"`
+	DeliveryName     string        `json:"delivery_name"`
+	DeliveryDays     int           `json:"delivery_days"`
+	CategoryID       int           `json:"category_id"`
+	ShopID           int           `json:"shop_id"`
+	ImageURL         string        `json:"image_url"`
+	Items            []ItemVariant `json:"items"`
 }
 
 type PaginationParams struct {
