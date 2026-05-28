@@ -9,9 +9,9 @@ const (
 )
 
 var roleToLevel = map[Role]int{
-	RoleStudent:      3,
+	RoleStudent:      1,
 	RoleMage:         2,
-	RoleProfessional: 1,
+	RoleProfessional: 3,
 }
 
 func (r Role) AccessLevel() (int, bool) {
