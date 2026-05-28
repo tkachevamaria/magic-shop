@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"magic-shop/internal/auth"
+	"magic-shop/internal/catalog"
 	"magic-shop/internal/db"
 	"net/http"
 
@@ -18,6 +19,12 @@ func main() {
 	}
 	defer database.Close()
 	log.Println("Подключение к БД установлено")
+
+	// 📦 Инициализация модуля catalog
+	productRepo := catalog.NewProductRepo(database)
+	productService := catalog.NewProductService(productRepo)
+	productHandler := catalog.NewProductHandler(productService)
+
 
 	// Настройка роутера
 	r := chi.NewRouter()
@@ -39,6 +46,10 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
+
+	r.Get("/api/products", productHandler.GetProducts) // Каталог
+	r.Get("/api/products/dark", productHandler.GetDarkProducts) // Запретные товары
+	r.Get("/api/products/{id}", productHandler.GetProductByID) // Для карточек конкретных товаров
 
 	// 3. Запуск сервера
 	addr := ":8080"
