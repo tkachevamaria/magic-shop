@@ -15,7 +15,9 @@
     card.setAttribute('data-product-id', product.id);
 
     card.innerHTML = `
-      <div class="card-image-area">${product.emoji || '✨'}</div>
+      <div class="card-image-area">
+        <img src="${product.image_url}" alt="${"картинки пока нет"}">
+      </div>
       <div class="card-footer">
         <span class="product-name">${product.name}</span>
         <span class="product-price">${product.price} Галлеонов</span>
