@@ -56,11 +56,7 @@ function renderOrdersPage() {
     
     let html = `
         <div class="stats-header">
-            <h1>📜 История заказов</h1>
-            <div class="total-stats">
-                <div class="total-amount">💰 ${totalAmount} Галлеонов</div>
-                <div class="total-orders-count">📦 Всего заказов: ${totalOrders}</div>
-            </div>
+            <h1>📜 Заказы </h1>
         </div>
     `;
     

@@ -4,7 +4,7 @@
 const userData = {
     name: "Волшебник",
     avatar: "🧙‍♂️",
-    level: 7,
+    level: 3,
     levelName: "Мастер волшебства",
     address: "Хогвартс, Башня Гриффиндора, комната 7",
     pendingPurchases: 3
@@ -100,7 +100,11 @@ function renderSidebarPanel() {
             <nav class="sidebar-nav">
                 <div class="nav-item" data-page="orders">
                     <span class="nav-icon">📜</span>
-                    <span class="nav-text">История заказов</span>
+                    <span class="nav-text">Заказы</span>
+                </div>
+                <div class="nav-item" data-page="purchases">
+                    <span class="nav-icon">🛍️</span>
+                    <span class="nav-text">Мои покупки</span>
                 </div>
             </nav>
             
@@ -155,6 +159,9 @@ function renderSidebarPanel() {
                 case 'orders':
                     window.location.href = 'orders.html';
                     break;
+                case 'purchases':
+                    window.location.href = 'purchases.html';
+                    break;
                 case 'logout':
                     if (confirm('Вы уверены, что хотите выйти?')) {
                         localStorage.removeItem('userLoggedIn');
@@ -174,6 +181,9 @@ function renderSidebarPanel() {
     const currentPage = window.location.pathname.split('/').pop();
     document.querySelectorAll('.nav-item').forEach(item => {
         if (currentPage === 'orders.html' && item.getAttribute('data-page') === 'orders') {
+            item.classList.add('active');
+        }
+        if (currentPage === 'purchases.html' && item.getAttribute('data-page') === 'purchases') {
             item.classList.add('active');
         }
     });
