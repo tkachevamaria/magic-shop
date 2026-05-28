@@ -8,6 +8,7 @@
             return response.json();
         })
         .then(products => {
+            console.log('товары с сервера:', products);
             container.innerHTML = '';
 
             products.forEach(product => {
@@ -26,7 +27,9 @@
                 `;
 
                 card.addEventListener('click', function() {
-                    window.location.href = `../frontend/product.html?id=${product.id}`;
+                    console.log('id товара:', product.id);
+                    console.log('переход на:', `/product.html?id=${product.id}`);
+                    window.location.href = `/frontend/product.html?id=${product.id}`;
                 });
 
                 container.appendChild(card);

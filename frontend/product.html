@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PotterShop — Товар</title>
-    <link rel="stylesheet" href="../styles/style.css">
+    <link rel="stylesheet" href="/styles/style.css">
 </head>
 <body>
 
@@ -16,22 +16,8 @@
         </div>
     </div>
 
-    <script src="../js/loadHeader.js"></script>
-    <script src="../js/renderProductPage.js"></script>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const productId = parseInt(urlParams.get('id'));
-        
-        let product = null;
-        if (typeof products !== 'undefined') {
-            product = products.find(p => p.id === productId);
-        }
-        
-        if (typeof renderProductPage === 'function') {
-            renderProductPage(product);
-        }
-    </script>
+    <script src="/js/loadHeader.js"></script>
+    <script src="/js/renderProductPage.js"></script>
 
 </body>
 </html>
-
