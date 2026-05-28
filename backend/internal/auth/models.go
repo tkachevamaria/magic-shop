@@ -3,9 +3,9 @@ package auth
 type Role string
 
 const (
-	RoleStudent      Role = "student"      // AccessLevel 3
+	RoleStudent      Role = "student"      // AccessLevel 1
 	RoleMage         Role = "mage"         // AccessLevel 2
-	RoleProfessional Role = "professional" // AccessLevel 1
+	RoleProfessional Role = "professional" // AccessLevel 3
 )
 
 var roleToLevel = map[Role]int{

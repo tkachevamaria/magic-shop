@@ -54,6 +54,10 @@ func (h *Handler) IncrementItem(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+	if errors.Is(err, ErrAccessDenied) {
+		http.Error(w, err.Error(), http.StatusForbidden) // 403
+		return
+	}
 	if errors.Is(err, ErrInsufficientStock) {
 		http.Error(w, err.Error(), http.StatusConflict) // 409
 		return

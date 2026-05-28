@@ -20,7 +20,7 @@ func (s *Service) IncrementItem(ctx context.Context, userID, itemID int) error {
 		return err
 	}
 
-	return s.repo.IncrementItem(ctx, cartID, itemID)
+	return s.repo.IncrementItem(ctx, cartID, userID, itemID)
 }
 
 func (s *Service) DecrementItem(ctx context.Context, userID, itemID int) error {

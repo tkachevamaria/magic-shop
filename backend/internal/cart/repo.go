@@ -122,17 +122,34 @@ func (r *Repo) GetCart(ctx context.Context, userID int) (*Cart, error) {
 	return &cart, nil
 }
 
-func (r *Repo) IncrementItem(ctx context.Context, cartID, itemID int) error {
+func (r *Repo) IncrementItem(ctx context.Context, cartID, userID, itemID int) error {
 
-	//проверка наличия товара
-	var stock int
+	// проверка наличия товара и получение его RequiredLevel
+	var stock, requiredLevel int
 	err := r.db.QueryRowContext(ctx,
-		`SELECT StockQuantity FROM Items WHERE ItemID = ?`, itemID).Scan(&stock)
+		`SELECT i.StockQuantity, p.RequiredLevel FROM Items i
+     JOIN Products p ON i.ProductID = p.ProductID
+     WHERE i.ItemID = ?`, itemID).Scan(&stock, &requiredLevel)
 	if err == sql.ErrNoRows {
 		return ErrItemNotFound
 	}
 	if err != nil {
 		return err
+	}
+
+	// проверка уровня доступа пользователя
+	var userAccessLevel int
+	err = r.db.QueryRowContext(ctx,
+		`SELECT AccessLevel FROM Users WHERE UserID = ?`, userID).Scan(&userAccessLevel)
+	if err == sql.ErrNoRows {
+		return ErrUserNotFound
+	}
+	if err != nil {
+		return err
+	}
+
+	if userAccessLevel < requiredLevel {
+		return ErrAccessDenied
 	}
 	//проверка количества товара на складе
 	var inCart int

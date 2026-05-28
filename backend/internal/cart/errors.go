@@ -8,4 +8,5 @@ var (
 	ErrItemNotInCart     = errors.New("item not in cart")
 	ErrInsufficientStock = errors.New("insufficient stock")
 	ErrCartNotFound      = errors.New("cart not found")
+	ErrAccessDenied      = errors.New("access level too low")
 )
