@@ -1,6 +1,5 @@
 package catalog
 
-// Product - компактная карточка для главной ленты
 type Product struct {
 	ID            int     `json:"id"`
 	Name          string  `json:"name"`
@@ -14,7 +13,6 @@ type Product struct {
 	ImageURL      string  `json:"image_url"`
 }
 
-// ItemVariant - конкретный экземпляр товара (цвет/размер/остаток)
 type ItemVariant struct {
 	ItemID        int    `json:"item_id"`
 	Color         string `json:"color"`
@@ -22,7 +20,6 @@ type ItemVariant struct {
 	StockQuantity int    `json:"stock_quantity"`
 }
 
-// ProductDetail - полная карточка для страницы товара
 type ProductDetail struct {
 	ID            int           `json:"id"`
 	Name          string        `json:"name"`
@@ -36,14 +33,24 @@ type ProductDetail struct {
 	Items         []ItemVariant `json:"items"`
 }
 
-// PaginationParams - параметры пагинации
 type PaginationParams struct {
 	Page  int
 	Limit int
 }
 
-// ProductFilter - фильтры + пагинация
 type ProductFilter struct {
-	CategoryID *int            
+	CategoryID *int
+	Color      *string
+	Size       *string
 	Pagination PaginationParams
+}
+
+type AvailableFilters struct {
+	Colors []string `json:"colors"`
+	Sizes  []string `json:"sizes"`
+}
+
+type CatalogResponse struct {
+	Products []Product        `json:"products"`
+	Filters  AvailableFilters `json:"filters"`
 }
