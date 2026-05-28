@@ -32,17 +32,27 @@ func (r *Repo) GetOrCreateCart(ctx context.Context, userID int) (int, error) {
 		userID,
 	).Scan(&cartID)
 
-	if err != nil {
-		return 0, err
+	if err == sql.ErrNoRows {
+		return 0, ErrUserNotFound
 	}
 
 	return cartID, nil
 }
 
 func (r *Repo) GetCart(ctx context.Context, userID int) (*Cart, error) {
-	var cart Cart
 
-	err := r.db.QueryRowContext(
+	var exists int
+	err := r.db.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM Users WHERE UserID = ?`, userID).Scan(&exists)
+	if err != nil {
+		return nil, err
+	}
+	if exists == 0 {
+		return nil, ErrUserNotFound
+	}
+
+	var cart Cart
+	err = r.db.QueryRowContext(
 		ctx,
 		`SELECT CartID, UserID
 		 FROM Cart
@@ -113,7 +123,32 @@ func (r *Repo) GetCart(ctx context.Context, userID int) (*Cart, error) {
 }
 
 func (r *Repo) IncrementItem(ctx context.Context, cartID, itemID int) error {
-	_, err := r.db.ExecContext(
+
+	//проверка наличия товара
+	var stock int
+	err := r.db.QueryRowContext(ctx,
+		`SELECT StockQuantity FROM Items WHERE ItemID = ?`, itemID).Scan(&stock)
+	if err == sql.ErrNoRows {
+		return ErrItemNotFound
+	}
+	if err != nil {
+		return err
+	}
+	//проверка количества товара на складе
+	var inCart int
+	err = r.db.QueryRowContext(ctx,
+		`SELECT COALESCE(Quantity, 0) FROM CartItems
+		 WHERE CartID = ? AND ItemID = ?`, cartID, itemID).Scan(&inCart)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if inCart >= stock {
+		return ErrInsufficientStock
+	}
+	// добавляем товар в корзину или увеличиваем количество
+
+	_, err = r.db.ExecContext(
 		ctx,
 		`
 		INSERT INTO CartItems (CartID, ItemID, Quantity)
@@ -129,57 +164,37 @@ func (r *Repo) IncrementItem(ctx context.Context, cartID, itemID int) error {
 }
 
 func (r *Repo) DecrementItem(ctx context.Context, cartID, itemID int) error {
-	result, err := r.db.ExecContext(
-		ctx,
-		`
-		UPDATE CartItems
-		SET Quantity = Quantity - 1
-		WHERE CartID = ?
-		  AND ItemID = ?
-		  AND Quantity > 1
-		`,
-		cartID,
-		itemID,
-	)
+	result, err := r.db.ExecContext(ctx,
+		`UPDATE CartItems SET Quantity = Quantity - 1
+		 WHERE CartID = ? AND ItemID = ?`, cartID, itemID)
 	if err != nil {
 		return err
 	}
-
-	rowsAffected, err := result.RowsAffected()
+	rows, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
-
-	if rowsAffected > 0 {
-		return nil
+	if rows == 0 {
+		return ErrItemNotInCart
 	}
-
-	_, err = r.db.ExecContext(
-		ctx,
-		`
-		DELETE FROM CartItems
-		WHERE CartID = ?
-		  AND ItemID = ?
-		  AND Quantity = 1
-		`,
-		cartID,
-		itemID,
-	)
-
+	_, err = r.db.ExecContext(ctx,
+		`DELETE FROM CartItems WHERE CartID = ? AND ItemID = ? AND Quantity <= 0`,
+		cartID, itemID)
 	return err
 }
 
 func (r *Repo) DeleteItem(ctx context.Context, cartID, itemID int) error {
-	_, err := r.db.ExecContext(
-		ctx,
-		`
-		DELETE FROM CartItems
-		WHERE CartID = ?
-		  AND ItemID = ?
-		`,
-		cartID,
-		itemID,
-	)
-
-	return err
+	result, err := r.db.ExecContext(ctx,
+		`DELETE FROM CartItems WHERE CartID = ? AND ItemID = ?`, cartID, itemID)
+	if err != nil {
+		return err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return ErrItemNotInCart
+	}
+	return nil
 }

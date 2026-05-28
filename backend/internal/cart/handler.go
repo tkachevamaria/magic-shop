@@ -2,6 +2,7 @@ package cart
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -24,11 +25,14 @@ func (h *Handler) GetCart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cart, err := h.service.GetCart(r.Context(), userID)
-	if err != nil {
-		http.Error(w, "failed to get cart", http.StatusInternalServerError)
+	if errors.Is(err, ErrUserNotFound) {
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
 	writeJSON(w, http.StatusOK, cart)
 }
 
@@ -46,11 +50,18 @@ func (h *Handler) IncrementItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.service.IncrementItem(r.Context(), userID, itemID)
-	if err != nil {
-		http.Error(w, "failed to increment item", http.StatusInternalServerError)
+	if errors.Is(err, ErrUserNotFound) || errors.Is(err, ErrItemNotFound) {
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
+	if errors.Is(err, ErrInsufficientStock) {
+		http.Error(w, err.Error(), http.StatusConflict) // 409
+		return
+	}
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -68,11 +79,14 @@ func (h *Handler) DecrementItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.service.DecrementItem(r.Context(), userID, itemID)
-	if err != nil {
-		http.Error(w, "failed to decrement item", http.StatusInternalServerError)
+	if errors.Is(err, ErrUserNotFound) || errors.Is(err, ErrItemNotInCart) {
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -90,11 +104,14 @@ func (h *Handler) DeleteItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.service.DeleteItem(r.Context(), userID, itemID)
-	if err != nil {
-		http.Error(w, "failed to delete item", http.StatusInternalServerError)
+	if errors.Is(err, ErrUserNotFound) || errors.Is(err, ErrItemNotInCart) {
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
