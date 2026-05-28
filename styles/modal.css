@@ -1,0 +1,147 @@
+/* modal.css - стили для модальных окон */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-container {
+    background: rgba(14, 18, 30, 0.95);
+    backdrop-filter: blur(16px);
+    border: 2px solid var(--gold-glow);
+    border-radius: 30px;
+    width: 90%;
+    max-width: 450px;
+    padding: 30px;
+    box-shadow: 0 0 40px rgba(201, 160, 84, 0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-container {
+    transform: scale(1);
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.modal-header .modal-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.modal-header h3 {
+    font-size: 28px;
+    color: var(--gold-bright);
+    margin-bottom: 8px;
+}
+
+.modal-header p {
+    font-size: 16px;
+    color: #a0a0a0;
+}
+
+.modal-body {
+    margin-bottom: 30px;
+}
+
+.modal-body label {
+    display: block;
+    font-size: 18px;
+    color: var(--gold-bright);
+    margin-bottom: 10px;
+}
+
+.modal-body input {
+    width: 100%;
+    background: rgba(20, 24, 33, 0.9);
+    border: 2px solid var(--gold-glow);
+    border-radius: 20px;
+    padding: 14px 18px;
+    color: #fff;
+    font-family: 'HarryPotter', 'Times New Roman', serif;
+    font-size: 18px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.modal-body input:focus {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 15px rgba(201, 160, 84, 0.3);
+}
+
+.modal-body input::placeholder {
+    color: #5a5a5a;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 12px 25px;
+    border-radius: 40px;
+    font-size: 18px;
+    font-family: 'HarryPotter', 'Times New Roman', serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.modal-btn-cancel {
+    background: rgba(100, 100, 100, 0.3);
+    color: #ccc;
+    border: 1px solid #666;
+}
+
+.modal-btn-cancel:hover {
+    background: rgba(100, 100, 100, 0.5);
+    transform: scale(1.02);
+}
+
+.modal-btn-confirm {
+    background: linear-gradient(135deg, var(--gold-glow), #daa520);
+    color: #0f0b1c;
+}
+
+.modal-btn-confirm:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px var(--gold-glow);
+}
+
+@media (max-width: 500px) {
+    .modal-container {
+        padding: 20px;
+        width: 95%;
+    }
+    .modal-header h3 {
+        font-size: 24px;
+    }
+    .modal-buttons {
+        flex-direction: column;
+    }
+    .modal-btn {
+        text-align: center;
+    }
+}

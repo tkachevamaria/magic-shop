@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PotterShop — История заказов</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/header.css">
+    <link rel="stylesheet" href="../styles/sidebar-panel.css">
+    <link rel="stylesheet" href="../styles/orders.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/modal.css">
+</head>
+<body class="has-sidebar">
+
+    <!-- Контейнер для левой панели -->
+    <div id="sidebar-panel-container"></div>
+
+    <header class="main-header" id="header-container"></header>
+
+    <div class="main-content-with-sidebar">
+        <div class="orders-container">
+            <div id="orders-content">
+                <div style="text-align: center; padding: 100px; font-size: 28px;">Загрузка...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/loadHeader.js"></script>
+    <script src="../js/orders.js"></script>
+    <script src="../js/sidebar-panel.js"></script>
+    <script src="../js/components.js"></script>
+    <script>
+        // Инициализируем левую панель
+        initSidebarPanel();
+        
+        setTimeout(function() {
+            if (typeof renderOrdersPage === 'function') {
+                renderOrdersPage();
+            }
+        }, 100);
+    </script>
+
+</body>
+</html>
