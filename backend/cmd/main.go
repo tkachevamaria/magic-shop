@@ -47,8 +47,9 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/api/products", productHandler.GetProducts)
-	r.Get("/api/products/{id}", productHandler.GetProductByID)
+	r.Get("/api/products", productHandler.GetProducts) // Каталог
+	r.Get("/api/products/dark", productHandler.GetDarkProducts) // Запретные товары
+	r.Get("/api/products/{id}", productHandler.GetProductByID) // Для карточек конкретных товаров
 
 	// 3. Запуск сервера
 	addr := ":8080"

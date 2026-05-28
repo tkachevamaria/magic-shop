@@ -14,7 +14,7 @@ func NewProductRepo(db *sql.DB) *ProductRepo {
 	return &ProductRepo{db: db}
 }
 
-func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error) {
+func (r *ProductRepo) buildProductQuery(ctx context.Context, conditions []string, args []interface{}, pagination PaginationParams) ([]Product, error) {
 	baseQuery := `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel, p.DeliveryType,
 			   p.CategoryID, p.ShopID, c.CategoryName, s.ShopName
@@ -22,31 +22,11 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
 	`
-
-	var args []interface{}
-	var conditions []string
-
-	// 🔍 Строгая фильтрация: только выбранные категории
-	if len(filter.CategoryIDs) > 0 {
-		placeholders := make([]string, len(filter.CategoryIDs))
-		for i, id := range filter.CategoryIDs {
-			placeholders[i] = "?"
-			args = append(args, id)
-		}
-		conditions = append(conditions, "p.CategoryID IN ("+strings.Join(placeholders, ",")+")")
-	}
-
-	if filter.ShopID != nil {
-		conditions = append(conditions, "p.ShopID = ?")
-		args = append(args, *filter.ShopID)
-	}
-
 	if len(conditions) > 0 {
 		baseQuery += " WHERE " + strings.Join(conditions, " AND ")
 	}
-
 	baseQuery += " ORDER BY p.ProductID LIMIT ? OFFSET ?"
-	args = append(args, filter.Pagination.Limit, (filter.Pagination.Page-1)*filter.Pagination.Limit)
+	args = append(args, pagination.Limit, (pagination.Page-1)*pagination.Limit)
 
 	rows, err := r.db.QueryContext(ctx, baseQuery, args...)
 	if err != nil {
@@ -57,15 +37,32 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		// Заглушки для полей, которых пока нет в schema.sql
 		p.ImageURL = "/images/default.png"
-
 		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryType, &p.CategoryID, &p.ShopID, &p.CategoryName, &p.ShopName); err != nil {
 			return nil, err
 		}
 		products = append(products, p)
 	}
 	return products, rows.Err()
+}
+
+// GetProducts - главная лента (скрывает категорию 666)
+func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) ([]Product, error) {
+	conditions := []string{"p.CategoryID != 666"}
+	var args []interface{}
+	if filter.CategoryID != nil {
+		conditions = append(conditions, "p.CategoryID = ?")
+		args = append(args, *filter.CategoryID)
+	}
+	return r.buildProductQuery(ctx, conditions, args, filter.Pagination)
+}
+
+// GetDarkProducts - только тёмные товары (категория 666)
+func (r *ProductRepo) GetDarkProducts(ctx context.Context, filter ProductFilter) ([]Product, error) {
+	conditions := []string{"p.CategoryID = 666"}
+	var args []interface{}
+	// Фильтр по категории здесь не нужен, т.к. все тёмные уже в cat=666
+	return r.buildProductQuery(ctx, conditions, args, filter.Pagination)
 }
 
 func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetail, error) {
@@ -82,7 +79,7 @@ func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetai
 		return nil, err
 	}
 
-	p.Description = "Описание загружается из БД (пока заглушка)"
+	p.Description = "Описание артефакта..."
 	p.ImageURL = "/images/default.png"
 	p.Items = make([]ItemVariant, 0)
 

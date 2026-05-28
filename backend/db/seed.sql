@@ -6,15 +6,15 @@ INSERT OR IGNORE INTO Shops (ShopID, ShopName) VALUES
 INSERT OR IGNORE INTO Categories (CategoryID, CategoryName) VALUES
 (1, 'Зелья'),
 (2, 'Одежда'),
-(3, 'Запрещённые артефакты'),
-(4, 'Канцелярия');
+(3, 'Канцелярия'),
+(666, 'Тёмные артефакты'); 
 
-INSERT OR IGNORE INTO Products (ProductID, ProductName, Price, Description, ImageURL, CategoryID, RequiredLevel, DeliveryType, ShopID) VALUES
-(1, 'Набор перьев', 5.0, 'Качественные перья для письма, зачарованные на бесконечные чернила.', '/images/feathers.png', 4, 1, 'OWL', 1),
-(2, 'Мантия Невидимости', 5000.0, 'Редчайший артефакт, делающий владельца полностью невидимым.', '/images/cloak.png', 2, 2, 'DELIVERY_GUY', 3),
-(3, 'Феликс Фелицис', 1500.0, 'Жидкая удача. Обеспечивает везение на несколько часов.', '/images/felix.png', 1, 3, 'OWL', 1),
-(4, 'Бомбы-пердёжки', 15.0, 'Весёлый сюрприз от братьев Уизли. Взрывается с громким хлопком.', '/images/puff.png', 3, 1, 'FIREPLACE', 2),
-(5, 'Книга Запретных Заклинаний', 999.0, 'Сборник тёмной магии. Требует осторожности и высокого уровня доступа.', '/images/darkbook.png', 3, 4, 'DELIVERY_GUY', 1);
+INSERT OR IGNORE INTO Products (ProductID, ProductName, Price, CategoryID, RequiredLevel, DeliveryType, ShopID) VALUES
+(1, 'Набор перьев', 5.0, 3, 1, 'OWL', 1),
+(2, 'Мантия Невидимости', 5000.0, 2, 2, 'DELIVERY_GUY', 3),
+(3, 'Феликс Фелицис', 1500.0, 1, 3, 'OWL', 1),
+(4, 'Бомбы-пердёжки', 15.0, 3, 1, 'FIREPLACE', 2),
+(5, 'Книга Запретных Заклинаний', 999.0, 666, 1, 'DELIVERY_GUY', 1);
 
 INSERT OR IGNORE INTO Items (ItemID, ProductID, Color, Size, StockQuantity) VALUES
 (1, 1, 'Чёрный', '10шт', 100),
