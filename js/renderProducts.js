@@ -1,34 +1,39 @@
 (function() {
-  const container = document.getElementById('products-grid');
-  if (!container) return;
+    const container = document.getElementById('products-grid');
+    if (!container) return;
 
-  container.innerHTML = '';
+    fetch('http://localhost:8080/api/products')
+        .then(response => {
+            if (!response.ok) throw new Error('Ошибка загрузки товаров');
+            return response.json();
+        })
+        .then(products => {
+            container.innerHTML = '';
 
-  if (typeof products === 'undefined' || !Array.isArray(products)) {
-    console.warn('Моки товаров не найдены');
-    return;
-  }
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.setAttribute('data-product-id', product.id);
 
-  products.forEach(product => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.setAttribute('data-product-id', product.id);
+                card.innerHTML = `
+                    <div class="card-image-area">
+                        <img src="${product.image_url}" alt="${product.name}">
+                    </div>
+                    <div class="card-footer">
+                        <span class="product-name">${product.name}</span>
+                        <span class="product-price">${product.price} Галлеонов</span>
+                    </div>
+                `;
 
-    card.innerHTML = `
-      <div class="card-image-area">
-        <img src="${product.image_url}" alt="${"картинки пока нет"}">
-      </div>
-      <div class="card-footer">
-        <span class="product-name">${product.name}</span>
-        <span class="product-price">${product.price} Галлеонов</span>
-      </div>
-    `;
+                card.addEventListener('click', function() {
+                    window.location.href = `../frontend/product.html?id=${product.id}`;
+                });
 
-    card.addEventListener('click', function() {
-      console.log('Переход на товар с id:', product.id);
-
-    });
-
-    container.appendChild(card);
-  });
+                container.appendChild(card);
+            });
+        })
+        .catch(err => {
+            container.innerHTML = `<div style="padding: 40px">Не удалось загрузить товары</div>`;
+            console.error(err);
+        });
 })();

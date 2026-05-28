@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -25,9 +26,16 @@ func main() {
 	productService := catalog.NewProductService(productRepo)
 	productHandler := catalog.NewProductHandler(productService)
 
-
 	// Настройка роутера
 	r := chi.NewRouter()
+
+	// Настройка CORS
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"http://127.0.0.1:5500", "http://127.0.0.1:3000"}, // порты фронта
+		AllowedMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type"},
+		MaxAge:         300,
+	}))
 
 	//регистрация маршрутов для аутентификации
 	authRepo := auth.NewRepo(database)
@@ -47,9 +55,9 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/api/products", productHandler.GetProducts) // Каталог
+	r.Get("/api/products", productHandler.GetProducts)          // Каталог
 	r.Get("/api/products/dark", productHandler.GetDarkProducts) // Запретные товары
-	r.Get("/api/products/{id}", productHandler.GetProductByID) // Для карточек конкретных товаров
+	r.Get("/api/products/{id}", productHandler.GetProductByID)  // Для карточек конкретных товаров
 
 	// 3. Запуск сервера
 	addr := ":8080"
