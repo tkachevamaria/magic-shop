@@ -1,0 +1,17 @@
+package cart
+
+type CartItem struct {
+	CartItemID  int     `json:"cart_item_id"`
+	ItemID      int     `json:"item_id"`
+	ProductName string  `json:"product_name"`
+	Color       string  `json:"color"`
+	Size        string  `json:"size"`
+	Price       float64 `json:"price"`
+	Quantity    int     `json:"quantity"`
+}
+
+type Cart struct {
+	CartID int        `json:"cart_id"`
+	UserID int        `json:"user_id"`
+	Items  []CartItem `json:"items"`
+}
