@@ -5,158 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PotterShop — Товар</title>
     <link rel="stylesheet" href="../styles/style.css">
-    <style>
-        .product-container {
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-
-        .product-card-large {
-            background: rgba(14, 18, 30, 0.85);
-            backdrop-filter: blur(12px);
-            border-radius: 40px;
-            border: 2px solid #c9a054;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            padding: 40px;
-        }
-
-        .product-image {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 30px;
-            border: 2px solid #c9a054;
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #888;
-        }
-
-        .product-title {
-            font-size: 56px;
-            color: #ffdf9e;
-            margin-bottom: 15px;
-        }
-
-        .product-price {
-            font-size: 48px;
-            color: #ffdf9e;
-            margin: 20px 0;
-        }
-
-        .product-description {
-            font-size: 22px;
-            line-height: 1.5;
-            color: #e2e8f0;
-            margin: 25px 0;
-        }
-
-        .section-label {
-            font-size: 24px;
-            color: #ffdf9e;
-            margin: 25px 0 15px 0;
-            display: block;
-        }
-
-        .options-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 25px;
-        }
-
-        .option-btn {
-            background: rgba(20, 24, 33, 0.8);
-            border: 2px solid #c9a054;
-            color: white;
-            padding: 10px 28px;
-            font-size: 20px;
-            font-family: 'HarryPotter', 'Times New Roman', serif;
-            border-radius: 40px;
-            cursor: pointer;
-        }
-
-        .option-btn:hover {
-            background: #c9a054;
-            color: #0f0b1c;
-        }
-
-        .option-btn.active {
-            background: #c9a054;
-            color: #0f0b1c;
-        }
-
-        .stock-status {
-            font-size: 22px;
-            color: #4ade80;
-            margin: 20px 0;
-            display: block;
-        }
-
-        .add-to-cart {
-            background: linear-gradient(135deg, #c9a054, #daa520);
-            border: none;
-            color: #0f0b1c;
-            font-family: 'HarryPotter', 'Times New Roman', serif;
-            font-size: 32px;
-            padding: 16px 40px;
-            border-radius: 60px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .add-to-cart:hover {
-            transform: scale(1.02);
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 30px;
-            color: #c9a054;
-            font-size: 22px;
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            color: #ffdf9e;
-        }
-
-        .toast-message {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(26, 20, 35, 0.95);
-            color: #ffdf9e;
-            padding: 14px 32px;
-            border-radius: 60px;
-            font-size: 22px;
-            border: 2px solid #c9a054;
-            z-index: 1000;
-            animation: fadeInOut 2s ease forwards;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
-        }
-
-        @media (max-width: 800px) {
-            .product-card-large {
-                grid-template-columns: 1fr;
-                padding: 25px;
-            }
-            .product-title {
-                font-size: 36px;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -168,137 +16,23 @@
         </div>
     </div>
 
+    <script src="../js/loadHeader.js"></script>
+    <script src="../js/mockProductPages.js"></script>
+    <script src="../js/renderProductPage.js"></script>
     <script>
-        // Товары
-        const productsData = {
-            1: { name: "Амортенция", price: 700, description: "Самое сильное любовное зелье. Вызывает непреодолимую страсть.", sizes: ["10 мл", "25 мл", "50 мл"], colors: ["Перламутровый"], inStock: true },
-            2: { name: "Палочка из тиса", price: 420, description: "Элегантная палочка из тисового дерева с сердцем дракона.", sizes: ["11 дюймов"], colors: ["Тисовый"], inStock: true },
-            3: { name: "Учебник зельеварения", price: 295, description: "Полное руководство по приготовлению зелий.", sizes: ["Стандарт"], colors: ["Коричневый переплёт"], inStock: true },
-            4: { name: "Нимбус-2001", price: 680, description: "Гоночная метла. Разгон до 100 км/ч за 3 секунды.", sizes: ["Один размер"], colors: ["Дубовый"], inStock: true },
-            5: { name: "Полярная сова", price: 240, description: "Белоснежная сова. Доставит любое письмо.", sizes: ["Средняя"], colors: ["Белая"], inStock: true },
-            6: { name: "Мантия-невидимка", price: 1250, description: "Легендарная мантия, делающая владельца невидимым.", sizes: ["S", "M", "L", "XL"], colors: ["Серебристая"], inStock: true }
-        };
-
-        // ЗАГРУЗКА ШАПКИ (точно такая же как на index.html)
-        fetch('header.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('header-container').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                document.getElementById('header-container').innerHTML = `
-                    <div class="header-content">
-                        <div class="logo">DA <span class="logo-sub">Лавка</span></div>
-                        <div class="search-container">
-                            <input type="text" placeholder="ПОИСК..." class="search-input">
-                            <span class="search-arrow">🔍</span>
-                        </div>
-                        <div class="header-icons">
-                            <button class="icon-btn">🛒</button>
-                            <button class="icon-btn">🧙‍♂️</button>
-                            <button class="icon-btn">🔔</button>
-                        </div>
-                    </div>
-                `;
-            });
-
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id');
-        const product = productsData[productId];
-
-        let selectedSize = '';
-        let selectedColor = '';
-
-        function showToast(message) {
-            const oldToast = document.querySelector('.toast-message');
-            if (oldToast) oldToast.remove();
-            const toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
+        const productId = parseInt(urlParams.get('id'));
+        
+        let product = null;
+        if (typeof products !== 'undefined') {
+            product = products.find(p => p.id === productId);
         }
-
-        function addToCart() {
-            let cart = JSON.parse(localStorage.getItem('potterCart') || '[]');
-            cart.push({
-                id: productId,
-                name: product.name,
-                price: product.price,
-                size: selectedSize || product.sizes[0],
-                color: selectedColor || product.colors[0]
-            });
-            localStorage.setItem('potterCart', JSON.stringify(cart));
-            showToast(product.name + ' добавлен в корзину');
+        
+        if (typeof renderProductPage === 'function') {
+            renderProductPage(product);
         }
-
-        function render() {
-            const container = document.getElementById('product-content');
-            if (!product) {
-                container.innerHTML = `<div class="product-card-large" style="text-align:center;"><h1>Товар не найден</h1><a href="index.html" class="back-link">В магазин</a></div>`;
-                return;
-            }
-
-            selectedSize = product.sizes[0];
-            selectedColor = product.colors[0];
-
-            container.innerHTML = `
-                <div class="product-card-large">
-                    <div class="product-image">Тут будет фото</div>
-                    <div class="product-info">
-                        <h1 class="product-title">${product.name}</h1>
-                        <div class="product-price">${product.price} Галлеонов</div>
-                        <div class="product-description">${product.description}</div>
-                        
-                        ${product.sizes.length > 1 ? `
-                            <span class="section-label">Размеры:</span>
-                            <div class="options-group" id="sizes-group">
-                                ${product.sizes.map(s => `<button class="option-btn size-option" data-size="${s}">${s}</button>`).join('')}
-                            </div>
-                        ` : ''}
-                        
-                        ${product.colors.length > 1 ? `
-                            <span class="section-label">Цвета:</span>
-                            <div class="options-group" id="colors-group">
-                                ${product.colors.map(c => `<button class="option-btn color-option" data-color="${c}">${c}</button>`).join('')}
-                            </div>
-                        ` : ''}
-                        
-                        <span class="stock-status">✓ В наличии</span>
-                        <button class="add-to-cart" id="add-to-cart-btn">В корзину</button>
-                        <a href="index.html" class="back-link">← Назад к покупкам</a>
-                    </div>
-                </div>
-            `;
-
-            // Выделить первый выбранный
-            if (product.sizes.length > 1) {
-                document.querySelectorAll('.size-option').forEach(btn => {
-                    if (btn.getAttribute('data-size') === selectedSize) btn.classList.add('active');
-                    btn.onclick = () => {
-                        document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        selectedSize = btn.dataset.size;
-                    };
-                });
-            }
-            if (product.colors.length > 1) {
-                document.querySelectorAll('.color-option').forEach(btn => {
-                    if (btn.getAttribute('data-color') === selectedColor) btn.classList.add('active');
-                    btn.onclick = () => {
-                        document.querySelectorAll('.color-option').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        selectedColor = btn.dataset.color;
-                    };
-                });
-            }
-
-            document.getElementById('add-to-cart-btn')?.addEventListener('click', addToCart);
-        }
-
-        render();
     </script>
 
 </body>
 </html>
+
