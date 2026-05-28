@@ -10,19 +10,15 @@ import (
 )
 
 func InitDB(cfg Config) (*sql.DB, error) {
-	// Проверяем ДО открытия соединения — иначе SQLite создаст файл сам
-	isNew := false
-	if _, err := os.Stat(cfg.DBPath); os.IsNotExist(err) {
-		isNew = true
-	}
+	// ✅ Вся строка DSN должна быть на одной линии или корректно собрана
+	dsn := "file:" + cfg.DBPath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_pragma=case_sensitive_like(0)"
 
-	dsn := "file:" + cfg.DBPath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	if isNew {
+	if _, err := os.Stat(cfg.DBPath); os.IsNotExist(err) {
 		log.Println("🪄 БД не найдена. Запускаем инициализацию...")
 		if err := runSQL(db, "db/schema.sql"); err != nil {
 			return nil, err

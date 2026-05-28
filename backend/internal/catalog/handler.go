@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -105,4 +106,31 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(product)
+}
+
+// Для поисковой строки
+func (h *ProductHandler) SearchProducts(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	query := strings.TrimSpace(q.Get("q"))
+
+	var pagination PaginationParams
+	pagination.Page = 1
+	pagination.Limit = 12
+
+	if p := q.Get("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 { pagination.Page = v }
+	}
+	if l := q.Get("limit"); l != "" {
+		if v, err := strconv.Atoi(l); err == nil && v > 0 { pagination.Limit = v }
+	}
+
+	products, err := h.service.SearchProducts(r.Context(), query, pagination)
+	if err != nil {
+		log.Printf("❌ Ошибка поиска: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
 }

@@ -98,3 +98,82 @@ func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetai
 	}
 	return &p, rows.Err()
 }
+
+// Для поисковой строки
+func (r *ProductRepo) SearchProducts(ctx context.Context, query string, pagination PaginationParams) ([]Product, error) {
+	trimmed := strings.TrimSpace(query)
+	if trimmed == "" {
+		return r.GetProducts(ctx, ProductFilter{Pagination: pagination})
+	}
+
+	// 1. Загружаем все товары (кроме тёмных, если нужно сохранить логику главной)
+	// Для поиска можно включить всё, либо оставить фильтр !=666. Оставим как есть.
+	allProducts, err := r.GetProducts(ctx, ProductFilter{Pagination: PaginationParams{Limit: 10000}})
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Разбиваем запрос на слова и приводим к нижнему регистру (Unicode-safe)
+	searchWords := strings.Fields(strings.ToLower(trimmed))
+	if len(searchWords) == 0 {
+		return allProducts[:0], nil
+	}
+
+	// 3. Фильтруем в Go (100% корректно для кириллицы)
+	var matched []Product
+	for _, p := range allProducts {
+		// Собираем все текстовые поля товара в одну строку для поиска
+		text := strings.ToLower(p.Name + " " + p.CategoryName + " " + p.ShopName)
+		
+		// Для точного поиска по размерам/цветам нужно подгрузить Items
+		items, _ := r.getItemVariants(p.ID) // отдельный метод, если нужно
+		for _, it := range items {
+			text += " " + strings.ToLower(it.Color) + " " + strings.ToLower(it.Size)
+		}
+
+		// Проверяем, что ВСЕ слова из запроса встречаются в тексте товара
+		found := true
+		for _, word := range searchWords {
+			if !strings.Contains(text, word) {
+				found = false
+				break
+			}
+		}
+		if found {
+			matched = append(matched, p)
+		}
+	}
+
+	// 4. Применяем пагинацию к отфильтрованному срезу
+	total := len(matched)
+	start := (pagination.Page - 1) * pagination.Limit
+	end := start + pagination.Limit
+	if start > total {
+		return []Product{}, nil
+	}
+	if end > total {
+		end = total
+	}
+
+	return matched[start:end], nil
+}
+
+// Вспомогательный метод для получения вариантов (если захочешь искать по размеру/цвету)
+func (r *ProductRepo) getItemVariants(productID int) ([]ItemVariant, error) {
+	rows, err := r.db.QueryContext(context.Background(), 
+		`SELECT ItemID, Color, Size, StockQuantity FROM Items WHERE ProductID=?`, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []ItemVariant
+	for rows.Next() {
+		var i ItemVariant
+		if err := rows.Scan(&i.ItemID, &i.Color, &i.Size, &i.StockQuantity); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	return items, rows.Err()
+}
