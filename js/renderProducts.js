@@ -7,8 +7,9 @@
             if (!response.ok) throw new Error('Ошибка загрузки товаров');
             return response.json();
         })
-        .then(products => {
-            console.log('товары с сервера:', products);
+        .then(data => {
+            console.log('ответ с сервера:', data);
+            const products = data.products;
             container.innerHTML = '';
 
             products.forEach(product => {

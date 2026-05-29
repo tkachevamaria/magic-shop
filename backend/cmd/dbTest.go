@@ -73,7 +73,7 @@ func checkCategories(db *sql.DB) {
 func checkProducts(db *sql.DB) {
 	fmt.Println("Products:")
 	rows, err := db.Query(`
-		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel, p.DeliveryType, c.CategoryName, s.ShopName
+		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel, p.DeliveryMethodID, c.CategoryName, s.ShopName
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
@@ -85,11 +85,11 @@ func checkProducts(db *sql.DB) {
 	defer rows.Close()
 	for rows.Next() {
 		var ProductID, RequiredLevel int
-		var ProductName, DeliveryType, CategoryName, ShopName string
+		var ProductName, DeliveryMethodID, CategoryName, ShopName string
 		var Price float64
-		rows.Scan(&ProductID, &ProductName, &Price, &RequiredLevel, &DeliveryType, &CategoryName, &ShopName)
-		fmt.Printf("  ProductID=%-3d  ProductName=%-30s  Price=%-8.1f  RequiredLevel=%d  DeliveryType=%-15s  CategoryName=%s  ShopName=%s\n",
-			ProductID, ProductName, Price, RequiredLevel, DeliveryType, CategoryName, ShopName)
+		rows.Scan(&ProductID, &ProductName, &Price, &RequiredLevel, &DeliveryMethodID, &CategoryName, &ShopName)
+		fmt.Printf("  ProductID=%-3d  ProductName=%-30s  Price=%-8.1f  RequiredLevel=%d  DeliveryMethodID=%-15s  CategoryName=%s  ShopName=%s\n",
+			ProductID, ProductName, Price, RequiredLevel, DeliveryMethodID, CategoryName, ShopName)
 	}
 	fmt.Println()
 }
@@ -165,7 +165,7 @@ func testInsertOrder(db *sql.DB) {
 
 	ItemID := "1;3;5"
 	_, err := db.Exec(`
-		INSERT INTO Orders (UserID, ItemID, DeliveryType, DeliveryAddress)
+		INSERT INTO Orders (UserID, ItemID, DeliveryMethodID, DeliveryAddress)
 		VALUES (1, ?, 'OWL', 'Hogwarts, Gryffindor Tower')
 	`, ItemID)
 	if err != nil {
@@ -178,7 +178,7 @@ func testInsertOrder(db *sql.DB) {
 func checkOrders(db *sql.DB) {
 	fmt.Println("Orders:")
 	rows, err := db.Query(`
-		SELECT o.OrderID, o.UserID, u.FirstName, u.Surname, o.ItemID, o.Status, o.DeliveryType, o.DeliveryAddress, o.OrderDate
+		SELECT o.OrderID, o.UserID, u.FirstName, u.Surname, o.ItemID, o.Status, o.DeliveryMethodID, o.DeliveryAddress, o.OrderDate
 		FROM Orders o
 		JOIN Users u ON o.UserID = u.UserID
 	`)
@@ -189,10 +189,10 @@ func checkOrders(db *sql.DB) {
 	defer rows.Close()
 	for rows.Next() {
 		var OrderID, UserID int
-		var FirstName, Surname, ItemID, Status, DeliveryType, DeliveryAddress, OrderDate string
-		rows.Scan(&OrderID, &UserID, &FirstName, &Surname, &ItemID, &Status, &DeliveryType, &DeliveryAddress, &OrderDate)
-		fmt.Printf("  OrderID=%-3d  UserID=%-3d  FirstName=%-10s  Surname=%-12s  ItemID=%-10s  Status=%-10s  DeliveryType=%-15s  DeliveryAddress=%-30s  OrderDate=%s\n",
-			OrderID, UserID, FirstName, Surname, ItemID, Status, DeliveryType, DeliveryAddress, OrderDate)
+		var FirstName, Surname, ItemID, Status, DeliveryMethodID, DeliveryAddress, OrderDate string
+		rows.Scan(&OrderID, &UserID, &FirstName, &Surname, &ItemID, &Status, &DeliveryMethodID, &DeliveryAddress, &OrderDate)
+		fmt.Printf("  OrderID=%-3d  UserID=%-3d  FirstName=%-10s  Surname=%-12s  ItemID=%-10s  Status=%-10s  DeliveryMethodID=%-15s  DeliveryAddress=%-30s  OrderDate=%s\n",
+			OrderID, UserID, FirstName, Surname, ItemID, Status, DeliveryMethodID, DeliveryAddress, OrderDate)
 	}
 	fmt.Println()
 }

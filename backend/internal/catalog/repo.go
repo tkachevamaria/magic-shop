@@ -60,22 +60,30 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) (Ca
 		args = append(args, *filter.CategoryID)
 	}
 	products, err := r.getBaseProducts(ctx, conditions, args, filter.Pagination)
-	if err != nil { return CatalogResponse{}, err }
+	if err != nil {
+		return CatalogResponse{}, err
+	}
 	return r.buildCatalogResponse(products, filter)
 }
 
 func (r *ProductRepo) GetDarkProducts(ctx context.Context, filter ProductFilter) (CatalogResponse, error) {
 	products, err := r.getBaseProducts(ctx, []string{"p.CategoryID = 666"}, nil, filter.Pagination)
-	if err != nil { return CatalogResponse{}, err }
+	if err != nil {
+		return CatalogResponse{}, err
+	}
 	return r.buildCatalogResponse(products, filter)
 }
 
 func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter ProductFilter) (CatalogResponse, error) {
 	trimmed := strings.TrimSpace(query)
-	if trimmed == "" { return r.GetProducts(ctx, filter) }
+	if trimmed == "" {
+		return r.GetProducts(ctx, filter)
+	}
 
 	allProducts, err := r.getBaseProducts(ctx, []string{"p.CategoryID != 666"}, nil, PaginationParams{Limit: 10000})
-	if err != nil { return CatalogResponse{}, err }
+	if err != nil {
+		return CatalogResponse{}, err
+	}
 
 	searchWords := strings.Fields(strings.ToLower(trimmed))
 	var matched []Product
@@ -83,9 +91,14 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 		text := strings.ToLower(p.Name + " " + p.CategoryName + " " + p.ShopName + " " + p.DeliveryName)
 		found := true
 		for _, word := range searchWords {
-			if !strings.Contains(text, word) { found = false; break }
+			if !strings.Contains(text, word) {
+				found = false
+				break
+			}
 		}
-		if found { matched = append(matched, p) }
+		if found {
+			matched = append(matched, p)
+		}
 	}
 	return r.buildCatalogResponse(matched, filter)
 }
@@ -97,19 +110,28 @@ func (r *ProductRepo) buildCatalogResponse(products []Product, filter ProductFil
 	}
 
 	productIDs := make([]interface{}, len(products))
-	for i, p := range products { productIDs[i] = p.ID }
+	for i, p := range products {
+		productIDs[i] = p.ID
+	}
 	placeholders := make([]string, len(productIDs))
-	for i := range placeholders { placeholders[i] = "?" }
-	
+	for i := range placeholders {
+		placeholders[i] = "?"
+	}
+
 	query := `SELECT ProductID, Color, Size, StockQuantity FROM Items WHERE ProductID IN (` + strings.Join(placeholders, ",") + `)`
 	rows, err := r.db.QueryContext(context.Background(), query, productIDs...)
-	if err != nil { return CatalogResponse{}, err }
+	if err != nil {
+		return CatalogResponse{}, err
+	}
 	defer rows.Close()
 
 	itemsByProduct := make(map[int][]ItemVariant)
 	for rows.Next() {
-		var pid int; var item ItemVariant
-		if err := rows.Scan(&pid, &item.Color, &item.Size, &item.StockQuantity); err != nil { continue }
+		var pid int
+		var item ItemVariant
+		if err := rows.Scan(&pid, &item.Color, &item.Size, &item.StockQuantity); err != nil {
+			continue
+		}
 		itemsByProduct[pid] = append(itemsByProduct[pid], item)
 	}
 
@@ -119,10 +141,16 @@ func (r *ProductRepo) buildCatalogResponse(products []Product, filter ProductFil
 		matchColor := filter.Color == nil
 		matchSize := filter.Size == nil
 		for _, item := range items {
-			if filter.Color != nil && item.Color == *filter.Color { matchColor = true }
-			if filter.Size != nil && item.Size == *filter.Size { matchSize = true }
+			if filter.Color != nil && item.Color == *filter.Color {
+				matchColor = true
+			}
+			if filter.Size != nil && item.Size == *filter.Size {
+				matchSize = true
+			}
 		}
-		if matchColor && matchSize { filtered = append(filtered, p) }
+		if matchColor && matchSize {
+			filtered = append(filtered, p)
+		}
 	}
 
 	colorSet, sizeSet := make(map[string]bool), make(map[string]bool)
@@ -133,8 +161,12 @@ func (r *ProductRepo) buildCatalogResponse(products []Product, filter ProductFil
 		}
 	}
 	var colors, sizes []string
-	for c := range colorSet { colors = append(colors, c) }
-	for s := range sizeSet { sizes = append(sizes, s) }
+	for c := range colorSet {
+		colors = append(colors, c)
+	}
+	for s := range sizeSet {
+		sizes = append(sizes, s)
+	}
 
 	return CatalogResponse{Products: filtered, Filters: AvailableFilters{Colors: colors, Sizes: sizes}}, nil
 }
@@ -142,24 +174,32 @@ func (r *ProductRepo) buildCatalogResponse(products []Product, filter ProductFil
 func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetail, error) {
 	var p ProductDetail
 	err := r.db.QueryRowContext(ctx, `
-		SELECT ProductID, ProductName, Price, RequiredLevel, DeliveryMethodID, dm.Name, dm.DurationDays, CategoryID, ShopID
+		SELECT ProductID, ProductName, Price, RequiredLevel, p.DeliveryMethodID, dm.Name, dm.DurationDays, CategoryID, ShopID
 		FROM Products p LEFT JOIN DeliveryMethods dm ON p.DeliveryMethodID = dm.DeliveryMethodID WHERE ProductID=?`, id).
 		Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays, &p.CategoryID, &p.ShopID)
 
-	if err == sql.ErrNoRows { return nil, nil }
-	if err != nil { return nil, err }
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
 
 	p.Description = "Описание артефакта..."
 	p.ImageURL = "/images/default.png"
 	p.Items = make([]ItemVariant, 0)
 
 	rows, err := r.db.QueryContext(ctx, `SELECT ItemID, Color, Size, StockQuantity FROM Items WHERE ProductID=?`, id)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var item ItemVariant
-		if err := rows.Scan(&item.ItemID, &item.Color, &item.Size, &item.StockQuantity); err != nil { return nil, err }
+		if err := rows.Scan(&item.ItemID, &item.Color, &item.Size, &item.StockQuantity); err != nil {
+			return nil, err
+		}
 		p.Items = append(p.Items, item)
 	}
 	return &p, rows.Err()
