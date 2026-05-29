@@ -7,6 +7,7 @@ type ProductRepoInterface interface {
 	GetDarkProducts(ctx context.Context, filter ProductFilter) (CatalogResponse, error)
 	GetProductByID(ctx context.Context, id int) (*ProductDetail, error)
 	SearchProducts(ctx context.Context, query string, filter ProductFilter) (CatalogResponse, error)
+	GetSidebarFilters(ctx context.Context) (SidebarFilter, error)
 }
 
 type ProductService struct {
@@ -31,4 +32,8 @@ func (s *ProductService) SearchProducts(ctx context.Context, query string, filte
 
 func (s *ProductService) GetProductByID(ctx context.Context, id int) (*ProductDetail, error) {
 	return s.repo.GetProductByID(ctx, id)
+}
+
+func (s *ProductService) GetSidebarFilters(ctx context.Context) (SidebarFilter, error) {
+	return s.repo.GetSidebarFilters(ctx)
 }
