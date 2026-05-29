@@ -57,7 +57,6 @@ func (r *ProductRepo) getBaseProducts(ctx context.Context, filter ProductFilter)
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		//p.ImageURL = "/images/default.png"
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Price, &p.RequiredLevel,
 			&p.CategoryID, &p.ShopID, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays,

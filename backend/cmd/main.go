@@ -76,10 +76,6 @@ func main() {
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 	r.Handle("/images/*", http.StripPrefix("/images/", http.FileServer(http.Dir("../static/images"))))
 
-	// Раздача статических файлов
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
-	r.Handle("/images/*", http.StripPrefix("/images/", http.FileServer(http.Dir("../static/images"))))
-
 	// Аутентификация
 	r.Post("/auth/register", authHandler.Register)
 	r.Post("/auth/login", authHandler.Login)
