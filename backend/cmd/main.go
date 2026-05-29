@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"magic-shop/internal/auth"
+	"magic-shop/internal/cart"
 	"magic-shop/internal/catalog"
 	"magic-shop/internal/db"
 	"net/http"
@@ -45,6 +46,16 @@ func main() {
 	r.Post("/auth/register", authHandler.Register)
 	r.Post("/auth/login", authHandler.Login)
 	r.Delete("/auth/user/{id}", authHandler.DeleteUser)
+
+	//регистрация маршрутов для корзины
+	cartRepo := cart.NewRepo(database)
+	cartService := cart.NewService(cartRepo)
+	cartHandler := cart.NewHandler(cartService)
+
+	r.Get("/cart/{userID}", cartHandler.GetCart)
+	r.Post("/cart/{userID}/items/{itemID}/increment", cartHandler.IncrementItem)
+	r.Post("/cart/{userID}/items/{itemID}/decrement", cartHandler.DecrementItem)
+	r.Delete("/cart/{userID}/items/{itemID}", cartHandler.DeleteItem)
 
 	// Тестовые маршруты
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {

@@ -3,15 +3,15 @@ package auth
 type Role string
 
 const (
-	RoleStudent      Role = "student"      // AccessLevel 3
+	RoleStudent      Role = "student"      // AccessLevel 1
 	RoleMage         Role = "mage"         // AccessLevel 2
-	RoleProfessional Role = "professional" // AccessLevel 1
+	RoleProfessional Role = "professional" // AccessLevel 3
 )
 
 var roleToLevel = map[Role]int{
-	RoleStudent:      3,
+	RoleStudent:      1,
 	RoleMage:         2,
-	RoleProfessional: 1,
+	RoleProfessional: 3,
 }
 
 func (r Role) AccessLevel() (int, bool) {
