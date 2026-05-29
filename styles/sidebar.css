@@ -1,0 +1,69 @@
+/* sidebar.css - стили бокового меню */
+
+.sidebar {
+    background: rgba(14, 18, 30, 0.7);
+    backdrop-filter: blur(12px);
+    border-radius: 32px;
+    padding: 32px 24px;
+    border: 1px solid rgba(201, 160, 84, 0.4);
+    height: fit-content;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-title {
+    font-size: 48px;
+    color: var(--gold-bright);
+    text-shadow: 0 0 6px #b8860b;
+    margin-bottom: 28px;
+    border-left: 5px solid var(--gold-glow);
+    padding-left: 16px;
+}
+
+.categories-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 35px;
+}
+
+.menu-link {
+    font-size: 28px;
+    text-decoration: none;
+    color: #f0e6d2;
+    padding: 6px 0 6px 10px;
+    border-bottom: 1px dashed rgba(201, 160, 84, 0.3);
+    transition: 0.2s;
+    display: block;
+}
+
+.menu-link:hover {
+    color: var(--gold-bright);
+    padding-left: 20px;
+    border-bottom-color: var(--gold-glow);
+    text-shadow: 0 0 5px #daa520;
+}
+
+.shops-dropdown {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: 3px solid var(--gold-glow);
+    padding-top: 20px;
+    margin-top: 15px;
+    font-size: 36px;
+    color: var(--gold-bright);
+    cursor: pointer;
+}
+
+.shops-dropdown span:first-child {
+    font-size: 36px;
+}
+
+.arrow {
+    font-size: 32px;
+    transition: transform 0.2s;
+}
+
+.shops-dropdown:hover .arrow {
+    transform: translateY(4px);
+}
