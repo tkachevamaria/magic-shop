@@ -12,6 +12,7 @@ import (
 	"magic-shop/internal/users"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -50,6 +51,14 @@ func main() {
 
 	// Настройка роутера
 	r := chi.NewRouter()
+
+	// Настройка CORPS
+	r.Use(cors.Handler(cors.Options{
+	AllowedOrigins: []string{"http://127.0.0.1:5500", "http://127.0.0.1:3000", "http://localhost:3000", "http://localhost:5500"}, // порты фронта
+	AllowedMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+	AllowedHeaders: []string{"Content-Type"},
+	MaxAge:         300,
+	}))
 
 	//  Базовые эндпоинты
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
