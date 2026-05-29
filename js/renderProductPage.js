@@ -1,5 +1,6 @@
 (function () {
     const API_URL = 'http://localhost:8080/api';
+    const PHOTO_URL = 'http://localhost:8080';
 
     const container = document.getElementById('product-content');
 
@@ -7,10 +8,10 @@
 
     function renderProduct(product) {
         container.innerHTML = `
-            <div class="product-page">
+            <div class="product-card-large">
 
                 <div class="product-image">
-                    <img src="${product.image_url}" alt="${product.name}">
+                    <img src="${PHOTO_URL}${product.image_url}" alt="${product.name}">
                 </div>
 
                 <div class="product-info">
