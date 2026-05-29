@@ -1,0 +1,220 @@
+/* sidebar-panel.css - левая панель для страниц (кроме главной) */
+@charset "UTF-8";
+.sidebar-panel {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: rgba(9, 11, 16, 0.95);
+    backdrop-filter: blur(16px);
+    border-right: 2px solid var(--gold-glow);
+    z-index: 100;
+    padding: 100px 20px 30px 20px;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+}
+
+/* Кнопка открытия/закрытия на мобилках */
+.sidebar-toggle {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    background: rgba(201, 160, 84, 0.2);
+    border: 2px solid var(--gold-glow);
+    color: var(--gold-bright);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 101;
+    display: none;
+    font-size: 24px;
+    transition: all 0.2s;
+}
+
+.sidebar-toggle:hover {
+    background: var(--gold-glow);
+    color: #0f0b1c;
+    transform: scale(1.05);
+}
+
+/* Профиль пользователя */
+.user-profile {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(201, 160, 84, 0.3);
+}
+
+.user-avatar {
+    font-size: 60px;
+    margin-bottom: 10px;
+}
+
+.user-name {
+    font-size: 24px;
+    color: var(--gold-bright);
+    margin-bottom: 8px;
+}
+
+.user-level {
+    font-size: 16px;
+    color: #a0a0a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.level-badge {
+    background: rgba(201, 160, 84, 0.2);
+    border: 1px solid var(--gold-glow);
+    border-radius: 40px;
+    padding: 4px 12px;
+    font-size: 14px;
+    color: var(--gold-bright);
+}
+
+/* Навигационное меню */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-radius: 15px;
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 20px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.nav-item:hover {
+    background: rgba(201, 160, 84, 0.15);
+    color: var(--gold-bright);
+    transform: translateX(5px);
+}
+
+.nav-item.active {
+    background: rgba(201, 160, 84, 0.25);
+    border-left: 3px solid var(--gold-glow);
+    color: var(--gold-bright);
+}
+
+.nav-icon {
+    font-size: 24px;
+    width: 32px;
+    text-align: center;
+}
+
+.nav-text {
+    flex: 1;
+}
+
+/* Отложенные покупки (счётчик) */
+.pending-count {
+    background: #e74c3c;
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: auto;
+}
+
+/* Адрес доставки */
+.delivery-address-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 15px;
+    margin: 20px 0;
+    border: 1px solid rgba(201, 160, 84, 0.2);
+}
+
+.delivery-address-card .label {
+    font-size: 14px;
+    color: #a0a0a0;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.delivery-address-card .address {
+    font-size: 16px;
+    color: #fff;
+    word-break: break-word;
+}
+
+.edit-address {
+    background: none;
+    border: none;
+    color: var(--gold-glow);
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: 'HarryPotter', sans-serif;
+}
+
+.edit-address:hover {
+    color: var(--gold-bright);
+}
+
+/* Кнопка выхода */
+.logout-btn {
+    margin-top: 30px;
+    background: rgba(231, 76, 60, 0.15);
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+}
+
+.logout-btn:hover {
+    background: rgba(231, 76, 60, 0.3);
+    color: #ff6b6b;
+}
+
+/* Основной контент со сдвигом */
+.main-content-with-sidebar {
+    margin-left: 280px;
+    padding: 20px;
+}
+
+/* Скрытие панели на мобилках */
+@media (max-width: 800px) {
+    .sidebar-panel {
+        transform: translateX(-100%);
+        width: 280px;
+        z-index: 200;
+    }
+    
+    .sidebar-panel.open {
+        transform: translateX(0);
+    }
+    
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .main-content-with-sidebar {
+        margin-left: 0;
+    }
+}
+
+/* Адаптация для страниц с панелью */
+body.has-sidebar {
+    overflow-x: hidden;
+}
+
+/* Скрытие старого сайдбара на страницах с новой панелью */
+.hide-old-sidebar .sidebar {
+    display: none;
+}

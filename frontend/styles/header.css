@@ -1,4 +1,5 @@
 /* styles/header.css */
+@charset "UTF-8";
 .main-header {
     background: rgba(9, 11, 16, 0.95);
     backdrop-filter: blur(16px);

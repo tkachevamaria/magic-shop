@@ -1,49 +1,47 @@
-/* main.css - глобальные стили и переменные */
-
+/* styles/main.css */
 @font-face {
     font-family: 'HarryPotter';
-    src: url('Harry Potter.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
+    src: url('https://fonts.cdnfonts.com/css/harry-potter') format('woff2');
 }
 
 :root {
     --gold-glow: #c9a054;
     --gold-bright: #ffdf9e;
-    --bg-dark: #090b10;
-    --card-bg: rgba(22, 27, 38, 0.55);
-    --wb-purple: #a124db;
+    --bg-dark: #0a0c12;
+    --card-bg: rgba(22, 27, 38, 0.7);
 }
 
 * {
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    font-family: 'HarryPotter', 'Times New Roman', 'Georgia', serif;
-    color: #ffffff;
-    background-color: #090b10;
-    background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920');
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
-    letter-spacing: 0.8px;
+    font-family: 'HarryPotter', 'Times New Roman', serif;
+    background: var(--bg-dark);
+    /* ЗВЁЗДНОЕ НЕБО */
+    background-image: 
+        radial-gradient(2px 2px at 15% 30%, rgba(255, 200, 100, 0.5), transparent),
+        radial-gradient(1px 1px at 72% 85%, rgba(255, 200, 100, 0.3), transparent),
+        radial-gradient(3px 3px at 45% 55%, rgba(255, 200, 100, 0.2), transparent);
+    background-size: 300px 300px, 200px 200px, 400px 400px;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    color: #fff;
 }
 
 .page-container {
-    max-width: 1440px;
+    max-width: 1400px;
     margin: 50px auto;
-    padding: 0 32px;
+    padding: 0 40px;
     display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 48px;
+    grid-template-columns: 300px 1fr;
+    gap: 50px;
 }
 
 @media (max-width: 900px) {
     .page-container {
         grid-template-columns: 1fr;
-        gap: 30px;
     }
 }

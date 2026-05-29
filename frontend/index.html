@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PotterShop — Магазин волшебных товаров</title>
-    <link rel="stylesheet" href="../styles/main.css">
-    <link rel="stylesheet" href="../styles/header.css">
-    <link rel="stylesheet" href="../styles/sidebar.css">
-    <link rel="stylesheet" href="../styles/products.css">
-    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- <link rel="stylesheet" href="styles/header.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="styles/products.css">
+    <link rel="stylesheet" href="styles/components.css"> -->
 </head>
 <body>
     <div class="stars-overlay"></div>
@@ -16,7 +16,6 @@
     <header class="main-header" id="header-container"></header>
 
     <div class="page-container">
-        
         <aside class="sidebar">
             <h2 class="sidebar-title">Категории</h2>
             <nav class="categories-menu">
@@ -29,18 +28,18 @@
                 <a href="#" class="menu-link">⚡ Почта</a>
                 <a href="#" class="menu-link">⚡ Питомцы</a>
             </nav>
-
             <div class="shops-dropdown">
                 <span>Магазины</span>
                 <span class="arrow">▼</span>
             </div>
         </aside>
 
-        <main class="products-container" id="products-grid">
-        </main>
+        <main class="products-container" id="products-grid"></main>
     </div>
 
-    <script src="/js/loadHeader.js"></script>
-    <script src="/js/renderProducts.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/loadHeader.js"></script>
+    <script src="js/renderProducts.js"></script>
+    <script src="js/cart.js"></script>
 </body>
 </html>
