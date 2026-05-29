@@ -18,7 +18,7 @@ func (r *ProductRepo) getBaseProducts(ctx context.Context, conditions []string, 
 	baseQuery := `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel, 
 			   p.CategoryID, p.ShopID, p.DeliveryMethodID, dm.Name, dm.DurationDays,
-			   c.CategoryName, s.ShopName
+			   c.CategoryName, s.ShopName, p.ImageURL
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
@@ -39,11 +39,11 @@ func (r *ProductRepo) getBaseProducts(ctx context.Context, conditions []string, 
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		p.ImageURL = "/images/default.png"
+		//p.ImageURL = "/images/default.png"
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Price, &p.RequiredLevel,
 			&p.CategoryID, &p.ShopID, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays,
-			&p.CategoryName, &p.ShopName,
+			&p.CategoryName, &p.ShopName, &p.ImageURL,
 		); err != nil {
 			return nil, err
 		}
@@ -174,9 +174,9 @@ func (r *ProductRepo) buildCatalogResponse(products []Product, filter ProductFil
 func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetail, error) {
 	var p ProductDetail
 	err := r.db.QueryRowContext(ctx, `
-		SELECT ProductID, ProductName, Price, RequiredLevel, p.DeliveryMethodID, dm.Name, dm.DurationDays, CategoryID, ShopID
+		SELECT ProductID, ProductName, Price, RequiredLevel, p.DeliveryMethodID, dm.Name, dm.DurationDays, CategoryID, ShopID, ImageURL
 		FROM Products p LEFT JOIN DeliveryMethods dm ON p.DeliveryMethodID = dm.DeliveryMethodID WHERE ProductID=?`, id).
-		Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays, &p.CategoryID, &p.ShopID)
+		Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays, &p.CategoryID, &p.ShopID, &p.ImageURL)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -186,7 +186,7 @@ func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetai
 	}
 
 	p.Description = "Описание артефакта..."
-	p.ImageURL = "/images/default.png"
+	//p.ImageURL = "/images/default.png"
 	p.Items = make([]ItemVariant, 0)
 
 	rows, err := r.db.QueryContext(ctx, `SELECT ItemID, Color, Size, StockQuantity FROM Items WHERE ProductID=?`, id)
