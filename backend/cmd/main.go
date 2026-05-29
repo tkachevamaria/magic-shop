@@ -26,7 +26,6 @@ func main() {
 	productService := catalog.NewProductService(productRepo)
 	productHandler := catalog.NewProductHandler(productService)
 
-
 	// Настройка роутера
 	r := chi.NewRouter()
 
@@ -56,9 +55,9 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/api/products", productHandler.GetProducts) // Каталог
-	r.Get("/api/products/dark", productHandler.GetDarkProducts) // Запретные товары
-	r.Get("/api/products/{id}", productHandler.GetProductByID) // Для карточек конкретных товаров
+	r.Get("/api/products", productHandler.GetProducts)           // Каталог
+	r.Get("/api/products/dark", productHandler.GetDarkProducts)  // Запретные товары
+	r.Get("/api/products/{id}", productHandler.GetProductByID)   // Для карточек конкретных товаров
 	r.Get("/api/products/search", productHandler.SearchProducts) // Поисковая строка
 
 	// 3. Запуск сервера
