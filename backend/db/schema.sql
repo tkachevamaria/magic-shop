@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS Items (
 CREATE TABLE IF NOT EXISTS Cart (
     CartID INTEGER PRIMARY KEY,
     UserID INTEGER UNIQUE,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS CartItems (
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS CartItems (
     CartID INTEGER,
     ItemID INTEGER,
     Quantity INTEGER,
-    FOREIGN KEY (CartID) REFERENCES Cart(CartID),
+    FOREIGN KEY (CartID) REFERENCES Cart(CartID) ON DELETE CASCADE,
     FOREIGN KEY (ItemID) REFERENCES Items(ItemID),
     UNIQUE(CartID, ItemID)
 );
@@ -69,7 +69,8 @@ CREATE TABLE IF NOT EXISTS Orders (
     OrderDate DATETIME DEFAULT (datetime('now')),
     Status TEXT DEFAULT 'PENDING',
     DeliveryMethodID INTEGER,
+    EstimatedDeliveryDate DATETIME,
     DeliveryAddress TEXT,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
     FOREIGN KEY (DeliveryMethodID) REFERENCES DeliveryMethods(DeliveryMethodID)
 );
