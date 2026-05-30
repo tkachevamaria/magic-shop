@@ -54,7 +54,8 @@ func main() {
 
 	//  CORS
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		//AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   []string{"http://127.0.0.1:5500", "http://127.0.0.1:3000", "http://localhost:3000", "http://localhost:5500"}, // порты фронта
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -71,30 +72,34 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	//  Аутентификация
+	//Раздача статических файлов
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
+	r.Handle("/images/*", http.StripPrefix("/images/", http.FileServer(http.Dir("../static/images"))))
+
+	//Аутентификация
 	r.Post("/auth/register", authHandler.Register)
 	r.Post("/auth/login", authHandler.Login)
 	r.Delete("/auth/user/{id}", authHandler.DeleteUser)
 
-	//  Каталог
+	// Каталог
 	r.Get("/api/filters", productHandler.GetSidebarFilters)
 	r.Get("/api/products", productHandler.GetProducts)
 	r.Get("/api/products/dark", productHandler.GetDarkProducts)
 	r.Get("/api/products/search", productHandler.SearchProducts)
 	r.Get("/api/products/{id}", productHandler.GetProductByID)
 
-	//  Корзина
+	//Корзина
 	r.Get("/api/cart/{userID}", cartHandler.GetCart)
-	r.Post("/api/cart/{userID}/{itemID}", cartHandler.IncrementItem)
-	r.Post("/api/cart/{userID}/{itemID}/decrement", cartHandler.DecrementItem)
-	r.Delete("/api/cart/{userID}/{itemID}", cartHandler.DeleteItem)
+	r.Post("/api/cart/{userID}/{itemID}", cartHandler.IncrementItem)           // Добавить / увеличить кол-во
+	r.Post("/api/cart/{userID}/{itemID}/decrement", cartHandler.DecrementItem) // Уменьшить кол-во
+	r.Delete("/api/cart/{userID}/{itemID}", cartHandler.DeleteItem)            // Удалить из корзины
 
 	//  Заказы
 	r.Get("/api/orders/{userID}", orderHandler.GetActiveOrders)      //  Активные
 	r.Get("/api/purchases/{userID}", orderHandler.GetPurchases)      // Завершённые
 	r.Get("/api/orders/{userID}/{orderID}", orderHandler.GetOrderDetails) // Детали для обоих
 
-	// Профиль
+	//Профиль
 	r.Get("/api/users/profile/{userID}", profileHandler.GetProfile)
 
 	// 4. Запуск сервера

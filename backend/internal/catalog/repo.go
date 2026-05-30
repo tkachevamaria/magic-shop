@@ -18,7 +18,7 @@ func (r *ProductRepo) getBaseProducts(ctx context.Context, filter ProductFilter)
 	baseQuery := `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel,
 			   p.CategoryID, p.ShopID, p.DeliveryMethodID, dm.Name, dm.DurationDays,
-			   c.CategoryName, s.ShopName
+			   c.CategoryName, s.ShopName, p.ImageURL
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
@@ -57,11 +57,10 @@ func (r *ProductRepo) getBaseProducts(ctx context.Context, filter ProductFilter)
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		p.ImageURL = "/images/default.png"
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Price, &p.RequiredLevel,
 			&p.CategoryID, &p.ShopID, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays,
-			&p.CategoryName, &p.ShopName,
+			&p.CategoryName, &p.ShopName, &p.ImageURL,
 		); err != nil {
 			return nil, err
 		}
@@ -74,7 +73,7 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) (Ca
 	// Исключаем тёмные товары (категория 666) из обычной выдачи
 	conditions := []string{"p.CategoryID != 666"}
 	var args []interface{}
-	
+
 	if filter.CategoryID != nil {
 		conditions = append(conditions, "p.CategoryID = ?")
 		args = append(args, *filter.CategoryID)
@@ -91,7 +90,7 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) (Ca
 	baseQuery := `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel,
 			   p.CategoryID, p.ShopID, p.DeliveryMethodID, dm.Name, dm.DurationDays,
-			   c.CategoryName, s.ShopName
+			   c.CategoryName, s.ShopName, p.ImageURL
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
@@ -110,11 +109,10 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) (Ca
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		p.ImageURL = "/images/default.png"
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Price, &p.RequiredLevel,
 			&p.CategoryID, &p.ShopID, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays,
-			&p.CategoryName, &p.ShopName,
+			&p.CategoryName, &p.ShopName, &p.ImageURL,
 		); err != nil {
 			return CatalogResponse{}, err
 		}
@@ -126,7 +124,7 @@ func (r *ProductRepo) GetProducts(ctx context.Context, filter ProductFilter) (Ca
 func (r *ProductRepo) GetDarkProducts(ctx context.Context, filter ProductFilter) (CatalogResponse, error) {
 	conditions := []string{"p.CategoryID = 666"}
 	var args []interface{}
-	
+
 	if filter.ShopID != nil {
 		conditions = append(conditions, "p.ShopID = ?")
 		args = append(args, *filter.ShopID)
@@ -139,7 +137,7 @@ func (r *ProductRepo) GetDarkProducts(ctx context.Context, filter ProductFilter)
 	baseQuery := `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel,
 			   p.CategoryID, p.ShopID, p.DeliveryMethodID, dm.Name, dm.DurationDays,
-			   c.CategoryName, s.ShopName
+			   c.CategoryName, s.ShopName, p.ImageURL
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
@@ -158,11 +156,10 @@ func (r *ProductRepo) GetDarkProducts(ctx context.Context, filter ProductFilter)
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		p.ImageURL = "/images/default.png"
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Price, &p.RequiredLevel,
 			&p.CategoryID, &p.ShopID, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays,
-			&p.CategoryName, &p.ShopName,
+			&p.CategoryName, &p.ShopName, &p.ImageURL,
 		); err != nil {
 			return CatalogResponse{}, err
 		}
@@ -180,7 +177,7 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 	//  Загружаем товары с учётом ВСЕХ фильтров (включая delivery) и исключаем 666
 	conditions := []string{"p.CategoryID != 666"}
 	var args []interface{}
-	
+
 	if filter.CategoryID != nil {
 		conditions = append(conditions, "p.CategoryID = ?")
 		args = append(args, *filter.CategoryID)
@@ -197,7 +194,7 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 	baseQuery := `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel,
 			   p.CategoryID, p.ShopID, p.DeliveryMethodID, dm.Name, dm.DurationDays,
-			   c.CategoryName, s.ShopName
+			   c.CategoryName, s.ShopName, p.ImageURL
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
@@ -205,7 +202,7 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 		WHERE ` + strings.Join(conditions, " AND ") + `
 		ORDER BY p.ProductID
 	`
-	
+
 	rows, err := r.db.QueryContext(ctx, baseQuery, args...)
 	if err != nil {
 		return CatalogResponse{}, err
@@ -215,11 +212,10 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		p.ImageURL = "/images/default.png"
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Price, &p.RequiredLevel,
 			&p.CategoryID, &p.ShopID, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays,
-			&p.CategoryName, &p.ShopName,
+			&p.CategoryName, &p.ShopName, &p.ImageURL,
 		); err != nil {
 			return CatalogResponse{}, err
 		}
@@ -231,28 +227,33 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 		s = strings.ToLower(s)
 		return strings.ReplaceAll(s, "ё", "е")
 	}
-	
+
 	searchWords := strings.Fields(normalize(trimmed))
 	var matched []Product
-	
+
 	// Загружаем Items для поиска по цвету/размеру
 	productIDs := make([]interface{}, len(products))
-	for i, p := range products { productIDs[i] = p.ID }
+	for i, p := range products {
+		productIDs[i] = p.ID
+	}
 	if len(productIDs) > 0 {
 		placeholders := make([]string, len(productIDs))
-		for i := range placeholders { placeholders[i] = "?" }
+		for i := range placeholders {
+			placeholders[i] = "?"
+		}
 		itemsQuery := `SELECT ProductID, Color, Size FROM Items WHERE ProductID IN (` + strings.Join(placeholders, ",") + `)`
 		itemRows, err := r.db.QueryContext(ctx, itemsQuery, productIDs...)
 		if err == nil {
 			defer itemRows.Close()
 			itemsByProduct := make(map[int][]ItemVariant)
 			for itemRows.Next() {
-				var pid int; var item ItemVariant
+				var pid int
+				var item ItemVariant
 				if err := itemRows.Scan(&pid, &item.Color, &item.Size); err == nil {
 					itemsByProduct[pid] = append(itemsByProduct[pid], item)
 				}
 			}
-			
+
 			for _, p := range products {
 				text := normalize(p.Name + " " + p.CategoryName + " " + p.ShopName + " " + p.DeliveryName)
 				for _, item := range itemsByProduct[p.ID] {
@@ -265,7 +266,9 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 						break
 					}
 				}
-				if found { matched = append(matched, p) }
+				if found {
+					matched = append(matched, p)
+				}
 			}
 		}
 	}
@@ -288,14 +291,18 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 					}
 				}
 				for _, item := range items {
-					if filter.Color != nil && item.Color == *filter.Color { matchColor = true }
-					if filter.Size != nil && item.Size == *filter.Size { matchSize = true }
+					if filter.Color != nil && item.Color == *filter.Color {
+						matchColor = true
+					}
+					if filter.Size != nil && item.Size == *filter.Size {
+						matchSize = true
+					}
 				}
 			}
 		}
 		// Доставка
 		matchDelivery := filter.DeliveryMethodID == nil || p.DeliveryMethodID == *filter.DeliveryMethodID
-		
+
 		if matchColor && matchSize && matchDelivery {
 			filtered = append(filtered, p)
 		}
@@ -395,11 +402,11 @@ func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetai
 	var p ProductDetail
 	err := r.db.QueryRowContext(ctx, `
 		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel, 
-			   p.DeliveryMethodID, dm.Name, dm.DurationDays, p.CategoryID, p.ShopID
+			   p.DeliveryMethodID, dm.Name, dm.DurationDays, p.CategoryID, p.ShopID, p.ImageURL
 		FROM Products p 
 		LEFT JOIN DeliveryMethods dm ON p.DeliveryMethodID = dm.DeliveryMethodID
 		WHERE p.ProductID=?`, id).
-		Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays, &p.CategoryID, &p.ShopID)
+		Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays, &p.CategoryID, &p.ShopID, &p.ImageURL)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -409,7 +416,6 @@ func (r *ProductRepo) GetProductByID(ctx context.Context, id int) (*ProductDetai
 	}
 
 	p.Description = "Описание артефакта..."
-	p.ImageURL = "/images/default.png"
 	p.Items = make([]ItemVariant, 0)
 
 	rows, err := r.db.QueryContext(ctx, `SELECT ItemID, Color, Size, StockQuantity FROM Items WHERE ProductID=?`, id)
