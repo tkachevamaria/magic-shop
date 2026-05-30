@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PotterShop — Вход и регистрация</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/header.css">
+    <link rel="stylesheet" href="../styles/auth.css">
+    <link rel="stylesheet" href="../styles/components.css">
+    <link rel="stylesheet" href="../styles/modal.css">
+</head>
+<body>
+
+    <header class="main-header" id="header-container"></header>
+
+    <div class="page-container register-container">
+        <div class="register-card">
+            <!-- Вкладки -->
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Вход</div>
+                <div class="auth-tab" data-tab="register">Регистрация</div>
+            </div>
+
+            <!-- Сообщение -->
+            <div class="auth-message" id="auth-message"></div>
+
+            <!-- Форма входа -->
+            <div class="auth-panel active" id="panel-login">
+                <div class="form-group">
+                    <label for="login-email">Почта</label>
+                    <input type="email" id="login-email" placeholder="ваша@почта.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Пароль</label>
+                    <input type="password" id="login-password" placeholder="••••••••">
+                </div>
+                <button class="register-btn" id="login-btn">Войти</button>
+                <p class="login-link">Нет аккаунта? <a href="#" data-tab="register">Зарегистрироваться</a></p>
+            </div>
+
+            <!-- Форма регистрации -->
+            <div class="auth-panel" id="panel-register">
+                <div class="form-group">
+                    <label for="reg-first-name">Имя</label>
+                    <input type="text" id="reg-first-name" placeholder="Гарри">
+                </div>
+                <div class="form-group">
+                    <label for="reg-surname">Фамилия</label>
+                    <input type="text" id="reg-surname" placeholder="Поттер">
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Почта</label>
+                    <input type="email" id="reg-email" placeholder="ваша@почта.com">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Пароль</label>
+                    <input type="password" id="reg-password" placeholder="Не менее 6 символов">
+                </div>
+                <div class="form-group">
+                    <label for="reg-role">Роль</label>
+                    <select id="reg-role">
+                        <option value="professional">Профессионал</option>
+                        <option value="mage">Маг</option>
+                        <option value="student">Студент</option>
+                    </select>
+                    <small class="role-hint">Уровень доступа: Профессионал (1) → Маг (2) → Студент (3)</small>
+                </div>
+                <button class="register-btn" id="register-btn">Примкнуть к избранным</button>
+                <p class="login-link">Уже есть аккаунт? <a href="#" data-tab="login">Войти</a></p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/loadHeader.js"></script>
+    <script src="../js/auth.js"></script>
+</body>
+</html>

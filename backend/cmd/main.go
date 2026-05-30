@@ -65,7 +65,7 @@ func main() {
 
 	//  Базовые эндпоинты
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("🪄 Magic Market API is running!"))
+		w.Write([]byte("Magic Market API is running!"))
 	})
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
