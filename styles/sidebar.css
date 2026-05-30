@@ -1,98 +1,127 @@
 /* sidebar.css - стили бокового меню */
 
 .sidebar {
-    background: rgba(14, 18, 30, 0.7);
-    backdrop-filter: blur(12px);
-    border-radius: 32px;
-    padding: 32px 24px;
-    border: 1px solid rgba(201, 160, 84, 0.4);
-    height: fit-content;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(14, 18, 30, 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: 32px;
+  padding: 32px 24px;
+  border: 1px solid rgba(201, 160, 84, 0.4);
+  height: fit-content;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-title {
-    font-size: 48px;
-    color: var(--gold-bright);
-    text-shadow: 0 0 6px #b8860b;
-    margin-bottom: 28px;
-    border-left: 5px solid var(--gold-glow);
-    padding-left: 16px;
+  font-size: 48px;
+  color: var(--gold-bright);
+  text-shadow: 0 0 6px #b8860b;
+  margin-bottom: 28px;
+  border-left: 5px solid var(--gold-glow);
+  padding-left: 16px;
 }
 
 .categories-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 35px;
 }
 
 .menu-link {
-    font-size: 28px;
-    text-decoration: none;
-    color: #f0e6d2;
-    padding: 6px 0 6px 10px;
-    border-bottom: 1px dashed rgba(201, 160, 84, 0.3);
-    transition: 0.2s;
-    display: block;
+  font-size: 28px;
+  text-decoration: none;
+  color: #f0e6d2;
+  padding: 6px 0 6px 10px;
+  border-bottom: 1px dashed rgba(201, 160, 84, 0.3);
+  transition: 0.2s;
+  display: block;
 }
 
 .menu-link:hover {
-    color: var(--gold-bright);
-    padding-left: 20px;
-    border-bottom-color: var(--gold-glow);
-    text-shadow: 0 0 5px #daa520;
+  color: var(--gold-bright);
+  padding-left: 20px;
+  border-bottom-color: var(--gold-glow);
+  text-shadow: 0 0 5px #daa520;
 }
 
 .shops-dropdown {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    border-top: 3px solid var(--gold-glow);
-    padding-top: 20px;
-    margin-top: 15px;
-    font-size: 36px;
-    color: var(--gold-bright);
-    cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 3px solid var(--gold-glow);
+  padding-top: 20px;
+  margin-top: 15px;
+  font-size: 36px;
+  color: var(--gold-bright);
+  cursor: pointer;
 }
 
 .shops-dropdown span:first-child {
-    font-size: 36px;
+  font-size: 36px;
 }
 
 .arrow {
-    font-size: 32px;
-    transition: transform 0.2s;
+  font-size: 32px;
+  transition: transform 0.2s;
 }
 
 .shops-dropdown:hover .arrow {
-    transform: translateY(4px);
+  transform: translateY(4px);
 }
 
 /* Выпадающий список магазинов */
 .shops-list {
-    display: none;
-    margin-top: 15px;
-    background: rgba(14, 18, 30, 0.95);
-    border-radius: 20px;
-    padding: 10px;
-    border: 1px solid var(--gold-glow);
+  display: none;
+  margin-top: 15px;
+  background: rgba(14, 18, 30, 0.95);
+  border-radius: 20px;
+  padding: 10px;
+  border: 1px solid var(--gold-glow);
 }
 
 .shops-dropdown:hover .shops-list {
-    display: block;
+  display: block;
 }
 
 .shop-link {
-    display: block;
-    font-size: 24px;
-    padding: 8px 12px;
-    text-decoration: none;
-    color: #f0e6d2;
-    transition: 0.2s;
+  display: block;
+  font-size: 24px;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #f0e6d2;
+  transition: 0.2s;
 }
 
 .shop-link:hover {
-    color: var(--gold-bright);
-    padding-left: 20px;
-    text-shadow: 0 0 5px #daa520;
+  color: var(--gold-bright);
+  padding-left: 20px;
+  text-shadow: 0 0 5px #daa520;
+}
+
+/* Активное состояние фильтров (выбранный элемент) */
+.menu-link.active,
+.shop-link.active {
+  background: linear-gradient(90deg, rgba(201, 160, 84, 0.2), transparent);
+  color: var(--gold-bright);
+  border-left: 4px solid var(--gold-glow);
+  border-bottom-color: transparent;
+  text-shadow: 0 0 8px rgba(255, 223, 158, 0.5);
+  font-weight: bold;
+  padding-left: 16px;
+  pointer-events: none; /* Чтобы нельзя было кликнуть повторно на уже выбранный */
+}
+
+/* Эффект наведения на активный (если нужно) */
+.menu-link.active:hover,
+.shop-link.active:hover {
+  background: linear-gradient(90deg, rgba(201, 160, 84, 0.3), transparent);
+  transform: translateX(4px);
+}
+
+/* Состояние загрузки/пустого результата в сайдбаре (опционально) */
+.categories-menu:empty::before,
+.shops-list:empty::before {
+  content: "⏳ Загрузка...";
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 20px;
+  padding: 10px 0;
 }
