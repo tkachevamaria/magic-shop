@@ -94,9 +94,10 @@ func main() {
 	r.Post("/api/cart/{userID}/{itemID}/decrement", cartHandler.DecrementItem) // Уменьшить кол-во
 	r.Delete("/api/cart/{userID}/{itemID}", cartHandler.DeleteItem)            // Удалить из корзины
 
-	//Заказы
-	r.Get("/api/orders/{userID}", orderHandler.GetActiveOrders)
-	r.Get("/api/orders/{userID}/{orderID}", orderHandler.GetOrderDetails)
+	//  Заказы
+	r.Get("/api/orders/{userID}", orderHandler.GetActiveOrders)      //  Активные
+	r.Get("/api/purchases/{userID}", orderHandler.GetPurchases)      // Завершённые
+	r.Get("/api/orders/{userID}/{orderID}", orderHandler.GetOrderDetails) // Детали для обоих
 
 	//Профиль
 	r.Get("/api/users/profile/{userID}", profileHandler.GetProfile)

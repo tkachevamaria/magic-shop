@@ -16,15 +16,21 @@ func NewRepo(db *sql.DB) *Repo {
 	return &Repo{db: db}
 }
 
-func (r *Repo) GetActiveOrders(ctx context.Context, userID int) ([]OrderSummary, error) {
-	// Запрашиваем заказы, которые еще не в архиве (PENDING или IN_TRANSIT)
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT o.OrderID, o.Status, dm.Name, o.EstimatedDeliveryDate, o.ItemID, o.DeliveryAddress
+// getOrdersByStatus — универсальный метод для заказов/покупок
+func (r *Repo) getOrdersByStatus(ctx context.Context, userID int, statusCondition string) ([]OrderSummary, error) {
+	query := `
+		SELECT o.OrderID, o.Status, dm.Name, o.EstimatedDeliveryDate, o.ActualDeliveryDate, 
+			   o.ItemID, o.DeliveryAddress, 
+			   (SELECT SUM(p.Price * 1) FROM Items i 
+			    JOIN Products p ON i.ProductID = p.ProductID 
+			    WHERE i.ItemID IN (SELECT value FROM json_each('["' || REPLACE(o.ItemID, ';', '","') || '"]'))) as total
 		FROM Orders o
 		JOIN DeliveryMethods dm ON o.DeliveryMethodID = dm.DeliveryMethodID
-		WHERE o.UserID = ? AND o.Status != 'DELIVERED'
+		WHERE o.UserID = ? AND ` + statusCondition + `
 		ORDER BY o.OrderDate DESC
-	`, userID)
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -33,66 +39,98 @@ func (r *Repo) GetActiveOrders(ctx context.Context, userID int) ([]OrderSummary,
 	var orders []OrderSummary
 	for rows.Next() {
 		var o OrderSummary
-		var itemIDsStr string
-		var estDateStr string
-		err := rows.Scan(&o.OrderID, &o.Status, &o.DeliveryName, &estDateStr, &itemIDsStr, &o.DeliveryAddress)
+		var itemIDsStr, estDateStr, actDateStr sql.NullString
+		err := rows.Scan(&o.OrderID, &o.Status, &o.DeliveryName, &estDateStr, &actDateStr, &itemIDsStr, &o.DeliveryAddress, &o.TotalPrice)
 		if err != nil {
 			return nil, err
 		}
-		// Считаем количество товаров по строке "1;2;3"
-		o.ItemsCount = len(strings.Split(itemIDsStr, ";"))
 		
-		// Форматируем дату (29 May, 14:00)
-		if t, err := time.Parse("2006-01-02 15:04:05", estDateStr); err == nil {
-			o.EstimatedDate = t.Format("02 Jan 15:04")
-		} else {
-			o.EstimatedDate = estDateStr
+		// Считаем количество товаров
+		if itemIDsStr.Valid {
+			o.ItemsCount = len(strings.Split(itemIDsStr.String, ";"))
+		}
+		
+		// Форматируем даты
+		if estDateStr.Valid {
+			if t, err := time.Parse("2006-01-02 15:04:05", estDateStr.String); err == nil {
+				o.EstimatedDate = t.Format("02 Jan 15:04")
+			}
+		}
+		if actDateStr.Valid && actDateStr.String != "" {
+			if t, err := time.Parse("2006-01-02 15:04:05", actDateStr.String); err == nil {
+				o.ActualDate = t.Format("02 Jan 15:04")
+			}
 		}
 		orders = append(orders, o)
 	}
 	return orders, rows.Err()
 }
 
+func (r *Repo) GetActiveOrders(ctx context.Context, userID int) ([]OrderSummary, error) {
+	return r.getOrdersByStatus(ctx, userID, "o.Status != 'DELIVERED'")
+}
+
+func (r *Repo) GetPurchases(ctx context.Context, userID int) ([]OrderSummary, error) {
+	return r.getOrdersByStatus(ctx, userID, "o.Status = 'DELIVERED'")
+}
+
 func (r *Repo) GetOrderDetails(ctx context.Context, orderID int) (*OrderDetails, error) {
-	// 1. Инфо о заказе
 	var od OrderDetails
-	var estDateStr, itemIDsStr string
-	err := r.db.QueryRowContext(ctx, `
-		SELECT o.OrderID, o.Status, dm.Name, o.EstimatedDeliveryDate, o.ItemID, o.DeliveryAddress
-		FROM Orders o JOIN DeliveryMethods dm ON o.DeliveryMethodID = dm.DeliveryMethodID
-		WHERE o.OrderID = ?
-	`, orderID).Scan(&od.OrderID, &od.Status, &od.DeliveryName, &estDateStr, &itemIDsStr, &od.DeliveryAddress)
+	var itemIDsStr, estDateStr, actDateStr sql.NullString
 	
-	if err == sql.ErrNoRows { return nil, nil }
-	if err != nil { return nil, err }
+	err := r.db.QueryRowContext(ctx, `
+		SELECT o.OrderID, o.Status, dm.Name, o.EstimatedDeliveryDate, o.ActualDeliveryDate, 
+		       o.ItemID, o.DeliveryAddress,
+		       (SELECT SUM(p.Price) FROM Items i 
+		        JOIN Products p ON i.ProductID = p.ProductID 
+		        WHERE i.ItemID IN (SELECT value FROM json_each('["' || REPLACE(o.ItemID, ';', '","') || '"]')))
+		FROM Orders o 
+		JOIN DeliveryMethods dm ON o.DeliveryMethodID = dm.DeliveryMethodID
+		WHERE o.OrderID = ?
+	`, orderID).Scan(&od.OrderID, &od.Status, &od.DeliveryName, &estDateStr, &actDateStr, &itemIDsStr, &od.DeliveryAddress, &od.TotalPrice)
 
-	if t, err := time.Parse("2006-01-02 15:04:05", estDateStr); err == nil {
-		od.EstimatedDate = t.Format("02 Jan 15:04")
-	} else {
-		od.EstimatedDate = estDateStr
+	if err == sql.ErrNoRows {
+		return nil, nil
 	}
-	od.ItemsCount = len(strings.Split(itemIDsStr, ";"))
+	if err != nil {
+		return nil, err
+	}
 
-	// 2. Инфо о товарах внутри заказа
+	if estDateStr.Valid {
+		if t, err := time.Parse("2006-01-02 15:04:05", estDateStr.String); err == nil {
+			od.EstimatedDate = t.Format("02 Jan 15:04")
+		}
+	}
+	if actDateStr.Valid && actDateStr.String != "" {
+		if t, err := time.Parse("2006-01-02 15:04:05", actDateStr.String); err == nil {
+			od.ActualDate = t.Format("02 Jan 15:04")
+		}
+	}
+	if itemIDsStr.Valid {
+		od.ItemsCount = len(strings.Split(itemIDsStr.String, ";"))
+	}
+
+	// Загружаем детали товаров
 	// Парсим "1;2;3" -> [1, 2, 3]
-	idStrs := strings.Split(itemIDsStr, ";")
+	idStrs := strings.Split(itemIDsStr.String, ";")
 	ids := make([]interface{}, len(idStrs))
 	for i, s := range idStrs {
 		ids[i], _ = strconv.Atoi(s)
 	}
 	
-	// Генерируем плейсхолдеры (?, ?, ?)
 	ph := make([]string, len(ids))
 	for i := range ph { ph[i] = "?" }
 	
-	// Запрос к Items + Products
 	query := `
 		SELECT i.ItemID, p.ProductName, p.Price, p.CategoryID, i.Color, i.Size
-		FROM Items i JOIN Products p ON i.ProductID = p.ProductID
+		FROM Items i 
+		JOIN Products p ON i.ProductID = p.ProductID
 		WHERE i.ItemID IN (` + strings.Join(ph, ",") + `)
 	`
 	rows, err := r.db.QueryContext(ctx, query, ids...)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	defer rows.Close()
 
 	var items []OrderItemDetail
@@ -101,8 +139,8 @@ func (r *Repo) GetOrderDetails(ctx context.Context, orderID int) (*OrderDetails,
 		var catID int
 		err := rows.Scan(&item.ProductID, &item.Name, &item.Price, &catID, &item.Color, &item.Size)
 		if err != nil { continue }
-		item.ImageURL = "/images/default.png" // Заглушка, можно привязать к catID
-		item.Quantity = 1 // В Orders у нас просто ID, считаем каждый вхождение за 1 шт
+		item.ImageURL = "/images/default.png"
+		item.Quantity = 1
 		items = append(items, item)
 	}
 	od.Items = items

@@ -4,6 +4,8 @@ type Product struct {
 	ID               int     `json:"id"`
 	Name             string  `json:"name"`
 	Price            float64 `json:"price"`
+	Description      string  `json:"description"`
+	ImageURL         string  `json:"image_url"`
 	RequiredLevel    int     `json:"required_level"`
 	DeliveryMethodID int     `json:"delivery_method_id"`
 	DeliveryName     string  `json:"delivery_name"`
@@ -12,7 +14,6 @@ type Product struct {
 	ShopID           int     `json:"shop_id"`
 	CategoryName     string  `json:"category_name,omitempty"`
 	ShopName         string  `json:"shop_name,omitempty"`
-	ImageURL         string  `json:"image_url"`
 }
 
 type ItemVariant struct {
