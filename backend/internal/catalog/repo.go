@@ -109,26 +109,30 @@ func (r *ProductRepo) GetDarkProducts(ctx context.Context, filter ProductFilter)
 // SearchProducts — поиск по названию/описанию/категории/магазину/доставке/цвету/размеру
 func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter ProductFilter) (CatalogResponse, error) {
 	trimmed := strings.TrimSpace(query)
-	if trimmed == "" {
+	// Игнорируем одиночные символы, чтобы не спамить выдачу
+	if len([]rune(trimmed)) < 2 {
 		return r.GetProducts(ctx, filter)
 	}
 
 	conditions := []string{"p.CategoryID != 666"}
 	var args []interface{}
+
 	if filter.CategoryID != nil { conditions = append(conditions, "p.CategoryID = ?"); args = append(args, *filter.CategoryID) }
 	if filter.ShopID != nil { conditions = append(conditions, "p.ShopID = ?"); args = append(args, *filter.ShopID) }
 	if filter.DeliveryMethodID != nil { conditions = append(conditions, "p.DeliveryMethodID = ?"); args = append(args, *filter.DeliveryMethodID) }
 
 	baseQuery := `
-		SELECT p.ProductID, p.ProductName, p.Price, p.Description, p.ImageURL, p.RequiredLevel,
+		SELECT p.ProductID, p.ProductName, p.Price, p.RequiredLevel,
 			   p.CategoryID, p.ShopID, p.DeliveryMethodID, dm.Name, dm.DurationDays,
-			   c.CategoryName, s.ShopName
+			   c.CategoryName, s.ShopName, p.ImageURL
 		FROM Products p
 		LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
 		LEFT JOIN Shops s ON p.ShopID = s.ShopID
 		LEFT JOIN DeliveryMethods dm ON p.DeliveryMethodID = dm.DeliveryMethodID
-		WHERE ` + strings.Join(conditions, " AND ") + ` ORDER BY p.ProductID
+		WHERE ` + strings.Join(conditions, " AND ") + `
+		ORDER BY p.ProductID
 	`
+
 	rows, err := r.db.QueryContext(ctx, baseQuery, args...)
 	if err != nil { return CatalogResponse{}, err }
 	defer rows.Close()
@@ -136,9 +140,9 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 	products := make([]Product, 0)
 	for rows.Next() {
 		var p Product
-		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Description, &p.ImageURL, &p.RequiredLevel,
+		if err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.RequiredLevel,
 			&p.CategoryID, &p.ShopID, &p.DeliveryMethodID, &p.DeliveryName, &p.DeliveryDays,
-			&p.CategoryName, &p.ShopName); err != nil {
+			&p.CategoryName, &p.ShopName, &p.ImageURL); err != nil {
 			return CatalogResponse{}, err
 		}
 		products = append(products, p)
@@ -148,32 +152,48 @@ func (r *ProductRepo) SearchProducts(ctx context.Context, query string, filter P
 		s = strings.ToLower(s)
 		return strings.ReplaceAll(s, "ё", "е")
 	}
+
 	searchWords := strings.Fields(normalize(trimmed))
 	var matched []Product
 
-	if len(searchWords) > 0 {
-		for _, p := range products {
-			text := normalize(p.Name + " " + p.Description + " " + p.CategoryName + " " + p.ShopName + " " + p.DeliveryName)
-			
-			// Добавляем цвет/размер в текст поиска
-			itemRows, _ := r.db.QueryContext(ctx, `SELECT Color, Size FROM Items WHERE ProductID=?`, p.ID)
-			if itemRows != nil {
-				defer itemRows.Close()
-				for itemRows.Next() {
-					var c, sz string
-					itemRows.Scan(&c, &sz)
-					text += " " + normalize(c) + " " + normalize(sz)
+	// Загружаем варианты (цвет/размер) для поиска
+	productIDs := make([]interface{}, len(products))
+	for i, p := range products { productIDs[i] = p.ID }
+	
+	itemsByProduct := make(map[int][]ItemVariant)
+	if len(productIDs) > 0 {
+		placeholders := make([]string, len(productIDs))
+		for i := range placeholders { placeholders[i] = "?" }
+		itemsQuery := `SELECT ProductID, Color, Size FROM Items WHERE ProductID IN (` + strings.Join(placeholders, ",") + `)`
+		itemRows, _ := r.db.QueryContext(ctx, itemsQuery, productIDs...)
+		if itemRows != nil {
+			defer itemRows.Close()
+			for itemRows.Next() {
+				var pid int; var item ItemVariant
+				if err := itemRows.Scan(&pid, &item.Color, &item.Size); err == nil {
+					itemsByProduct[pid] = append(itemsByProduct[pid], item)
 				}
 			}
-
-			found := true
-			for _, word := range searchWords {
-				if !strings.Contains(text, word) { found = false; break }
-			}
-			if found { matched = append(matched, p) }
 		}
-	} else {
-		matched = products
+	}
+
+	// 🔍 Формируем текст для поиска. ОПИСАНИЕ (Description) ИСКЛЮЧЕНО!
+	for _, p := range products {
+		text := normalize(p.Name + " " + p.CategoryName + " " + p.ShopName + " " + p.DeliveryName)
+		for _, item := range itemsByProduct[p.ID] {
+			text += " " + normalize(item.Color) + " " + normalize(item.Size)
+		}
+
+		found := true
+		for _, word := range searchWords {
+			if !strings.Contains(text, word) {
+				found = false
+				break
+			}
+		}
+		if found {
+			matched = append(matched, p)
+		}
 	}
 
 	return r.buildCatalogResponse(matched, filter)

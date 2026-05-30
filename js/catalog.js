@@ -1,8 +1,9 @@
 (function () {
-  //  Единое состояние приложения
+  // 🧙‍♂️ Единое состояние приложения
   const state = {
     category: null,
     shop: null,
+    searchQuery: null, // 🔍 Новое поле для поиска
     page: 1,
     limit: 12,
   };
@@ -10,8 +11,41 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     loadFilters();
-    loadProducts(); // Первая загрузка без фильтров
+    loadProducts();
+    setupSearch(); // 🔍 Подключаем обработчики поиска
   });
+
+  // 🔍 Настройка поиска (работает даже если шапка подгружается асинхронно)
+  function setupSearch() {
+    // 1. Поиск по Enter в поле ввода
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.matches(".search-input")) {
+        handleSearch(e.target.value.trim());
+      }
+    });
+
+    // 2. Поиск по клику на иконку 🔍
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".search-arrow")) {
+        const input = document.querySelector(".search-input");
+        if (input) handleSearch(input.value.trim());
+      }
+    });
+  }
+
+  function handleSearch(query) {
+    state.searchQuery = query || null; // пустая строка = сброс поиска
+    state.page = 1;
+
+    // При активном поиске обычно сбрасываем категории/магазины, чтобы не было пересечений
+    if (state.searchQuery) {
+      state.category = null;
+      state.shop = null;
+    }
+
+    updateActiveUI();
+    loadProducts();
+  }
 
   // 📥 1. Загрузка фильтров
   function loadFilters() {
@@ -25,7 +59,6 @@
           "data-category-id",
         );
 
-        // Создаём контейнер для магазинов, если его нет в HTML
         const dropdown = document.querySelector(".shops-dropdown");
         if (dropdown) {
           let list = dropdown.querySelector(".shops-list");
@@ -44,7 +77,6 @@
     const container = document.querySelector(containerSelector);
     if (!container) return;
 
-    // 🔹 Генерируем <div> вместо <a>
     container.innerHTML = items
       .map(
         (item) =>
@@ -52,17 +84,14 @@
       )
       .join("");
 
-    // 🔹 Делегирование кликов (исправлено под div)
     container.addEventListener("click", (e) => {
       const link = e.target.closest(".filter-link");
       if (!link) return;
-      // e.preventDefault() удалён, т.к. это не ссылка
 
       const id = parseInt(link.getAttribute(attr), 10);
       const isCategory = type === "category";
       const current = isCategory ? state.category : state.shop;
 
-      // 🔁 Тоггл состояния
       if (current === id) {
         if (isCategory) state.category = null;
         else state.shop = null;
@@ -88,29 +117,33 @@
     document.querySelectorAll(".filter-link.shop").forEach((el) => {
       el.classList.toggle("active", parseInt(el.dataset.shopId) === state.shop);
     });
-
-    // 🔓 Если магазин выбран, держим дропдаун открытым
-    const dropdown = document.querySelector(".shops-dropdown");
-    if (dropdown) {
-      dropdown.classList.toggle("force-open", state.shop !== null);
-    }
   }
 
-  // 📦 2. Загрузка товаров
+  // 📦 2. Загрузка товаров (теперь поддерживает поиск)
   function loadProducts() {
     const grid = document.getElementById("products-grid");
     if (!grid) return;
     grid.innerHTML =
       '<p style="text-align:center; padding:40px;">🔍 Ищем волшебные товары...</p>';
 
+    // Выбираем эндпоинт в зависимости от наличия поискового запроса
+    const endpoint = state.searchQuery
+      ? `${API}/api/products/search`
+      : `${API}/api/products`;
+
     const params = new URLSearchParams({
       page: state.page,
       limit: state.limit,
     });
-    if (state.category) params.set("category", state.category);
-    if (state.shop) params.set("shop", state.shop);
 
-    fetch(`${API}/api/products?${params.toString()}`)
+    if (state.searchQuery) {
+      params.set("q", state.searchQuery); // ⚠️ Уточни имя параметра у бэка (q/query/search)
+    } else {
+      if (state.category) params.set("category", state.category);
+      if (state.shop) params.set("shop", state.shop);
+    }
+
+    fetch(`${endpoint}?${params.toString()}`)
       .then((res) => {
         if (!res.ok) throw new Error("Ошибка сети");
         return res.json();
@@ -120,8 +153,10 @@
         const products = data.products || [];
 
         if (!products.length) {
-          grid.innerHTML =
-            '<p style="text-align:center; padding:40px;">📦 Ничего не найдено. Сбросьте фильтры или попробуйте другие.</p>';
+          const msg = state.searchQuery
+            ? `📦 По запросу "${state.searchQuery}" ничего не найдено.`
+            : "📦 Ничего не найдено. Сбросьте фильтры или попробуйте другие.";
+          grid.innerHTML = `<p style="text-align:center; padding:40px;">${msg}</p>`;
           return;
         }
 
