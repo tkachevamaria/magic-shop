@@ -72,33 +72,33 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 
-	// Раздача статических файлов
+	//Раздача статических файлов
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 	r.Handle("/images/*", http.StripPrefix("/images/", http.FileServer(http.Dir("../static/images"))))
 
-	// Аутентификация
+	//Аутентификация
 	r.Post("/auth/register", authHandler.Register)
 	r.Post("/auth/login", authHandler.Login)
 	r.Delete("/auth/user/{id}", authHandler.DeleteUser)
 
-	//  Каталог
+	// Каталог
 	r.Get("/api/filters", productHandler.GetSidebarFilters)
 	r.Get("/api/products", productHandler.GetProducts)
 	r.Get("/api/products/dark", productHandler.GetDarkProducts)
 	r.Get("/api/products/search", productHandler.SearchProducts)
 	r.Get("/api/products/{id}", productHandler.GetProductByID)
 
-	//  Корзина
+	//Корзина
 	r.Get("/api/cart/{userID}", cartHandler.GetCart)
 	r.Post("/api/cart/{userID}/{itemID}", cartHandler.IncrementItem)           // Добавить / увеличить кол-во
 	r.Post("/api/cart/{userID}/{itemID}/decrement", cartHandler.DecrementItem) // Уменьшить кол-во
 	r.Delete("/api/cart/{userID}/{itemID}", cartHandler.DeleteItem)            // Удалить из корзины
 
-	//  Заказы
+	//Заказы
 	r.Get("/api/orders/{userID}", orderHandler.GetActiveOrders)
 	r.Get("/api/orders/{userID}/{orderID}", orderHandler.GetOrderDetails)
 
-	// Профиль
+	//Профиль
 	r.Get("/api/users/profile/{userID}", profileHandler.GetProfile)
 
 	// 4. Запуск сервера
