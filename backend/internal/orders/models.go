@@ -1,12 +1,14 @@
 package orders
 
 type OrderSummary struct {
-	OrderID         int    `json:"id"`
-	Status          string `json:"status"`
-	DeliveryName    string `json:"delivery_name"`
-	EstimatedDate   string `json:"estimated_date"`
-	ItemsCount      int    `json:"items_count"`
-	DeliveryAddress string `json:"delivery_address"`
+	OrderID         int     `json:"id"`
+	Status          string  `json:"status"`
+	DeliveryName    string  `json:"delivery_name"`
+	EstimatedDate   string  `json:"estimated_date"`
+	ActualDate      string  `json:"actual_date,omitempty"`
+	ItemsCount      int     `json:"items_count"`
+	TotalPrice      float64 `json:"total_price"`
+	DeliveryAddress string  `json:"delivery_address"`
 }
 
 type OrderItemDetail struct {

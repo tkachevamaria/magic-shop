@@ -1,0 +1,181 @@
+/* purchases.css - стили страницы моих покупок (маленькие карточки) */
+
+.purchases-container {
+    max-width: 1400px;
+    margin: 50px auto;
+    padding: 0 20px;
+}
+
+.stats-header {
+    background: rgba(14, 18, 30, 0.85);
+    backdrop-filter: blur(12px);
+    border-radius: 30px;
+    padding: 25px 30px;
+    margin-bottom: 40px;
+    border: 1px solid rgba(201, 160, 84, 0.4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.stats-header h1 {
+    font-size: 42px;
+    color: var(--gold-bright);
+}
+
+.total-stats {
+    text-align: right;
+}
+
+.total-amount {
+    font-size: 32px;
+    color: var(--gold-bright);
+    font-weight: bold;
+}
+
+.total-orders-count {
+    font-size: 18px;
+    color: #a0a0a0;
+}
+
+/* МАЛЕНЬКИЕ КАРТОЧКИ - 5-6 в ряд */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.purchase-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid var(--gold-glow);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.purchase-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 20px rgba(201, 160, 84, 0.4);
+}
+
+/* МАЛЕНЬКАЯ КАРТИНКА */
+.card-image {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    padding: 20px;
+    background: radial-gradient(circle at 30% 20%, rgba(255, 223, 158, 0.05), transparent);
+}
+
+/* МАЛЕНЬКИЙ ФУТЕР */
+.card-footer {
+    background: rgba(6, 8, 14, 0.85);
+    padding: 10px 8px;
+    text-align: center;
+    border-top: 1px solid rgba(201, 160, 84, 0.3);
+}
+
+.product-name {
+    font-size: 16px;
+    color: #fff1dd;
+    display: block;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-price {
+    font-size: 15px;
+    color: var(--gold-bright);
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.delivery-date {
+    font-size: 11px;
+    color: #a0a0a0;
+    display: block;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(201, 160, 84, 0.2);
+}
+
+.empty-purchases {
+    text-align: center;
+    padding: 80px 20px;
+    background: rgba(14, 18, 30, 0.85);
+    backdrop-filter: blur(12px);
+    border-radius: 30px;
+    border: 1px solid rgba(201, 160, 84, 0.4);
+}
+
+.empty-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.empty-purchases h2 {
+    color: var(--gold-bright);
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+.empty-purchases p {
+    font-size: 20px;
+    color: #a0a0a0;
+    margin-bottom: 30px;
+}
+
+.back-to-shop {
+    display: inline-block;
+    background: var(--gold-glow);
+    color: #0f0b1c;
+    padding: 12px 30px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-size: 20px;
+    font-family: 'HarryPotter', 'Times New Roman', serif;
+    transition: 0.2s;
+}
+
+.back-to-shop:hover {
+    background: var(--gold-bright);
+    transform: scale(1.05);
+}
+
+@media (max-width: 700px) {
+    .stats-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    .total-stats {
+        text-align: center;
+    }
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    .card-image {
+        font-size: 36px;
+        padding: 15px;
+        min-height: 80px;
+    }
+    .product-name {
+        font-size: 13px;
+    }
+    .product-price {
+        font-size: 13px;
+    }
+    .delivery-date {
+        font-size: 10px;
+    }
+}

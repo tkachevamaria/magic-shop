@@ -1,0 +1,85 @@
+/* products.css - стили карточек товаров на главной */
+
+.products-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 32px;
+    align-items: start;
+}
+
+.product-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 2px solid var(--gold-glow);
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 28px rgba(201, 160, 84, 0.5);
+}
+
+.badge-sale {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    background: var(--wb-purple);
+    color: #ffe9b6;
+    font-size: 22px;
+    padding: 6px 18px 4px 18px;
+    border-radius: 40px;
+    font-weight: bold;
+    box-shadow: 0 0 12px #b85ef0;
+    z-index: 3;
+    backdrop-filter: blur(2px);
+    letter-spacing: 1px;
+}
+
+.card-image-area {
+    flex: 1;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 74px;
+    padding: 24px 8px;
+    background: radial-gradient(circle at 30% 20%, rgba(255, 223, 158, 0.05), transparent);
+}
+
+.card-image-area img {
+    max-width: 100%;
+    max-height: 150px;
+    object-fit: contain;
+}
+
+.card-footer {
+    background: rgba(6, 8, 14, 0.85);
+    padding: 16px 12px;
+    text-align: center;
+    border-top: 1px solid rgba(201, 160, 84, 0.5);
+}
+
+.product-name {
+    font-size: 28px;
+    font-weight: normal;
+    letter-spacing: 1px;
+    color: #fff1dd;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.product-price {
+    font-size: 28px;
+    color: var(--gold-bright);
+    font-weight: bold;
+    text-shadow: 0 0 5px #a56b1a;
+    display: inline-block;
+}

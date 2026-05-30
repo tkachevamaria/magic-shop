@@ -18,7 +18,6 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) GetActiveOrders(w http.ResponseWriter, r *http.Request) {
-	// Получаем UserID из URL (например /api/orders/1)
 	userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -27,12 +26,27 @@ func (h *Handler) GetActiveOrders(w http.ResponseWriter, r *http.Request) {
 
 	orders, err := h.service.GetActiveOrders(r.Context(), userID)
 	if err != nil {
-		log.Printf("❌ Ошибка списка заказов: %v", err)
+		log.Printf("❌ Ошибка активных заказов: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
 	writeJSON(w, orders)
+}
+
+func (h *Handler) GetPurchases(w http.ResponseWriter, r *http.Request) {
+	userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	purchases, err := h.service.GetPurchases(r.Context(), userID)
+	if err != nil {
+		log.Printf("❌ Ошибка покупок: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, purchases)
 }
 
 func (h *Handler) GetOrderDetails(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +66,6 @@ func (h *Handler) GetOrderDetails(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Order not found", http.StatusNotFound)
 		return
 	}
-
 	writeJSON(w, details)
 }
 

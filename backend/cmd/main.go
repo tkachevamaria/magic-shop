@@ -90,8 +90,9 @@ func main() {
 	r.Delete("/api/cart/{userID}/{itemID}", cartHandler.DeleteItem)
 
 	//  Заказы
-	r.Get("/api/orders/{userID}", orderHandler.GetActiveOrders)
-	r.Get("/api/orders/{userID}/{orderID}", orderHandler.GetOrderDetails)
+	r.Get("/api/orders/{userID}", orderHandler.GetActiveOrders)      //  Активные
+	r.Get("/api/purchases/{userID}", orderHandler.GetPurchases)      // Завершённые
+	r.Get("/api/orders/{userID}/{orderID}", orderHandler.GetOrderDetails) // Детали для обоих
 
 	// Профиль
 	r.Get("/api/users/profile/{userID}", profileHandler.GetProfile)
