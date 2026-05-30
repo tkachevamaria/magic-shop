@@ -23,16 +23,12 @@
     <script src="../js/loadHeader.js"></script>
     <script src="../js/cart.js"></script>
     <script src="../js/renderCart.js"></script>
-    <script>
-        setTimeout(function() {
-            if (typeof renderCartPage === 'function') {
-                renderCartPage();
-            }
-            if (typeof updateCartCount === 'function') {
-                updateCartCount();
-            }
-        }, 100);
-    </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                await renderCartPage();
+                await updateCartCount();
+            });
+        </script>
 
 </body>
 </html>
