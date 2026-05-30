@@ -28,11 +28,12 @@ CREATE TABLE IF NOT EXISTS Products (
     ProductID INTEGER PRIMARY KEY,
     ProductName TEXT,
     Price REAL,
+    Description TEXT DEFAULT '',
+    ImageURL TEXT DEFAULT '/images/logo.png',
     CategoryID INTEGER,
     RequiredLevel INTEGER,
     DeliveryMethodID INTEGER,
     ShopID INTEGER,
-    ImageURL TEXT DEFAULT '/images/logo.png',
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID),
     FOREIGN KEY (ShopID) REFERENCES Shops(ShopID),
     FOREIGN KEY (DeliveryMethodID) REFERENCES DeliveryMethods(DeliveryMethodID)
@@ -71,6 +72,7 @@ CREATE TABLE IF NOT EXISTS Orders (
     Status TEXT DEFAULT 'PENDING',
     DeliveryMethodID INTEGER,
     EstimatedDeliveryDate DATETIME,
+    ActualDeliveryDate DATETIME,
     DeliveryAddress TEXT,
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
     FOREIGN KEY (DeliveryMethodID) REFERENCES DeliveryMethods(DeliveryMethodID)
