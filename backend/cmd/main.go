@@ -88,19 +88,24 @@ func main() {
 	r.Get("/api/products/search", productHandler.SearchProducts)
 	r.Get("/api/products/{id}", productHandler.GetProductByID)
 
-	//Корзина
-	r.Get("/api/cart/{userID}", cartHandler.GetCart)
-	r.Post("/api/cart/{userID}/{itemID}", cartHandler.IncrementItem)           // Добавить / увеличить кол-во
-	r.Post("/api/cart/{userID}/{itemID}/decrement", cartHandler.DecrementItem) // Уменьшить кол-во
-	r.Delete("/api/cart/{userID}/{itemID}", cartHandler.DeleteItem)            // Удалить из корзины
+	// Защищенные маршруты
+	r.Group(func(r chi.Router) {
+		r.Use(auth.Middleware)
 
-	//  Заказы
-	r.Get("/api/orders/{userID}", orderHandler.GetActiveOrders)      //  Активные
-	r.Get("/api/purchases/{userID}", orderHandler.GetPurchases)      // Завершённые
-	r.Get("/api/orders/{userID}/{orderID}", orderHandler.GetOrderDetails) // Детали для обоих
+		// Профиль
+		r.Get("/api/users/profile/me", profileHandler.GetProfile)
 
-	//Профиль
-	r.Get("/api/users/profile/{userID}", profileHandler.GetProfile)
+		// Корзина
+		r.Get("/api/cart", cartHandler.GetCart)
+		r.Post("/api/cart/{itemID}", cartHandler.IncrementItem)
+		r.Post("/api/cart/{itemID}/decrement", cartHandler.DecrementItem)
+		r.Delete("/api/cart/{itemID}", cartHandler.DeleteItem)
+
+		// Заказы
+		r.Get("/api/orders", orderHandler.GetActiveOrders)
+		r.Get("/api/purchases", orderHandler.GetPurchases)
+		r.Get("/api/orders/{orderID}", orderHandler.GetOrderDetails)
+	})
 
 	// 4. Запуск сервера
 	addr := ":8080"

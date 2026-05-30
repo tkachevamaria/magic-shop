@@ -5,9 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	"magic-shop/internal/auth"
 )
 
 type ProfileHandler struct {
@@ -26,15 +25,14 @@ type UserProfile struct {
 }
 
 func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	// Берём ID из пути /api/users/profile/1
-	uid, err := strconv.Atoi(chi.URLParam(r, "userID"))
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+	uid, ok := r.Context().Value(auth.CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	var profile UserProfile
-	err = h.db.QueryRowContext(r.Context(), `
+	err := h.db.QueryRowContext(r.Context(), `
 		SELECT UserID, FirstName, AccessLevel, TotalSpent FROM Users WHERE UserID=?`, uid).
 		Scan(&profile.ID, &profile.FirstName, &profile.AccessLevel, &profile.TotalSpent)
 

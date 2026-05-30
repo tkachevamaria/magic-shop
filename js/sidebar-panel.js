@@ -198,7 +198,7 @@ function loadUserAddress() {
     }
 }
 
-function initSidebarPanel() {
+async function initSidebarPanel() {
     const currentPage = window.location.pathname.split('/').pop();
     const isIndexPage = currentPage === 'index.html' || currentPage === '' || currentPage === '/';
     
@@ -209,9 +209,32 @@ function initSidebarPanel() {
         return;
     }
     
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('http://localhost:8080/api/users/profile/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+            window.location.href = 'auth.html';
+            return;
+        }
+        const profile = await res.json();
+        // Перезаписываем моки реальными данными
+        userData.name = profile.first_name;
+        userData.level = profile.access_level;
+        userData.levelName = levelName(profile.access_level);
+    } catch (err) {
+        console.error('Ошибка загрузки профиля:', err);
+    }
+
     loadUserAddress();
     renderSidebarPanel();
     document.body.classList.add('has-sidebar');
+}
+
+function levelName(level) {
+    return { 1: 'Студент', 2: 'Маг', 3: 'Профессионал' }[level];
 }
 
 // Функция для уведомлений
