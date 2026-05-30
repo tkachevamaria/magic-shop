@@ -104,3 +104,76 @@
 .login-link a:hover {
     color: #ffffff;
 }
+/*--------еще стили
+ /* Вкладки */
+        .auth-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 0;
+            border-bottom: 2px solid var(--gold-glow);
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-family: 'HarryPotter', sans-serif;
+            font-size: 26px;
+            color: #bda478;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .auth-tab:hover {
+            color: var(--gold-bright);
+        }
+
+        .auth-tab.active {
+            color: var(--gold-bright);
+            border-bottom: 3px solid var(--gold-bright);
+            text-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        /* Панели форм */
+        .auth-panel {
+            display: none;
+        }
+
+        .auth-panel.active {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Сообщение об ошибке/успехе */
+        .auth-message {
+            text-align: center;
+            font-size: 18px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .auth-message.error {
+            display: block;
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .auth-message.success {
+            display: block;
+            color: #6bffa8;
+            background: rgba(107, 255, 168, 0.1);
+            border: 1px solid rgba(107, 255, 168, 0.3);
+        }
+
+        /* Кнопка в состоянии загрузки */
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
