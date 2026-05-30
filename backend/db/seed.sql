@@ -16,13 +16,16 @@ INSERT OR IGNORE INTO Users (UserID, FirstName, Surname, Email, PasswordHash, Ac
 (4, 'Северус', 'Снейп', 'snape@hogwarts.edu', 'hash_4', 3);
 
 -- 3. Товары (разные уровни и способы доставки)
+INSERT OR IGNORE INTO Products (ProductID, ProductName, Price, CategoryID, RequiredLevel, DeliveryMethodID, ShopID, ImageURL) VALUES
+(1, 'Набор перьев', 5.0, 3, 1, 1, 1, '/images/1.png'),
+(2, 'Мантия Невидимости', 5000.0, 2, 2, 3, 3, '/images/мантия.png'),
+(3, 'Феликс Фелицис', 1500.0, 1, 3, 1, 1, '/images/felix.png'),
+(4, 'Бомбы-пердёжки', 15.0, 666, 0, 2, 2, '/images/bombs.png'),
+(5, 'Нимбус 2000', 1200.0, 4, 2, 1, 3, '/images/nimbus.png');
+
+--3. ТОвары (без фото)
 INSERT OR IGNORE INTO Products (ProductID, ProductName, Price, CategoryID, RequiredLevel, DeliveryMethodID, ShopID) VALUES
-(1, 'Набор перьев', 5.0, 3, 1, 1, 1),
-(2, 'Мантия Невидимости', 5000.0, 2, 2, 3, 3),
-(3, 'Феликс Фелицис', 1500.0, 1, 3, 1, 1),
-(4, 'Бомбы-пердёжки', 15.0, 666, 0, 2, 2),
-(5, 'Книга Запретных Заклинаний', 999.0, 666, 0, 3, 1),
-(6, 'Нимбус 2000', 1200.0, 4, 2, 1, 3),
+(6, 'Книга Запретных Заклинаний', 999.0, 666, 0, 3, 1),
 (7, 'Амортенция', 800.0, 1, 3, 2, 2),
 (8, 'Сова-почтальон', 300.0, 5, 1, 1, 1),
 (9, 'Зелье многоликого', 2500.0, 1, 2, 3, 2),

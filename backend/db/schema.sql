@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS Products (
     RequiredLevel INTEGER,
     DeliveryMethodID INTEGER,
     ShopID INTEGER,
+    ImageURL TEXT DEFAULT '/images/logo.png',
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID),
     FOREIGN KEY (ShopID) REFERENCES Shops(ShopID),
     FOREIGN KEY (DeliveryMethodID) REFERENCES DeliveryMethods(DeliveryMethodID)

@@ -43,18 +43,31 @@ type PaginationParams struct {
 }
 
 type ProductFilter struct {
-	CategoryID *int
-	Color      *string
-	Size       *string
-	Pagination PaginationParams
+	CategoryID       *int
+	ShopID           *int
+	Color            *string
+	Size             *string
+	DeliveryMethodID *int
+	Pagination       PaginationParams
 }
 
 type AvailableFilters struct {
-	Colors []string `json:"colors"`
-	Sizes  []string `json:"sizes"`
+	Colors          []string       `json:"colors"`
+	Sizes           []string       `json:"sizes"`
+	DeliveryMethods []FilterOption `json:"delivery_methods"`
 }
 
 type CatalogResponse struct {
 	Products []Product        `json:"products"`
 	Filters  AvailableFilters `json:"filters"`
+}
+
+type FilterOption struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type SidebarFilter struct {
+	Categories []FilterOption `json:"categories"`
+	Shops      []FilterOption `json:"shops"`
 }

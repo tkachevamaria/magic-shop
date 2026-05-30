@@ -7,8 +7,9 @@
             if (!response.ok) throw new Error('Ошибка загрузки товаров');
             return response.json();
         })
-        .then(products => {
-            console.log('товары с сервера:', products);
+        .then(data => {
+            console.log('ответ с сервера:', data);
+            const products = data.products;
             container.innerHTML = '';
 
             products.forEach(product => {
@@ -18,7 +19,7 @@
 
                 card.innerHTML = `
                     <div class="card-image-area">
-                        <img src="${product.image_url}" alt="${product.name}">
+                        <img src="http://localhost:8080${product.image_url}" alt="${product.name}">
                     </div>
                     <div class="card-footer">
                         <span class="product-name">${product.name}</span>
