@@ -32,8 +32,8 @@ func main() {
 	}
 	fmt.Println("DB connection OK\n")
 
-	//checkUsers(db)
-	checkProducts(db)
+	checkUsers(db)
+	//checkProducts(db)
 }
 
 func checkShops(db *sql.DB) {

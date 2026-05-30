@@ -44,8 +44,18 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token, err := GenerateToken(user)
+	if err != nil {
+		http.Error(w, "token error", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"token":        token,
+		"user_id":      user.UserID,
+		"access_level": user.AccessLevel,
+	})
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
