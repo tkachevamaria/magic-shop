@@ -80,7 +80,14 @@ async function renderCartPage() {
         btn.addEventListener('click', async () => {
             const itemID = parseInt(btn.getAttribute('data-item-id'));
             const name = btn.getAttribute('data-name');
-            await removeFromCart(itemID, name);
+            btn.disabled = true;
+            try {
+                await removeFromCart(itemID, name);
+                btn.closest('.cart-item').remove();
+                updateTotalPrice(); // пересчитает и покажет пустую корзину если надо
+            } finally {
+                btn.disabled = false;
+            }
         });
     });
 
@@ -88,19 +95,58 @@ async function renderCartPage() {
     document.querySelectorAll('.qty-btn.increment').forEach(btn => {
         btn.addEventListener('click', async () => {
             const itemID = parseInt(btn.getAttribute('data-item-id'));
-            await incrementItem(itemID);
-            renderCartPage();
+            btn.disabled = true;
+            try {
+                await incrementItem(itemID);
+                const qtySpan = btn.previousElementSibling;
+                const newQty = parseInt(qtySpan.textContent) + 1;
+                qtySpan.textContent = newQty;
+                updateTotalPrice();
+            } finally {
+                btn.disabled = false;
+            }
         });
     });
 
     // Уменьшить количество
     document.querySelectorAll('.qty-btn.decrement').forEach(btn => {
-        btn.addEventListener('click', async () => {
+            btn.addEventListener('click', async () => {
             const itemID = parseInt(btn.getAttribute('data-item-id'));
-            await decrementItem(itemID);
-            renderCartPage();
+            const qtySpan = btn.nextElementSibling;
+            const currentQty = parseInt(qtySpan.textContent);
+
+            btn.disabled = true;
+            try {
+                await decrementItem(itemID);
+                if (currentQty <= 1) {
+                    // Если было 1 — удаляем карточку из DOM
+                    btn.closest('.cart-item').remove();
+                } else {
+                    qtySpan.textContent = currentQty - 1;
+                }
+                updateTotalPrice();
+            } finally {
+                btn.disabled = false;
+            }
         });
     });
+
+    //пересчет общей стоимости
+    function updateTotalPrice() {
+        let total = 0;
+        document.querySelectorAll('.cart-item').forEach(cartItem => {
+            const price = parseFloat(cartItem.querySelector('.cart-item-price').textContent);
+            const qty = parseInt(cartItem.querySelector('.cart-item-quantity span').textContent);
+            total += price * qty;
+        });
+        const totalEl = document.querySelector('.total-price');
+        if (totalEl) totalEl.textContent = `${total} Галлеонов`;
+
+        // Если корзина опустела — перерисовываем целиком
+        if (document.querySelectorAll('.cart-item').length === 0) {
+            renderCartPage();
+        }
+    }
 
     // Заказать
     document.getElementById('order-btn')?.addEventListener('click', () => {

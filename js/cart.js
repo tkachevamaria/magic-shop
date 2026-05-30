@@ -40,7 +40,6 @@ async function removeFromCart(itemID, productName) {
     if (!res.ok) throw new Error(`Ошибка удаления: ${res.status}`);
     showCartToast(`${productName} удалён из корзины`);
     await updateCartCount();
-    if (typeof renderCartPage === 'function') renderCartPage();
 }
 
 async function incrementItem(itemID) {
