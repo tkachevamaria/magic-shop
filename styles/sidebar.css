@@ -1,5 +1,4 @@
-/* sidebar.css - стили бокового меню */
-
+/* sidebar.css */
 .sidebar {
   background: rgba(14, 18, 30, 0.7);
   backdrop-filter: blur(12px);
@@ -9,7 +8,6 @@
   height: fit-content;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
-
 .sidebar-title {
   font-size: 48px;
   color: var(--gold-bright);
@@ -18,7 +16,6 @@
   border-left: 5px solid var(--gold-glow);
   padding-left: 16px;
 }
-
 .categories-menu {
   display: flex;
   flex-direction: column;
@@ -26,102 +23,82 @@
   margin-bottom: 35px;
 }
 
-.menu-link {
+/* 🎯 Универсальный стиль для всех элементов фильтра */
+.filter-link {
   font-size: 28px;
-  text-decoration: none;
   color: #f0e6d2;
   padding: 6px 0 6px 10px;
   border-bottom: 1px dashed rgba(201, 160, 84, 0.3);
   transition: 0.2s;
+  cursor: pointer;
+  user-select: none;
   display: block;
 }
-
-.menu-link:hover {
+.filter-link:hover {
   color: var(--gold-bright);
   padding-left: 20px;
   border-bottom-color: var(--gold-glow);
   text-shadow: 0 0 5px #daa520;
 }
+.filter-link.active {
+  color: var(--gold-bright);
+  border-left: 3px solid var(--gold-glow);
+  background: rgba(201, 160, 84, 0.15);
+  padding-left: 14px;
+  font-weight: bold;
+}
 
+/* 🏪 Заголовок дропдауна магазинов */
 .shops-dropdown {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-direction: column; /* Заголофик сверху, список под ним */
   border-top: 3px solid var(--gold-glow);
   padding-top: 20px;
   margin-top: 15px;
   font-size: 36px;
   color: var(--gold-bright);
   cursor: pointer;
+  user-select: none;
 }
 
-.shops-dropdown span:first-child {
-  font-size: 36px;
-}
-
-.arrow {
+.shops-dropdown .arrow {
   font-size: 32px;
-  transition: transform 0.2s;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
 }
 
-.shops-dropdown:hover .arrow {
-  transform: translateY(4px);
-}
-
-/* Выпадающий список магазинов */
+/* 🔽 Список магазинов */
 .shops-list {
-  display: none;
-  margin-top: 15px;
-  background: rgba(14, 18, 30, 0.95);
-  border-radius: 20px;
-  padding: 10px;
-  border: 1px solid var(--gold-glow);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
-.shops-dropdown:hover .shops-list {
-  display: block;
+/* Открывается при наведении ИЛИ когда активен фильтр */
+.shops-dropdown:hover .shops-list,
+.shops-dropdown.force-open .shops-list {
+  max-height: 900px;
+  opacity: 1;
 }
 
-.shop-link {
-  display: block;
+/* Стрелка поворачивается в обоих случаях */
+.shops-dropdown:hover .arrow,
+.shops-dropdown.force-open .arrow {
+  transform: rotate(180deg);
+}
+
+/* Стили пунктов списка */
+.filter-link.shop {
   font-size: 24px;
   padding: 8px 12px;
-  text-decoration: none;
-  color: #f0e6d2;
+  border-bottom: none;
+  border-radius: 8px;
   transition: 0.2s;
 }
-
-.shop-link:hover {
-  color: var(--gold-bright);
-  padding-left: 20px;
-  text-shadow: 0 0 5px #daa520;
-}
-
-/* Активное состояние фильтров (выбранный элемент) */
-.menu-link.active,
-.shop-link.active {
-  background: linear-gradient(90deg, rgba(201, 160, 84, 0.2), transparent);
-  color: var(--gold-bright);
-  border-left: 4px solid var(--gold-glow);
-  border-bottom-color: transparent;
-  text-shadow: 0 0 8px rgba(255, 223, 158, 0.5);
-  font-weight: bold;
-  padding-left: 16px;
-  pointer-events: none; /* Чтобы нельзя было кликнуть повторно на уже выбранный */
-}
-
-/* Эффект наведения на активный (если нужно) */
-.menu-link.active:hover,
-.shop-link.active:hover {
-  background: linear-gradient(90deg, rgba(201, 160, 84, 0.3), transparent);
-  transform: translateX(4px);
-}
-
-/* Состояние загрузки/пустого результата в сайдбаре (опционально) */
-.categories-menu:empty::before,
-.shops-list:empty::before {
-  content: "⏳ Загрузка...";
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 20px;
-  padding: 10px 0;
+.filter-link.shop:hover {
+  padding-left: 18px;
+  background: rgba(255, 255, 255, 0.05);
 }

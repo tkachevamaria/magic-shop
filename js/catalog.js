@@ -1,12 +1,11 @@
 (function () {
-  // 🧙‍♂️ Единое состояние приложения
+  //  Единое состояние приложения
   const state = {
     category: null,
     shop: null,
     page: 1,
     limit: 12,
   };
-
   const API = "http://localhost:8080";
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -26,40 +25,44 @@
           "data-category-id",
         );
 
-        // Магазинам нужен контейнер внутри dropdown
-        const shopsDropdown = document.querySelector(".shops-dropdown");
-        if (shopsDropdown && !shopsDropdown.querySelector(".shops-list")) {
-          const list = document.createElement("div");
-          list.className = "shops-list";
-          shopsDropdown.appendChild(list);
+        // Создаём контейнер для магазинов, если его нет в HTML
+        const dropdown = document.querySelector(".shops-dropdown");
+        if (dropdown) {
+          let list = dropdown.querySelector(".shops-list");
+          if (!list) {
+            list = document.createElement("div");
+            list.className = "shops-list";
+            dropdown.appendChild(list);
+          }
           renderFilterGroup(".shops-list", data.shops, "shop", "data-shop-id");
         }
       })
-      .catch((err) => console.error("❌ Ошибка загрузки фильтров:", err));
+      .catch((err) => console.error("❌ Ошибка загрузки фильтров: ", err));
   }
 
   function renderFilterGroup(containerSelector, items, type, attr) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
 
+    // 🔹 Генерируем <div> вместо <a>
     container.innerHTML = items
       .map(
         (item) =>
-          `<a href="#" class="filter-link ${type}" ${attr}="${item.id}">${type === "category" ? "⚡" : "🏪"} ${item.name}</a>`,
+          `<div class="filter-link ${type}" ${attr}="${item.id}" style="cursor: pointer; user-select: none;">${type === "category" ? "⚡ " : "🏪 "} ${item.name} </div>`,
       )
       .join("");
 
-    // Делегирование кликов
+    // 🔹 Делегирование кликов (исправлено под div)
     container.addEventListener("click", (e) => {
-      const link = e.target.closest("a");
+      const link = e.target.closest(".filter-link");
       if (!link) return;
-      e.preventDefault();
+      // e.preventDefault() удалён, т.к. это не ссылка
 
       const id = parseInt(link.getAttribute(attr), 10);
       const isCategory = type === "category";
       const current = isCategory ? state.category : state.shop;
 
-      // 🔁 Тоггл: если кликнули на уже выбранный - снимаем, иначе выбираем новый
+      // 🔁 Тоггл состояния
       if (current === id) {
         if (isCategory) state.category = null;
         else state.shop = null;
@@ -68,7 +71,7 @@
         else state.shop = id;
       }
 
-      state.page = 1; // Сброс пагинации при смене фильтра
+      state.page = 1;
       updateActiveUI();
       loadProducts();
     });
@@ -85,17 +88,21 @@
     document.querySelectorAll(".filter-link.shop").forEach((el) => {
       el.classList.toggle("active", parseInt(el.dataset.shopId) === state.shop);
     });
+
+    // 🔓 Если магазин выбран, держим дропдаун открытым
+    const dropdown = document.querySelector(".shops-dropdown");
+    if (dropdown) {
+      dropdown.classList.toggle("force-open", state.shop !== null);
+    }
   }
 
   // 📦 2. Загрузка товаров
   function loadProducts() {
     const grid = document.getElementById("products-grid");
     if (!grid) return;
-
     grid.innerHTML =
       '<p style="text-align:center; padding:40px;">🔍 Ищем волшебные товары...</p>';
 
-    // Формируем параметры запроса точно под твой бэкенд
     const params = new URLSearchParams({
       page: state.page,
       limit: state.limit,
