@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"magic-shop/internal/auth"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -18,9 +20,9 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) GetActiveOrders(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+	userID, ok := r.Context().Value(auth.CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -34,9 +36,9 @@ func (h *Handler) GetActiveOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetPurchases(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+	userID, ok := r.Context().Value(auth.CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 

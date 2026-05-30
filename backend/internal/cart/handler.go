@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"magic-shop/internal/auth"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -18,9 +20,9 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) GetCart(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseID(r, "userID")
-	if err != nil {
-		http.Error(w, "invalid user id", http.StatusBadRequest)
+	userID, ok := r.Context().Value(auth.CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -37,9 +39,9 @@ func (h *Handler) GetCart(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) IncrementItem(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseID(r, "userID")
-	if err != nil {
-		http.Error(w, "invalid user id", http.StatusBadRequest)
+	userID, ok := r.Context().Value(auth.CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -55,11 +57,11 @@ func (h *Handler) IncrementItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if errors.Is(err, ErrAccessDenied) {
-		http.Error(w, err.Error(), http.StatusForbidden) // 403
+		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
 	if errors.Is(err, ErrInsufficientStock) {
-		http.Error(w, err.Error(), http.StatusConflict) // 409
+		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 	if err != nil {
@@ -70,9 +72,9 @@ func (h *Handler) IncrementItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DecrementItem(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseID(r, "userID")
-	if err != nil {
-		http.Error(w, "invalid user id", http.StatusBadRequest)
+	userID, ok := r.Context().Value(auth.CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -95,9 +97,9 @@ func (h *Handler) DecrementItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteItem(w http.ResponseWriter, r *http.Request) {
-	userID, err := parseID(r, "userID")
-	if err != nil {
-		http.Error(w, "invalid user id", http.StatusBadRequest)
+	userID, ok := r.Context().Value(auth.CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -126,6 +128,5 @@ func parseID(r *http.Request, param string) (int, error) {
 func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-
 	_ = json.NewEncoder(w).Encode(data)
 }
