@@ -164,10 +164,12 @@ function renderSidebarPanel() {
                     break;
                 case 'logout':
                     if (confirm('Вы уверены, что хотите выйти?')) {
-                        localStorage.removeItem('userLoggedIn');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user_id');
+                        localStorage.removeItem('access_level');
                         showToast('🚪 Вы вышли из аккаунта');
                         setTimeout(() => {
-                            window.location.href = 'index.html';
+                            window.location.href = 'auth.html';
                         }, 1000);
                     }
                     break;
