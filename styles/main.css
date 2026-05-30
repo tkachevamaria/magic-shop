@@ -25,7 +25,7 @@ body {
     font-family: 'HarryPotter', 'Times New Roman', 'Georgia', serif;
     color: #ffffff;
     background-color: #090b10;
-    background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920');
+    background-image: url('http://localhost:8080/static/background.jpg');
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
