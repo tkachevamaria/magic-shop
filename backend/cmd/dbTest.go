@@ -34,6 +34,7 @@ func main() {
 
 	checkUsers(db)
 	//checkProducts(db)
+	//checkCartWithItems(db)
 }
 
 func checkShops(db *sql.DB) {
@@ -96,7 +97,7 @@ func checkProducts(db *sql.DB) {
 
 func checkUsers(db *sql.DB) {
 	fmt.Println("Users:")
-	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, AccessLevel, TotalSpent FROM Users")
+	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, DeliveryAddress FROM Users")
 	if err != nil {
 		log.Printf("  error: %v", err)
 		return
@@ -104,11 +105,11 @@ func checkUsers(db *sql.DB) {
 	defer rows.Close()
 	for rows.Next() {
 		var UserID, AccessLevel int
-		var FirstName, Surname, Email string
+		var FirstName, Surname, Email, DeliveryAddress string
 		var TotalSpent float64
-		rows.Scan(&UserID, &FirstName, &Surname, &Email, &AccessLevel, &TotalSpent)
-		fmt.Printf("  UserID=%-3d  FirstName=%-10s  Surname=%-12s  Email=%-25s  AccessLevel=%d  TotalSpent=%.1f\n",
-			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent)
+		rows.Scan(&UserID, &FirstName, &Surname, &Email, &AccessLevel, &TotalSpent, &DeliveryAddress)
+		fmt.Printf("  UserID=%-3d  FirstName=%-10s  Surname=%-12s  Email=%-25s  AccessLevel=%d  TotalSpent=%.1f  DeliveryAddress=%s\n",
+			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, DeliveryAddress)
 	}
 	fmt.Println()
 }
@@ -199,7 +200,7 @@ func checkOrders(db *sql.DB) {
 
 func checkUsersAll(db *sql.DB) {
 	fmt.Println("Users:")
-	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, PasswordHash, AccessLevel, TotalSpent FROM Users")
+	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, PasswordHash, AccessLevel, TotalSpent, DeliveryAddress FROM Users")
 	if err != nil {
 		log.Printf("  error: %v", err)
 		return
@@ -207,11 +208,11 @@ func checkUsersAll(db *sql.DB) {
 	defer rows.Close()
 	for rows.Next() {
 		var UserID, AccessLevel int
-		var FirstName, Surname, Email, PasswordHash string
+		var FirstName, Surname, Email, PasswordHash, DeliveryAddress string
 		var TotalSpent float64
-		rows.Scan(&UserID, &FirstName, &Surname, &Email, &PasswordHash, &AccessLevel, &TotalSpent)
-		fmt.Printf("  UserID=%-3d | FirstName=%-10s | Surname=%-12s | Email=%-25s | AccessLevel=%d | TotalSpent=%-6.1f | PasswordHash=%s\n",
-			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, PasswordHash)
+		rows.Scan(&UserID, &FirstName, &Surname, &Email, &PasswordHash, &AccessLevel, &TotalSpent, &DeliveryAddress)
+		fmt.Printf("  UserID=%-3d | FirstName=%-10s | Surname=%-12s | Email=%-25s | AccessLevel=%d | TotalSpent=%-6.1f | PasswordHash=%s | DeliveryAddress=%s\n",
+			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, PasswordHash, DeliveryAddress)
 	}
 	fmt.Println()
 }

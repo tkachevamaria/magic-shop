@@ -21,11 +21,12 @@ func (r Role) AccessLevel() (int, bool) {
 
 // перевод роли в число у нас на беке
 type RegisterRequest struct {
-	FirstName string `json:"first_name"`
-	Surname   string `json:"surname"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Role      Role   `json:"role"` // "student" | "mage" | "professional"
+	FirstName       string `json:"first_name"`
+	Surname         string `json:"surname"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	Role            Role   `json:"role"` // "student" | "mage" | "professional"
+	DeliveryAddress string `json:"delivery_address"`
 }
 
 type LoginRequest struct {
@@ -34,10 +35,11 @@ type LoginRequest struct {
 }
 
 type User struct {
-	UserID      int
-	FirstName   string
-	Surname     string
-	Email       string
-	AccessLevel int
-	TotalSpent  float64
+	UserID          int
+	FirstName       string
+	Surname         string
+	Email           string
+	AccessLevel     int
+	TotalSpent      float64
+	DeliveryAddress string
 }

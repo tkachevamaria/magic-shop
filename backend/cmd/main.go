@@ -94,6 +94,7 @@ func main() {
 
 		// Профиль
 		r.Get("/api/users/profile/me", profileHandler.GetProfile)
+		r.Put("/api/users/profile/me/address", authHandler.UpdateDeliveryAddress)
 
 		// Корзина
 		r.Get("/api/cart", cartHandler.GetCart)

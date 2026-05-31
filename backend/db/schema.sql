@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS Users (
     Email TEXT UNIQUE,
     PasswordHash TEXT,
     AccessLevel INTEGER,
-    TotalSpent REAL DEFAULT 0.0
+    TotalSpent REAL DEFAULT 0.0,
+    DeliveryAddress TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS Products (
