@@ -67,25 +67,4 @@ fetch('header.html')
             </div>
         `;
         
-        // // Обработчики для запасных кнопок
-        // const fallbackLogo = document.getElementById('fallbackLogo');
-        // if (fallbackLogo) {
-        //     fallbackLogo.addEventListener('click', () => window.location.href = 'index.html');
-        // }
-        
-        // const fallbackCart = document.getElementById('fallbackCart');
-        // if (fallbackCart) {
-        //     fallbackCart.addEventListener('click', () => window.location.href = 'cart.html');
-        // }
-        
-        // const fallbackOrders = document.getElementById('fallbackOrders');
-        // if (fallbackOrders) {
-        //     fallbackOrders.addEventListener('click', () => window.location.href = 'orders.html');
-        // }
-        
-        // const fallbackProfile = document.getElementById('fallbackProfile');
-        // if (fallbackProfile) {
-        //     fallbackProfile.addEventListener('click', () => showToast('🧙 Скоро здесь будет личный кабинет'));
-        // }
-        
     });
