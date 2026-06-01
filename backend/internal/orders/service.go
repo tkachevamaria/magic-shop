@@ -21,3 +21,7 @@ func (s *Service) GetPurchases(ctx context.Context, userID int) ([]OrderSummary,
 func (s *Service) GetOrderDetails(ctx context.Context, orderID int) (*OrderDetails, error) {
 	return s.repo.GetOrderDetails(ctx, orderID)
 }
+
+func (s *Service) CreateOrderFromCart(ctx context.Context, userID int) ([]CreatedOrderInfo, error) {
+	return s.repo.CreateOrderFromCart(ctx, userID)
+}

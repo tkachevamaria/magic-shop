@@ -33,6 +33,7 @@ func main() {
 	fmt.Println("DB connection OK\n")
 
 	checkUsers(db)
+	checkOrders(db)
 	//checkProducts(db)
 	//checkCartWithItems(db)
 }

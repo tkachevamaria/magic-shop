@@ -11,6 +11,7 @@ function getDeliveryMeta(name) {
     return deliveryMeta[name] ?? { icon: "📦", description: name };
 }
 
+// Загружает активные заказы (не DELIVERED)
 async function loadOrders() {
     const token = localStorage.getItem('token');
     const res = await fetch(`${API_URL}/api/orders`, {
@@ -26,6 +27,7 @@ async function loadOrders() {
     return await res.json();
 }
 
+// Группирует заказы по методу доставки для отображения секциями
 function groupByDelivery(orders) {
     const groups = {};
     (orders ?? []).forEach(order => {
@@ -34,6 +36,43 @@ function groupByDelivery(orders) {
         groups[name].push(order);
     });
     return groups;
+}
+
+// Рендерит карточки товаров внутри заказа.
+// Каждый товар — отдельная карточка со ссылкой на страницу продукта.
+// quantity берётся из order.items[n].quantity (бек уже схлопывает дубли).
+function renderOrderItems(items, deliveryIcon) {
+    if (!items || items.length === 0) {
+        return `<div class="order-product-card">
+            <div class="card-image">${deliveryIcon}</div>
+            <div class="card-footer"><span class="product-name">Нет данных о товарах</span></div>
+        </div>`;
+    }
+
+
+    return items.map(item => {
+        const image = item.image_url
+            ? `<img src="${API_URL}${item.image_url}" alt="${item.name}" class="card-img">`
+            : `<div class="card-image">${deliveryIcon}</div>`;
+
+        const quantityBadge = item.quantity > 1
+            ? `<span class="quantity-badge">×${item.quantity}</span>`
+            : '';
+
+        return `
+            <div class="order-product-card clickable-card" data-product-id="${item.product_id}">
+                <div class="card-image-wrap">
+                    ${image}
+                    ${quantityBadge}
+                </div>
+                <div class="card-footer">
+                    <span class="product-name">${item.name}</span>
+                    ${item.color ? `<span class="product-meta">${item.color}${item.size ? `, ${item.size}` : ''}</span>` : ''}
+                    <span class="product-price">${item.price} Галлеонов</span>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 async function renderOrdersPage() {
@@ -62,7 +101,7 @@ async function renderOrdersPage() {
 
     let html = `<div class="stats-header"><h1>📜 Заказы</h1></div>`;
 
-    Object.entries(groups).forEach(([deliveryName, items]) => {
+    Object.entries(groups).forEach(([deliveryName, groupOrders]) => {
         const { icon, description } = getDeliveryMeta(deliveryName);
 
         html += `<div class="delivery-section">`;
@@ -75,31 +114,43 @@ async function renderOrdersPage() {
                     <p>${description}</p>
                 </div>
             </div>
-            <div class="products-grid">
         `;
 
-        items.forEach(order => {
+        // Каждый заказ — своя подсекция с датой/статусом и сеткой товаров
+        groupOrders.forEach(order => {
             html += `
-                <div class="order-product-card" data-order-id="${order.id}">
-                    <div class="card-image">${icon}</div>
-                    <div class="card-footer">
-                        <span class="product-name">Заказ #${order.id}</span>
-                        <span class="product-price">${order.total_price} Галлеонов</span>
+                <div class="order-block" data-order-id="${order.id}">
+                    <div class="order-block-header">
+                        <span class="order-id">Заказ #${order.id}</span>
+                        <span class="order-status">${order.status}</span>
                         <span class="delivery-date">📅 ${order.estimated_date}</span>
-                        <span class="delivery-date">📦 Товаров: ${order.items_count}</span>
+                        <span class="order-total">${order.total_price} Галлеонов</span>
+                    </div>
+                    <div class="products-grid">
+                        ${renderOrderItems(order.items, icon)}
                     </div>
                 </div>
             `;
         });
 
-        html += `</div></div>`;
+        html += `</div>`;
     });
 
     container.innerHTML = html;
 
-    document.querySelectorAll('.order-product-card').forEach(card => {
+    // Клик по карточке товара - страница продукта
+    document.querySelectorAll('.order-product-card[data-product-id]').forEach(card => {
         card.addEventListener('click', function () {
-            const orderId = this.getAttribute('data-order-id');
+            const productId = this.getAttribute('data-product-id');
+            if (productId) window.location.href = `product.html?id=${productId}`;
+        });
+    });
+
+    // Клик по заголовку заказа - страница деталей заказа
+    document.querySelectorAll('.order-block-header').forEach(header => {
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function () {
+            const orderId = this.closest('.order-block').getAttribute('data-order-id');
             if (orderId) window.location.href = `order-details.html?id=${orderId}`;
         });
     });

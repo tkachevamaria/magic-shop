@@ -103,6 +103,7 @@ func main() {
 		r.Delete("/api/cart/{itemID}", cartHandler.DeleteItem)
 
 		// Заказы
+		r.Post("/api/orders", orderHandler.CreateOrder)
 		r.Get("/api/orders", orderHandler.GetActiveOrders)
 		r.Get("/api/purchases", orderHandler.GetPurchases)
 		r.Get("/api/orders/{orderID}", orderHandler.GetOrderDetails)

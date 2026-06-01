@@ -35,9 +35,6 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// UpdateDeliveryAddress godoc
-// PUT /api/users/profile/me/address
-// Body: { "delivery_address": "ул. Ленина 1" }
 func (h *Handler) UpdateDeliveryAddress(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(CtxUserID).(int)
 	if !ok {
