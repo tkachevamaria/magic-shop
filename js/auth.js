@@ -95,9 +95,19 @@ document.getElementById("register-btn").addEventListener("click", async () => {
   const email = document.getElementById("reg-email").value.trim();
   const password = document.getElementById("reg-password").value;
   const role = document.getElementById("reg-role").value;
+  const deliveryAddress = document
+    .getElementById("reg-delivery-address")
+    .value.trim();
   const btn = document.getElementById("register-btn");
 
-  if (!firstName || !surname || !email || !password) {
+  if (
+    !firstName ||
+    !surname ||
+    !email ||
+    !password ||
+    !role ||
+    !deliveryAddress
+  ) {
     showMessage("Заполните все поля", "error");
     return;
   }
@@ -120,6 +130,7 @@ document.getElementById("register-btn").addEventListener("click", async () => {
         email,
         password,
         role,
+        delivery_address: deliveryAddress,
       }),
     });
 
@@ -131,6 +142,7 @@ document.getElementById("register-btn").addEventListener("click", async () => {
         document.getElementById("reg-surname").value = "";
         document.getElementById("reg-email").value = "";
         document.getElementById("reg-password").value = "";
+        document.getElementById("reg-delivery-address").value = "";
         switchTab("login");
         // Подставляем email в форму входа
         document.getElementById("login-email").value = email;
