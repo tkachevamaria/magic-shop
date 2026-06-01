@@ -123,61 +123,47 @@ func (r *Repo) GetCart(ctx context.Context, userID int) (*Cart, error) {
 }
 
 func (r *Repo) IncrementItem(ctx context.Context, cartID, userID, itemID int) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil { return err }
+	defer tx.Rollback()
 
-	// проверка наличия товара и получение его RequiredLevel
+	// 1. Блокируем строку товара на чтение+запись (SQLite: SELECT ... FOR UPDATE не нужен, но BEGIN уже держит lock)
 	var stock, requiredLevel int
-	err := r.db.QueryRowContext(ctx,
+	err = tx.QueryRowContext(ctx,
 		`SELECT i.StockQuantity, p.RequiredLevel FROM Items i
-     JOIN Products p ON i.ProductID = p.ProductID
-     WHERE i.ItemID = ?`, itemID).Scan(&stock, &requiredLevel)
-	if err == sql.ErrNoRows {
-		return ErrItemNotFound
-	}
-	if err != nil {
-		return err
-	}
+		 JOIN Products p ON i.ProductID = p.ProductID
+		 WHERE i.ItemID = ?`, itemID).Scan(&stock, &requiredLevel)
+	if err == sql.ErrNoRows { return ErrItemNotFound }
+	if err != nil { return err }
 
-	// проверка уровня доступа пользователя
+	// 2. Проверяем уровень
 	var userAccessLevel int
-	err = r.db.QueryRowContext(ctx,
-		`SELECT AccessLevel FROM Users WHERE UserID = ?`, userID).Scan(&userAccessLevel)
-	if err == sql.ErrNoRows {
-		return ErrUserNotFound
-	}
-	if err != nil {
-		return err
-	}
+	err = tx.QueryRowContext(ctx, `SELECT AccessLevel FROM Users WHERE UserID = ?`, userID).Scan(&userAccessLevel)
+	if err == sql.ErrNoRows { return ErrUserNotFound }
+	if err != nil { return err }
+	if userAccessLevel < requiredLevel { return ErrAccessDenied }
 
-	if userAccessLevel < requiredLevel {
-		return ErrAccessDenied
-	}
-	//проверка количества товара на складе
+	// 3. Проверяем текущее кол-во в корзине
 	var inCart int
-	err = r.db.QueryRowContext(ctx,
-		`SELECT COALESCE(Quantity, 0) FROM CartItems
-		 WHERE CartID = ? AND ItemID = ?`, cartID, itemID).Scan(&inCart)
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
+	err = tx.QueryRowContext(ctx,
+		`SELECT COALESCE(Quantity, 0) FROM CartItems WHERE CartID = ? AND ItemID = ?`, cartID, itemID).Scan(&inCart)
+	if err != nil && err != sql.ErrNoRows { return err }
 
-	if inCart >= stock {
+	// ✅ Исправленная логика: разрешаем добавить, если inCart + 1 <= stock
+	if inCart+1 > stock {
 		return ErrInsufficientStock
 	}
-	// добавляем товар в корзину или увеличиваем количество
 
-	_, err = r.db.ExecContext(
-		ctx,
-		`
-		INSERT INTO CartItems (CartID, ItemID, Quantity)
-		VALUES (?, ?, 1)
-		ON CONFLICT(CartID, ItemID)
-		DO UPDATE SET Quantity = Quantity + 1
-		`,
-		cartID,
-		itemID,
+	// 4. Вставляем или обновляем
+	_, err = tx.ExecContext(ctx,
+		`INSERT INTO CartItems (CartID, ItemID, Quantity)
+		 VALUES (?, ?, 1)
+		 ON CONFLICT(CartID, ItemID) DO UPDATE SET Quantity = Quantity + 1`,
+		cartID, itemID,
 	)
+	if err != nil { return err }
 
-	return err
+	return tx.Commit()
 }
 
 func (r *Repo) DecrementItem(ctx context.Context, cartID, itemID int) error {

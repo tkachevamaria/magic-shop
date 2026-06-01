@@ -33,10 +33,8 @@ func main() {
 	}
 	fmt.Println("DB connection OK\n")
 
-	// updateOrderToDelivered(db, 5, 5)
-	// checkTimeFormat(db)
-	//checkCartWithItems(db)
-	checkOrders(db)
+	checkProducts(db)
+	checkItems(db)
 }
 
 func checkShops(db *sql.DB) {

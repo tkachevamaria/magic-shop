@@ -288,7 +288,6 @@
       showToast("Выберите цвет и размер");
       return;
     }
-
     try {
       const response = await fetch(
         `${API_URL}/cart/${productState.currentItemId}`,
@@ -299,7 +298,19 @@
       );
 
       if (response.status === 401) return (window.location.href = "/auth.html");
-      if (response.status === 409) return showToast("Больше нет в наличии");
+
+      // ✅ Показываем реальное сообщение от бэкенда
+      if (response.status === 409) {
+        const errData = await response.json().catch(() => ({}));
+        return showToast(
+          errData.message ||
+            errData.error ||
+            "Не удалось добавить: товар отсутствует или уже в корзине",
+        );
+      }
+      if (response.status === 403) {
+        return showToast("Ваш уровень доступа недостаточен для этого товара");
+      }
       if (!response.ok) throw new Error("Ошибка сети");
 
       renderQuantityControls(1);
