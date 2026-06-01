@@ -68,7 +68,7 @@ function showCartToast(message) {
 async function updateCartCount() {
   try {
     const cart = await getCart();
-    const count = cart?.items?.length ?? 0;
+    const count = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
     const cartIcon = document.querySelector(
       '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
     );
@@ -101,6 +101,7 @@ async function renderCart() {
   if (!container) return;
   container.innerHTML =
     '<div style="text-align:center; padding:40px;">Загрузка...</div>';
+
 
   const cart = await getCart();
   if (!cart) return;
