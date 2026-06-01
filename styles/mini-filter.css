@@ -1,162 +1,195 @@
-/* mini-filter.css */
+/* ================= MINI FILTER PANEL ================= */
 .mini-filter-panel {
-  display: none;
   position: fixed;
-  top: 85px; /* Отступ под шапку */
-  right: 20px;
-  width: 340px;
-  max-height: 70vh;
-  overflow-y: auto;
-  background: rgba(14, 18, 30, 0.96);
-  backdrop-filter: blur(16px);
-  border: 2px solid var(--gold-glow);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
-  z-index: 1000;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold-glow) transparent;
-}
-
-/* Кастомный скролл для Chrome/Safari */
-.mini-filter-panel::-webkit-scrollbar {
-  width: 6px;
-}
-.mini-filter-panel::-webkit-scrollbar-track {
-  background: transparent;
-}
-.mini-filter-panel::-webkit-scrollbar-thumb {
-  background: var(--gold-glow);
-  border-radius: 3px;
+  top: 78px; /* Подстроено под высоту вашего хедера */
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  background: rgba(9, 11, 16, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--gold-glow);
+  border-radius: 20px;
+  padding: 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+  max-width: min(90vw, 820px);
+  z-index: 1005;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
 }
 
 .mini-filter-panel.open {
-  display: block;
-  animation: mf-slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
-@keyframes mf-slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Секции */
+/* Секции фильтра */
 .mini-filter-section {
-  margin-bottom: 18px;
-}
-.mini-filter-section:last-child {
-  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 150px;
 }
 
-.mf-label {
-  font-size: 16px;
+.section-label {
+  font-size: 0.9rem;
   color: var(--gold-bright);
-  display: block;
-  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
   font-weight: bold;
-  text-shadow: 0 0 4px var(--gold-glow);
-  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(201, 160, 84, 0.3);
+  padding-bottom: 6px;
 }
 
-.mf-options {
+.mini-filter-options {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-/* Кнопки размеров */
-.mf-btn {
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(201, 160, 84, 0.4);
-  background: rgba(20, 24, 33, 0.6);
-  color: #e2e8f0;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-.mf-btn:hover {
-  border-color: var(--gold-glow);
-  background: rgba(201, 160, 84, 0.15);
-}
-.mf-btn.active {
-  background: var(--gold-glow);
-  color: #0f0b1c;
-  border-color: #fff;
-  box-shadow: 0 0 8px var(--gold-bright);
-}
-
 /* Кружочки цветов */
 .mf-color {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  padding: 0;
-  border: 2px solid var(--gold-glow);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 .mf-color:hover {
-  transform: scale(1.15);
+  transform: scale(1.12);
+  border-color: var(--gold-bright);
 }
 .mf-color.active {
-  border-color: #fff;
-  transform: scale(1.2);
-  box-shadow: 0 0 8px var(--gold-bright);
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 0 2px rgba(255, 223, 158, 0.4);
+  transform: scale(1.12);
+}
+.mf-color.active::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 14px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  font-weight: bold;
 }
 
-/* Доставка */
-.mf-delivery {
+/* Кнопки размеров и доставки */
+.mf-btn {
+  background: rgba(20, 24, 35, 0.6);
+  border: 1px solid var(--gold-glow);
+  color: #f7e5c2;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-family: inherit;
 }
-.mf-delivery .d-icon {
-  font-size: 20px;
-  line-height: 1;
+.mf-btn:hover {
+  background: rgba(201, 160, 84, 0.15);
+  border-color: var(--gold-bright);
+}
+.mf-btn.active {
+  background: var(--gold-glow);
+  color: #090b10;
+  font-weight: bold;
+  border-color: var(--gold-bright);
 }
 
 /* Кнопка сброса */
 #mf-clear {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding: 10px 22px;
   background: transparent;
-  border: 1px solid #e74c3c;
-  color: #e74c3c;
-  border-radius: 14px;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 20px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  font-family: inherit;
 }
 #mf-clear:hover {
-  background: #7f1d1d;
+  background: #ef4444;
   color: #fff;
-  border-color: #f87171;
 }
 
-/* Активное состояние иконки фильтра в шапке */
-.filter-icon-active {
-  color: var(--gold-bright) !important;
-  text-shadow: 0 0 10px var(--gold-glow);
-  filter: drop-shadow(0 0 5px var(--gold-glow));
-  transform: scale(1.1);
-  transition: all 0.3s ease;
-}
-
-/* Мобильная адаптация */
-@media (max-width: 480px) {
+/* Адаптив под мобильные */
+@media (max-width: 768px) {
   .mini-filter-panel {
-    width: calc(100% - 24px);
-    right: 12px;
-    top: 75px;
+    top: 72px;
+    padding: 16px;
+    gap: 16px;
+    max-width: 96vw;
+    border-radius: 16px;
   }
+  .mini-filter-section {
+    width: 100%;
+  }
+  #mf-clear {
+    width: 100%;
+  }
+}
+
+.mf-controls {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(201, 160, 84, 0.3);
+}
+.mf-apply {
+  background: var(--gold-glow);
+  color: #090b10;
+  font-weight: bold;
+  padding: 10px 24px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(201, 160, 84, 0.3);
+}
+.mf-apply:hover {
+  background: var(--gold-bright);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(201, 160, 84, 0.5);
+}
+#mf-clear {
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 10px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#mf-clear:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Скрываем панель при загрузке */
+.mini-filter-panel {
+  visibility: hidden;
+}
+.mini-filter-panel.open {
+  visibility: visible;
 }

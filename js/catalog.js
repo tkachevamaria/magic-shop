@@ -3,14 +3,15 @@
     category: null,
     shop: null,
     searchQuery: null,
+    sort: null,
     miniFilters: { color: null, size: null, deliveryId: null },
     availableFilters: { colors: [], sizes: [], deliveryMethods: [] },
     page: 1,
     limit: 12,
   };
+
   const API = "http://localhost:8080";
 
-  // Маппинг цветов для кружочков
   const colorMap = {
     Чёрный: "#1a1a1a",
     Черный: "#1a1a1a",
@@ -40,6 +41,7 @@
     Стеклянный: "rgba(200,230,255,0.4)",
     Хрустальный: "#bae6fd",
   };
+
   const deliveryMeta = {
     Сова: { icon: "🦉", name: "Совиная почта" },
     Камин: { icon: "🔥", name: "Каминная сеть" },
@@ -52,9 +54,11 @@
     setupSearch();
     initMiniFilter();
     setupClickOutside();
+    setupSort();
+    updateFilterIconState();
   });
 
-  // 🔍 Поиск
+  /* 🔍 ПОИСК */
   function setupSearch() {
     document.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && e.target.matches(".search-input"))
@@ -71,13 +75,13 @@
   function handleSearch(query) {
     state.searchQuery = query || null;
     state.page = 1;
-    resetMiniFilters(); // Сброс мини-фильтра при поиске
+    resetMiniFilters();
     updateFilterIconState();
     updateActiveUI();
     loadProducts();
   }
 
-  // 📥 Большие фильтры
+  /* 📥 БОЛЬШИЕ ФИЛЬТРЫ */
   function loadFilters() {
     fetch(`${API}/api/filters`)
       .then((res) => res.json())
@@ -99,7 +103,7 @@
           renderFilterGroup(".shops-list", data.shops, "shop", "data-shop-id");
         }
       })
-      .catch((err) => console.error("❌ Ошибка загрузки фильтров: ", err));
+      .catch((err) => console.error("❌ Ошибка загрузки фильтров:", err));
   }
 
   function renderFilterGroup(containerSelector, items, type, attr) {
@@ -128,7 +132,7 @@
       }
 
       state.page = 1;
-      resetMiniFilters(); // Сброс мини-фильтра при смене больших фильтров
+      resetMiniFilters();
       updateFilterIconState();
       updateActiveUI();
       loadProducts();
@@ -154,7 +158,7 @@
       );
   }
 
-  // 📦 Загрузка товаров + захват фасетов
+  /* 📦 ЗАГРУЗКА ТОВАРОВ + ФАСЕТЫ */
   function loadProducts() {
     const grid = document.getElementById("products-grid");
     if (!grid) return;
@@ -172,6 +176,7 @@
     if (state.miniFilters.size) params.set("size", state.miniFilters.size);
     if (state.miniFilters.deliveryId)
       params.set("delivery", state.miniFilters.deliveryId);
+    if (state.sort) params.set("sort", state.sort);
 
     const endpoint = state.searchQuery
       ? `${API}/api/products/search`
@@ -190,7 +195,6 @@
           return;
         }
 
-        // Обновляем доступные фильтры для мини-панели
         if (data.filters) {
           state.availableFilters = data.filters;
           renderMiniFilterOptions();
@@ -220,14 +224,13 @@
       });
   }
 
-  // 🎛 Мини-фильтр
+  /* 🎛 МИНИ-ФИЛЬТР */
   function initMiniFilter() {
     const panel = document.createElement("div");
     panel.id = "mini-filter-panel";
     panel.className = "mini-filter-panel";
     document.body.appendChild(panel);
-
-    panel.addEventListener("click", (e) => e.stopPropagation()); // Не закрывать при клике внутри
+    panel.addEventListener("click", (e) => e.stopPropagation());
   }
 
   function renderMiniFilterOptions() {
@@ -238,9 +241,9 @@
       state.miniFilters.color ||
       state.miniFilters.size ||
       state.miniFilters.deliveryId;
-
     let html = "";
-    if (state.availableFilters.colors.length) {
+
+    if (state.availableFilters.colors?.length) {
       html += `<div class="mini-filter-section"><span class="section-label">Цвет</span><div class="mini-filter-options">`;
       state.availableFilters.colors.forEach((c) => {
         const bg = colorMap[c] || "#555";
@@ -250,7 +253,7 @@
       html += `</div></div>`;
     }
 
-    if (state.availableFilters.sizes.length) {
+    if (state.availableFilters.sizes?.length) {
       html += `<div class="mini-filter-section"><span class="section-label">Размер</span><div class="mini-filter-options">`;
       state.availableFilters.sizes.forEach((s) => {
         const active = state.miniFilters.size === s ? "active" : "";
@@ -269,68 +272,70 @@
       html += `</div></div>`;
     }
 
-    if (hasActive) {
-      html += `<button id="mf-clear">Сбросить фильтр</button>`;
-    }
+    // Кнопки управления
+    html += `<div class="mf-controls">`;
+    if (hasActive) html += `<button id="mf-clear">Сбросить</button>`;
+    html += `<button id="mf-apply" class="mf-btn mf-apply">✨ Применить</button>`;
+    html += `</div>`;
 
     panel.innerHTML = html;
 
-    // Привязка событий
+    // Привязка событий (только обновление UI)
     panel
       .querySelectorAll(".mf-color")
       .forEach((btn) =>
         btn.addEventListener("click", () =>
-          applyMiniFilter("color", btn.dataset.value),
+          toggleMiniFilterValue("color", btn.dataset.value),
         ),
       );
     panel
       .querySelectorAll(".mf-btn[data-value]")
       .forEach((btn) =>
         btn.addEventListener("click", () =>
-          applyMiniFilter("size", btn.dataset.value),
+          toggleMiniFilterValue("size", btn.dataset.value),
         ),
       );
     panel
       .querySelectorAll(".mf-btn[data-id]")
       .forEach((btn) =>
         btn.addEventListener("click", () =>
-          applyMiniFilter("deliveryId", parseInt(btn.dataset.id)),
+          toggleMiniFilterValue("deliveryId", parseInt(btn.dataset.id)),
         ),
       );
+
     panel.querySelector("#mf-clear")?.addEventListener("click", () => {
       resetMiniFilters();
       loadProducts();
       toggleMiniPanel(false);
     });
+    panel.querySelector("#mf-apply")?.addEventListener("click", () => {
+      loadProducts();
+      toggleMiniPanel(false);
+    });
   }
 
-  function applyMiniFilter(type, value) {
-    state.miniFilters[type] = state.miniFilters[type] === value ? null : value; // Тоггл
+  function toggleMiniFilterValue(type, value) {
+    state.miniFilters[type] = state.miniFilters[type] === value ? null : value;
     state.page = 1;
-    updateFilterIconState();
-    renderMiniFilterOptions(); // Перерисовать кнопки
-    loadProducts();
-    toggleMiniPanel(false); // Закрыть панель после выбора
+    renderMiniFilterOptions();
   }
 
   function resetMiniFilters() {
     state.miniFilters = { color: null, size: null, deliveryId: null };
     updateFilterIconState();
+    renderMiniFilterOptions();
   }
 
   function updateFilterIconState() {
     const icon = document.querySelector(
-      '.icon-btn[title="Фильтр"], .header-icons button[onclick*="Фильтр"]',
+      '.icon-btn[title="Фильтr"], .header-icons button.filter-toggle',
     );
     if (!icon) return;
-    const hasAnyFilter =
-      state.category ||
-      state.shop ||
-      state.searchQuery ||
-      state.miniFilters.color ||
-      state.miniFilters.size ||
-      state.miniFilters.deliveryId;
-    icon.classList.toggle("filter-icon-active", !!hasAnyFilter);
+
+    const hasMainFilter = state.category || state.shop || state.searchQuery;
+    icon.style.opacity = hasMainFilter ? "1" : "0.4";
+    icon.style.pointerEvents = hasMainFilter ? "auto" : "none";
+    icon.classList.toggle("filter-icon-active", !!hasMainFilter);
   }
 
   function toggleMiniPanel(show) {
@@ -338,13 +343,23 @@
     if (panel) panel.classList.toggle("open", show);
   }
 
+  // Глобальная функция для шапки
+  window.toggleMiniFilter = () => {
+    const hasMainFilter = state.category || state.shop || state.searchQuery;
+    if (!hasMainFilter) {
+      showToast("🔍 Сначала примените поиск, категорию или магазин");
+      return;
+    }
+    const panel = document.getElementById("mini-filter-panel");
+    if (panel) panel.classList.toggle("open");
+  };
+
   function setupClickOutside() {
     document.addEventListener("click", (e) => {
       const panel = document.getElementById("mini-filter-panel");
       const btn = document.querySelector('.icon-btn[title="Фильтр"]');
       if (
-        panel &&
-        panel.classList.contains("open") &&
+        panel?.classList.contains("open") &&
         !panel.contains(e.target) &&
         e.target !== btn &&
         !btn?.contains(e.target)
@@ -352,5 +367,28 @@
         toggleMiniPanel(false);
       }
     });
+  }
+
+  /* 📊 СОРТИРОВКА */
+  function setupSort() {
+    const sortSelect = document.getElementById("sort-select");
+    if (!sortSelect) return;
+    sortSelect.addEventListener("change", (e) => {
+      state.sort = e.target.value || null;
+      state.page = 1;
+      loadProducts();
+    });
+  }
+
+  /* 🍞 TOAST */
+  function showToast(message) {
+    const old = document.querySelector(".cart-toast");
+    if (old) old.remove();
+    const toast = document.createElement("div");
+    toast.className = "cart-toast";
+    toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 12px; border: 1px solid var(--gold-glow); z-index: 1000; animation: slideIn 0.3s ease;`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
   }
 })();
