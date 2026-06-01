@@ -145,13 +145,4 @@ async function renderOrdersPage() {
             if (productId) window.location.href = `product.html?id=${productId}`;
         });
     });
-
-    // Клик по заголовку заказа - страница деталей заказа
-    document.querySelectorAll('.order-block-header').forEach(header => {
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', function () {
-            const orderId = this.closest('.order-block').getAttribute('data-order-id');
-            if (orderId) window.location.href = `order-details.html?id=${orderId}`;
-        });
-    });
 }
