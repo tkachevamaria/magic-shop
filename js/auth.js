@@ -1,4 +1,4 @@
-        const API_URL = "http://localhost:8080";
+const API_URL = "http://localhost:8080";
 
         // Если уже залогинен — сразу на главную
         if (localStorage.getItem('token')) {
@@ -89,9 +89,10 @@
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
             const role = document.getElementById('reg-role').value;
+            const deliveryAddress = document.getElementById('reg-delivery-address').value.trim();
             const btn = document.getElementById('register-btn');
 
-            if (!firstName || !surname || !email || !password) {
+            if (!firstName || !surname || !email || !password || !role || !deliveryAddress) {
                 showMessage('Заполните все поля', 'error');
                 return;
             }
@@ -108,7 +109,7 @@
                 const res = await fetch(`${API_URL}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ first_name: firstName, surname, email, password, role })
+                    body: JSON.stringify({ first_name: firstName, surname, email, password, role, delivery_address: deliveryAddress })
                 });
 
                 if (res.ok) {
@@ -119,6 +120,7 @@
                         document.getElementById('reg-surname').value = '';
                         document.getElementById('reg-email').value = '';
                         document.getElementById('reg-password').value = '';
+                        document.getElementById('reg-delivery-address').value = '';
                         switchTab('login');
                         // Подставляем email в форму входа
                         document.getElementById('login-email').value = email;
