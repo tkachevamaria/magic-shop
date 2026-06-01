@@ -4,8 +4,47 @@
   const container = document.getElementById("product-content");
   if (!container) return;
 
-  // 🔑 УКАЖИТЕ ТОЧНЫЙ КЛЮЧ, ПОД КОТОРЫМ У ВАС СОХРАНЯЕТСЯ ТОКЕН
   const TOKEN_KEY = "token";
+  function getAuthHeaders() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  const deliveryMeta = {
+    Сова: { icon: "🦉", name: "Совиная почта" },
+    Камин: { icon: "🔥", name: "Каминная сеть" },
+    "Delivery Guy": { icon: "🧙‍♂️", name: "Курьер-волшебник" },
+  };
+
+  const colorMap = {
+    Чёрный: "#1a1a1a",
+    Черный: "#1a1a1a",
+    Синий: "#1e3a8a",
+    Белый: "#f8fafc",
+    Серебристый: "#c0c0c0",
+    Прозрачный: "rgba(255,255,255,0.15)",
+    Матовый: "#4b5563",
+    Золотистый: "#d97706",
+    Янтарный: "#f59e0b",
+    Фиолетовый: "#7c3aed",
+    Зелёный: "#166534",
+    Зеленый: "#166534",
+    "Тёмно-зелёный": "#064e3b",
+    Изумрудный: "#10b981",
+    Красный: "#dc2626",
+    "Тёмный дуб": "#5c3a21",
+    "Светлый дуб": "#b58b4c",
+    "Красное дерево": "#7f2d1f",
+    Кожаный: "#8b5a2b",
+    Тканевый: "#9ca3af",
+    Бархатный: "#4c1d95",
+    Розовый: "#f472b6",
+    Перламутровый: "#e9d5ff",
+    Серый: "#6b7280",
+    Бурый: "#78350f",
+    Стеклянный: "rgba(200,230,255,0.4)",
+    Хрустальный: "#bae6fd",
+  };
 
   const productState = {
     product: null,
@@ -16,30 +55,37 @@
     quantity: 1,
   };
 
-  // Хелпер для получения заголовков авторизации
-  function getAuthHeaders() {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) return {};
-    // Если бэкенд ждёт не "Bearer", а например "Token", замените слово Bearer
-    return { Authorization: `Bearer ${token}` };
+  function getDeliveryInfo(name) {
+    const key = name?.trim();
+    return deliveryMeta[key] || deliveryMeta["Сова"];
   }
 
   function renderProduct(product) {
+    const { icon, name } = getDeliveryInfo(product.delivery_name);
     container.innerHTML = `
-      <div class="product-card-large">
-        <div class="product-image">
-          <img src="${PHOTO_URL}${product.image_url || ""}" alt="${product.name}">
-        </div>
-        <div class="product-info">
-          <h1 class="product-title">${product.name}</h1>
-          <div class="product-price">${product.price} Галлеонов</div>
-          <div class="product-description">${product.description || "Описание отсутствует"}</div>
-          <div id="options-container"></div>
-          <div id="action-container"></div>
-          <a href="index.html" class="back-link">Вернуться в каталог</a>
-        </div>
+    <div class="product-card-large">
+      <div class="product-image">
+        <img src="${PHOTO_URL}${product.image_url || ""}" alt="${product.name}">
       </div>
-    `;
+      <div class="product-info">
+        <h1 class="product-title">${product.name}</h1>
+        
+        <div class="product-meta">
+          <div class="product-price">${product.price} Галлеонов</div>
+          <div class="product-delivery-compact">
+            <span class="delivery-icon">${icon}</span>
+            <span class="delivery-text">${name} · ${product.delivery_days} дн.</span>
+          </div>
+        </div>
+
+        <div class="product-description">${product.description || "Описание отсутствует"}</div>
+
+        <div id="options-container"></div>
+        <div id="action-container"></div>
+        <a href="index.html" class="back-link">Вернуться в каталог</a>
+      </div>
+    </div>
+  `;
   }
 
   function renderOptions() {
@@ -57,7 +103,12 @@
           ? `
         <span class="section-label">Цвет:</span>
         <div class="options-group" id="colors-group">
-          ${colors.map((color) => `<button class="option-btn color-btn" data-value="${color}">${color}</button>`).join("")}
+          ${colors
+            .map((color) => {
+              const hex = colorMap[color] || "#555";
+              return `<button class="color-circle-btn" style="background-color: ${hex};" title="${color}" data-value="${color}"></button>`;
+            })
+            .join("")}
         </div>
       `
           : ""
@@ -75,10 +126,10 @@
       <span id="stock-hint" class="stock-status"></span>
     `;
 
-    optionsContainer.querySelectorAll(".color-btn").forEach((btn) => {
+    optionsContainer.querySelectorAll(".color-circle-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         optionsContainer
-          .querySelectorAll(".color-btn")
+          .querySelectorAll(".color-circle-btn")
           .forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         productState.selectedColor = btn.dataset.value;
@@ -101,6 +152,7 @@
   function updateStockInfo() {
     const { items, selectedColor, selectedSize } = productState;
     const hint = document.getElementById("stock-hint");
+
     if (!selectedColor || !selectedSize) {
       if (hint) {
         hint.textContent = "Выберите цвет и размер";
@@ -154,26 +206,24 @@
     if (!container) return;
 
     container.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 20px; justify-content: center;">
-        <button id="btn-minus" class="option-btn" style="padding: 10px 20px; font-size: 24px;">−</button>
-        <span id="qty-display" style="font-size: 28px; min-width: 40px; text-align: center;">${initialQty}</span>
-        <button id="btn-plus" class="option-btn" style="padding: 10px 20px; font-size: 24px;">+</button>
-        <button id="btn-remove" class="option-btn" style="background: #7f1d1d; margin-left: 10px;">Убрать</button>
+      <div class="qty-controls">
+        <button id="btn-minus" class="option-btn">−</button>
+        <span id="qty-display">${initialQty}</span>
+        <button id="btn-plus" class="option-btn" ${initialQty >= maxStock ? "disabled" : ""}>+</button>
+        <button id="btn-remove" class="remove-btn">Убрать</button>
       </div>
     `;
 
     const qtyDisplay = document.getElementById("qty-display");
-    const btnMinus = document.getElementById("btn-minus");
     const btnPlus = document.getElementById("btn-plus");
-    const btnRemove = document.getElementById("btn-remove");
 
-    btnMinus.addEventListener("click", async () => {
+    document.getElementById("btn-minus").addEventListener("click", async () => {
       let qty = parseInt(qtyDisplay.textContent);
       if (qty > 1) {
         qty--;
         qtyDisplay.textContent = qty;
-        productState.quantity = qty;
         await syncQuantityWithBackend("decrement");
+        btnPlus.disabled = false;
       }
     });
 
@@ -182,34 +232,35 @@
       if (qty < maxStock) {
         qty++;
         qtyDisplay.textContent = qty;
-        productState.quantity = qty;
         await syncQuantityWithBackend("increment");
+        if (qty >= maxStock) btnPlus.disabled = true;
       } else {
-        showToast(`Максимум ${maxStock} шт. в наличии`);
+        showToast("Достигнут лимит наличия");
+        btnPlus.disabled = true;
       }
     });
 
-    btnRemove.addEventListener("click", async () => {
-      if (!productState.currentItemId) return;
-      try {
-        const res = await fetch(
-          `${API_URL}/cart/${productState.currentItemId}`,
-          {
-            method: "DELETE",
-            headers: getAuthHeaders(),
-          },
-        );
-        if (res.status === 401) return handleAuthRequired();
-        if (!res.ok) throw new Error("Ошибка сети");
-
-        productState.quantity = 1;
-        renderAddButton();
-        showToast("Товар убран из корзины");
-      } catch (err) {
-        console.error("Ошибка удаления:", err);
-        showToast("Не удалось убрать товар");
-      }
-    });
+    document
+      .getElementById("btn-remove")
+      .addEventListener("click", async () => {
+        if (!productState.currentItemId) return;
+        try {
+          const res = await fetch(
+            `${API_URL}/cart/${productState.currentItemId}`,
+            {
+              method: "DELETE",
+              headers: getAuthHeaders(),
+            },
+          );
+          if (res.status === 401) return (window.location.href = "/auth.html");
+          if (!res.ok) throw new Error("Ошибка сети");
+          renderAddButton();
+          showToast("Товар убран из корзины");
+        } catch (err) {
+          console.error(err);
+          showToast("Не удалось убрать товар");
+        }
+      });
   }
 
   async function syncQuantityWithBackend(action) {
@@ -224,10 +275,10 @@
         method: "POST",
         headers: getAuthHeaders(),
       });
-      if (res.status === 401) return handleAuthRequired();
+      if (res.status === 401) return (window.location.href = "/auth.html");
       if (!res.ok) throw new Error("Ошибка сети");
     } catch (err) {
-      console.error("Ошибка синхронизации:", err);
+      console.error(err);
       showToast("Не удалось обновить количество");
     }
   }
@@ -243,30 +294,20 @@
         `${API_URL}/cart/${productState.currentItemId}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...getAuthHeaders(),
-          },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         },
       );
 
-      if (response.status === 401) return handleAuthRequired();
+      if (response.status === 401) return (window.location.href = "/auth.html");
+      if (response.status === 409) return showToast("Больше нет в наличии");
       if (!response.ok) throw new Error("Ошибка сети");
 
-      productState.quantity = 1;
       renderQuantityControls(1);
       showToast("Добавлено в корзину");
     } catch (err) {
-      console.error("Ошибка добавления:", err);
+      console.error(err);
       showToast("Не удалось добавить в корзину");
     }
-  }
-
-  function handleAuthRequired() {
-    const msg = "Для работы с корзиной необходимо войти в аккаунт";
-    showToast(msg);
-    // Раскомментируйте, если нужен редирект на страницу входа:
-    // setTimeout(() => window.location.href = '/login.html', 1500);
   }
 
   function showToast(message) {
@@ -275,14 +316,14 @@
     const toast = document.createElement("div");
     toast.className = "cart-toast";
     toast.style.cssText = `
-      position: fixed; bottom: 20px; right: 20px; 
-      background: #1e293b; color: #fff; padding: 12px 24px; 
+      position: fixed; bottom: 20px; right: 20px;
+      background: #1e293b; color: #fff; padding: 12px 24px;
       border-radius: 12px; border: 1px solid var(--gold-glow);
       z-index: 1000; animation: slideIn 0.3s ease;
     `;
     toast.textContent = message;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => toast.remove(), 2500);
   }
 
   async function init() {

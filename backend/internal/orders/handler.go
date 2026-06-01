@@ -28,7 +28,7 @@ func (h *Handler) GetActiveOrders(w http.ResponseWriter, r *http.Request) {
 
 	orders, err := h.service.GetActiveOrders(r.Context(), userID)
 	if err != nil {
-		log.Printf("❌ Ошибка активных заказов: %v", err)
+		log.Printf("Ошибка активных заказов: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -44,7 +44,7 @@ func (h *Handler) GetPurchases(w http.ResponseWriter, r *http.Request) {
 
 	purchases, err := h.service.GetPurchases(r.Context(), userID)
 	if err != nil {
-		log.Printf("❌ Ошибка покупок: %v", err)
+		log.Printf("Ошибка покупок: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -60,7 +60,7 @@ func (h *Handler) GetOrderDetails(w http.ResponseWriter, r *http.Request) {
 
 	details, err := h.service.GetOrderDetails(r.Context(), orderID)
 	if err != nil {
-		log.Printf("❌ Ошибка деталей заказа: %v", err)
+		log.Printf("Ошибка деталей заказа: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
