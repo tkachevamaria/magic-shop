@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — Magic Market</title>
+    <link rel="stylesheet" href="../styles/style.css">
+</head>
+<body>
+
+    <header class="main-header" id="header-container"></header>
+
+    <div class="page-container register-container">
+        <div class="register-card">
+            <h1 class="register-title">Регистрация</h1>
+            <form id="registerForm" class="register-form">
+                <div class="form-group">
+                    <label for="first_name">Имя</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="surname">Фамилия</label>
+                    <input type="text" id="surname" name="surname" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Почта</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Роль</label>
+                    <select id="role" name="role" required>
+                        <option value="professional">Профессионал</option>
+                        <option value="mage">Маг</option>
+                        <option value="student">Студент</option>
+                    </select>
+                    <small class="role-hint">Уровень доступа: Профессионал (1) → Маг (2) → Студент (3)</small>
+                </div>
+                <button type="submit" class="register-btn">Примкнуть к избранным</button>
+                <p class="login-link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/loadHeader.js"></script>
+    <script src="../js/register.js"></script>
+</body>
+</html>

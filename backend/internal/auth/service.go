@@ -25,7 +25,7 @@ func (s *Service) Register(req RegisterRequest) error {
 		return err
 	}
 
-	return s.repo.CreateUser(req.FirstName, req.Surname, req.Email, string(hash), accessLevel)
+	return s.repo.CreateUser(req.FirstName, req.Surname, req.Email, string(hash), accessLevel, req.DeliveryAddress)
 }
 
 func (s *Service) Login(req LoginRequest) (*User, error) {
@@ -43,4 +43,8 @@ func (s *Service) Login(req LoginRequest) (*User, error) {
 
 func (s *Service) DeleteUser(userID int) error {
 	return s.repo.DeleteUser(userID)
+}
+
+func (s *Service) UpdateDeliveryAddress(userID int, address string) error {
+	return s.repo.UpdateDeliveryAddress(userID, address)
 }

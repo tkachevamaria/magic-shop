@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -32,8 +33,10 @@ func main() {
 	}
 	fmt.Println("DB connection OK\n")
 
-	checkUsers(db)
-	//checkProducts(db)
+	// updateOrderToDelivered(db, 5, 5)
+	// checkTimeFormat(db)
+	//checkCartWithItems(db)
+	checkOrders(db)
 }
 
 func checkShops(db *sql.DB) {
@@ -96,7 +99,7 @@ func checkProducts(db *sql.DB) {
 
 func checkUsers(db *sql.DB) {
 	fmt.Println("Users:")
-	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, AccessLevel, TotalSpent FROM Users")
+	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, DeliveryAddress FROM Users")
 	if err != nil {
 		log.Printf("  error: %v", err)
 		return
@@ -104,11 +107,11 @@ func checkUsers(db *sql.DB) {
 	defer rows.Close()
 	for rows.Next() {
 		var UserID, AccessLevel int
-		var FirstName, Surname, Email string
+		var FirstName, Surname, Email, DeliveryAddress string
 		var TotalSpent float64
-		rows.Scan(&UserID, &FirstName, &Surname, &Email, &AccessLevel, &TotalSpent)
-		fmt.Printf("  UserID=%-3d  FirstName=%-10s  Surname=%-12s  Email=%-25s  AccessLevel=%d  TotalSpent=%.1f\n",
-			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent)
+		rows.Scan(&UserID, &FirstName, &Surname, &Email, &AccessLevel, &TotalSpent, &DeliveryAddress)
+		fmt.Printf("  UserID=%-3d  FirstName=%-10s  Surname=%-12s  Email=%-25s  AccessLevel=%d  TotalSpent=%.1f  DeliveryAddress=%s\n",
+			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, DeliveryAddress)
 	}
 	fmt.Println()
 }
@@ -178,7 +181,7 @@ func testInsertOrder(db *sql.DB) {
 func checkOrders(db *sql.DB) {
 	fmt.Println("Orders:")
 	rows, err := db.Query(`
-		SELECT o.OrderID, o.UserID, u.FirstName, u.Surname, o.ItemID, o.Status, o.DeliveryMethodID, o.DeliveryAddress, o.OrderDate
+		SELECT o.OrderID, o.UserID, u.FirstName, u.Surname, o.ItemID, o.Status, o.DeliveryMethodID, o.DeliveryAddress, o.OrderDate, o.EstimatedDeliveryDate, o.ActualDeliveryDate
 		FROM Orders o
 		JOIN Users u ON o.UserID = u.UserID
 	`)
@@ -189,17 +192,17 @@ func checkOrders(db *sql.DB) {
 	defer rows.Close()
 	for rows.Next() {
 		var OrderID, UserID int
-		var FirstName, Surname, ItemID, Status, DeliveryMethodID, DeliveryAddress, OrderDate string
-		rows.Scan(&OrderID, &UserID, &FirstName, &Surname, &ItemID, &Status, &DeliveryMethodID, &DeliveryAddress, &OrderDate)
-		fmt.Printf("  OrderID=%-3d  UserID=%-3d  FirstName=%-10s  Surname=%-12s  ItemID=%-10s  Status=%-10s  DeliveryMethodID=%-15s  DeliveryAddress=%-30s  OrderDate=%s\n",
-			OrderID, UserID, FirstName, Surname, ItemID, Status, DeliveryMethodID, DeliveryAddress, OrderDate)
+		var FirstName, Surname, ItemID, Status, DeliveryMethodID, DeliveryAddress, OrderDate, EstimatedDeliveryDate, ActualDeliveryDate string
+		rows.Scan(&OrderID, &UserID, &FirstName, &Surname, &ItemID, &Status, &DeliveryMethodID, &DeliveryAddress, &OrderDate, &EstimatedDeliveryDate, &ActualDeliveryDate)
+		fmt.Printf("  OrderID=%-3d  UserID=%-3d  FirstName=%-10s  Surname=%-12s  ItemID=%-10s  Status=%-10s  DeliveryMethodID=%-15s  DeliveryAddress=%-30s  OrderDate=%s  EstimatedDeliveryDate=%s  ActualDeliveryDate=%s\n",
+			OrderID, UserID, FirstName, Surname, ItemID, Status, DeliveryMethodID, DeliveryAddress, OrderDate, EstimatedDeliveryDate, ActualDeliveryDate)
 	}
 	fmt.Println()
 }
 
 func checkUsersAll(db *sql.DB) {
 	fmt.Println("Users:")
-	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, PasswordHash, AccessLevel, TotalSpent FROM Users")
+	rows, err := db.Query("SELECT UserID, FirstName, Surname, Email, PasswordHash, AccessLevel, TotalSpent, DeliveryAddress FROM Users")
 	if err != nil {
 		log.Printf("  error: %v", err)
 		return
@@ -207,11 +210,86 @@ func checkUsersAll(db *sql.DB) {
 	defer rows.Close()
 	for rows.Next() {
 		var UserID, AccessLevel int
-		var FirstName, Surname, Email, PasswordHash string
+		var FirstName, Surname, Email, PasswordHash, DeliveryAddress string
 		var TotalSpent float64
-		rows.Scan(&UserID, &FirstName, &Surname, &Email, &PasswordHash, &AccessLevel, &TotalSpent)
-		fmt.Printf("  UserID=%-3d | FirstName=%-10s | Surname=%-12s | Email=%-25s | AccessLevel=%d | TotalSpent=%-6.1f | PasswordHash=%s\n",
-			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, PasswordHash)
+		rows.Scan(&UserID, &FirstName, &Surname, &Email, &PasswordHash, &AccessLevel, &TotalSpent, &DeliveryAddress)
+		fmt.Printf("  UserID=%-3d | FirstName=%-10s | Surname=%-12s | Email=%-25s | AccessLevel=%d | TotalSpent=%-6.1f | PasswordHash=%s | DeliveryAddress=%s\n",
+			UserID, FirstName, Surname, Email, AccessLevel, TotalSpent, PasswordHash, DeliveryAddress)
 	}
 	fmt.Println()
+}
+
+func updateOrderToDelivered(db *sql.DB, orderID int, daysAgo int) {
+	pastDate := time.Now().AddDate(0, 0, -daysAgo).Format(time.RFC3339)
+
+	result, err := db.Exec(`
+		UPDATE Orders 
+		SET Status = 'DELIVERED', 
+		    ActualDeliveryDate = ?
+		WHERE OrderID = ? AND Status != 'DELIVERED'
+	`, pastDate, orderID)
+
+	if err != nil {
+		log.Printf("  error updating order %d: %v", orderID, err)
+		return
+	}
+
+	result, err = db.Exec(`
+	UPDATE Orders 
+	SET ActualDeliveryDate = datetime('now')
+	WHERE Status = 'DELIVERED'`)
+
+	if err != nil {
+		log.Printf("  error updating delivery dates: %v", err)
+		return
+	}
+
+	rows, _ := result.RowsAffected()
+	if rows > 0 {
+		fmt.Printf("✅ Order %d updated to DELIVERED (delivery date: %s)\n", orderID, pastDate)
+	} else {
+		fmt.Printf("⚠️ Order %d not found or already delivered\n", orderID)
+	}
+}
+
+func checkTimeFormat(db *sql.DB) {
+	rows, err := db.Query(`
+		SELECT OrderID, EstimatedDeliveryDate, ActualDeliveryDate, Status 
+		FROM Orders 
+		WHERE EstimatedDeliveryDate IS NOT NULL 
+		LIMIT 3`)
+	if err != nil {
+		log.Printf("  error checking time format: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	fmt.Println("-------------------")
+	fmt.Println("Recent orders with delivery dates:")
+
+	for rows.Next() {
+		var orderID int
+		var estimatedDate, actualDate sql.NullString
+		var status string
+
+		err := rows.Scan(&orderID, &estimatedDate, &actualDate, &status)
+		if err != nil {
+			log.Printf("  error scanning row: %v", err)
+			continue
+		}
+
+		estDate := "NULL"
+		if estimatedDate.Valid {
+			estDate = estimatedDate.String
+		}
+
+		actDate := "NULL"
+		if actualDate.Valid {
+			actDate = actualDate.String
+		}
+
+		fmt.Printf("Order %d: Status=%s, Estimated=%s, Actual=%s\n",
+			orderID, status, estDate, actDate)
+	}
+	fmt.Println("-------------------")
 }

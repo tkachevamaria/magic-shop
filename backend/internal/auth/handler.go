@@ -22,6 +22,10 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
+	if req.DeliveryAddress == "" {
+		http.Error(w, "delivery_address is required", http.StatusBadRequest)
+		return
+	}
 
 	if err := h.service.Register(req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -29,6 +33,33 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *Handler) UpdateDeliveryAddress(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(CtxUserID).(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req struct {
+		DeliveryAddress string `json:"delivery_address"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if req.DeliveryAddress == "" {
+		http.Error(w, "delivery_address is required", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.UpdateDeliveryAddress(userID, req.DeliveryAddress); err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {

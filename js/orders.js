@@ -1,118 +1,147 @@
-// orders.js - заказы, сгруппированные по способу доставки
+const API_URL = "http://localhost:8080";
 
-const ordersData = {
-    owl: {
-        name: "Сова",
-        icon: "🦉",
-        description: "Доставка совой — традиционный и надёжный способ",
-        items: [
-            { id: 1, name: "Бузинная палочка", price: 5000, icon: "🪄", size: "Стандарт", color: "Черный", deliveryDate: "15.12.2024" },
-            { id: 2, name: "Амортенция", price: 700, icon: "💖", size: "30 мл", color: "Розовый", deliveryDate: "15.12.2024" },
-            { id: 3, name: "Сова-почтальон", price: 200, icon: "🦉", size: "Крупная", color: "Белая", deliveryDate: "18.01.2025" },
-            { id: 4, name: "Волшебные шахматы", price: 350, icon: "♟️", size: "Стандарт", color: "Черно-белые", deliveryDate: "22.02.2025" }
-        ]
-    },
-    fireplace: {
-        name: "Камин",
-        icon: "🔥",
-        description: "Каминная сеть — мгновенная доставка через камины",
-        items: [
-            { id: 5, name: "Нимбус 2000", price: 400, icon: "🧹", size: "Стандарт", color: "Дубовый", deliveryDate: "20.12.2024" },
-            { id: 6, name: "Учебник заклинаний", price: 300, icon: "📚", size: "Твердая обложка", color: "Синий", deliveryDate: "20.12.2024" },
-            { id: 7, name: "Летучий порох", price: 50, icon: "🔥", size: "Стандарт", color: "Черный", deliveryDate: "20.12.2024" }
-        ]
-    },
-    guy: {
-        name: "Delivery Guy",
-        icon: "🧙‍♂️",
-        description: "Курьер-волшебник — доставит лично в руки",
-        items: [
-            { id: 8, name: "Мантия-невидимка", price: 10000, icon: "👻", size: "Взрослый (M)", color: "Серебристо-серая", deliveryDate: "05.01.2025" },
-            { id: 9, name: "Золотой снитч", price: 1500, icon: "⭐", size: "Стандарт", color: "Золотой", deliveryDate: "10.03.2025" }
-        ]
-    }
+// Иконки и описания способов доставки
+const deliveryMeta = {
+    "Сова":          { icon: "🦉", description: "Доставка совой — традиционный и надёжный способ" },
+    "Камин":         { icon: "🔥", description: "Каминная сеть — мгновенная доставка через камины" },
+    "Delivery Guy":  { icon: "🧙‍♂️", description: "Курьер-волшебник — доставит лично в руки" },
 };
 
-function getTotalStats() {
-    let totalAmount = 0;
-    let totalOrders = 0;
-    
-    for (const method in ordersData) {
-        ordersData[method].items.forEach(item => {
-            totalAmount += item.price;
-            totalOrders++;
-        });
-    }
-    
-    return { totalAmount, totalOrders };
+function getDeliveryMeta(name) {
+    return deliveryMeta[name] ?? { icon: "📦", description: name };
 }
 
-function renderOrdersPage() {
-    const container = document.getElementById('orders-content');
-    
-    if (!container) return;
-    
-    const { totalAmount, totalOrders } = getTotalStats();
-    
-    let html = `
-        <div class="stats-header">
-            <h1>📜 Заказы </h1>
-        </div>
-    `;
-    
-    const methods = ['owl', 'fireplace', 'guy'];
-    
-    methods.forEach(method => {
-        const section = ordersData[method];
-        
-        // СНАЧАЛА ЗОЛОТАЯ ЛИНИЯ
-        html += `<div class="delivery-section">`;
-        html += `<div class="delivery-line"></div>`;
-        
-        // ПОТОМ СПОСОБ ДОСТАВКИ (под линией)
-        html += `
-            <div class="delivery-content">
-                <div class="delivery-icon">${section.icon}</div>
-                <div class="delivery-title">
-                    <h2>${section.name}</h2>
-                    <p>${section.description}</p>
+// Загружает активные заказы (не DELIVERED)
+async function loadOrders() {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_URL}/api/orders`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (res.status === 401) {
+        window.location.href = 'auth.html';
+        return [];
+    }
+    if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`);
+
+    return await res.json();
+}
+
+// Группирует заказы по методу доставки для отображения секциями
+function groupByDelivery(orders) {
+    const groups = {};
+    (orders ?? []).forEach(order => {
+        const name = order.delivery_name;
+        if (!groups[name]) groups[name] = [];
+        groups[name].push(order);
+    });
+    return groups;
+}
+
+// Рендерит карточки товаров внутри заказа.
+// Каждый товар — отдельная карточка со ссылкой на страницу продукта.
+// quantity берётся из order.items[n].quantity (бек уже схлопывает дубли).
+function renderOrderItems(items, deliveryIcon) {
+    if (!items || items.length === 0) {
+        return `<div class="order-product-card">
+            <div class="card-image">${deliveryIcon}</div>
+            <div class="card-footer"><span class="product-name">Нет данных о товарах</span></div>
+        </div>`;
+    }
+
+
+    return items.map(item => {
+        const image = item.image_url
+            ? `<img src="${API_URL}${item.image_url}" alt="${item.name}" class="card-img">`
+            : `<div class="card-image">${deliveryIcon}</div>`;
+
+        const quantityBadge = item.quantity > 1
+            ? `<span class="quantity-badge">×${item.quantity}</span>`
+            : '';
+
+        return `
+            <div class="order-product-card clickable-card" data-product-id="${item.product_id}">
+                <div class="card-image-wrap">
+                    ${image}
+                    ${quantityBadge}
+                </div>
+                <div class="card-footer">
+                    <span class="product-name">${item.name}</span>
+                    ${item.color ? `<span class="product-meta">${item.color}${item.size ? `, ${item.size}` : ''}</span>` : ''}
+                    <span class="product-price">${item.price} Галлеонов</span>
                 </div>
             </div>
         `;
-        
-        if (section.items.length === 0) {
-            html += `<div class="empty-section">📭 Нет заказов с доставкой "${section.name}"</div>`;
-        } else {
-            html += `<div class="products-grid">`;
-            
-            section.items.forEach(item => {
-                html += `
-                    <div class="order-product-card" data-product-id="${item.id}">
-                        <div class="card-image">${item.icon}</div>
-                        <div class="card-footer">
-                            <span class="product-name" title="${item.name}">${item.name}</span>
-                            <span class="product-price">${item.price} Галлеонов</span>
-                            <span class="delivery-date">📅 ${item.deliveryDate}</span>
-                        </div>
+    }).join('');
+}
+
+async function renderOrdersPage() {
+    const container = document.getElementById('orders-content');
+    if (!container) return;
+
+    container.innerHTML = `<div style="text-align:center; padding:100px; font-size:28px;">Загрузка...</div>`;
+
+    let orders;
+    try {
+        orders = await loadOrders();
+    } catch (err) {
+        container.innerHTML = `<div style="text-align:center; padding:100px; font-size:24px; color:#ff6b6b;">⚠️ Не удалось загрузить заказы</div>`;
+        return;
+    }
+
+    if (!orders || orders.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:100px; font-size:28px;">
+                📭 У вас пока нет активных заказов
+            </div>`;
+        return;
+    }
+
+    const groups = groupByDelivery(orders);
+
+    let html = `<div class="stats-header"><h1>📜 Заказы</h1></div>`;
+
+    Object.entries(groups).forEach(([deliveryName, groupOrders]) => {
+        const { icon, description } = getDeliveryMeta(deliveryName);
+
+        html += `<div class="delivery-section">`;
+        html += `<div class="delivery-line"></div>`;
+        html += `
+            <div class="delivery-content">
+                <div class="delivery-icon">${icon}</div>
+                <div class="delivery-title">
+                    <h2>${deliveryName}</h2>
+                </div>
+            </div>
+        `;
+
+        // Каждый заказ — своя подсекция с датой/статусом и сеткой товаров
+        groupOrders.forEach(order => {
+            html += `
+                <div class="order-block" data-order-id="${order.id}">
+                    <div class="order-block-header">
+                        <span class="order-id">Заказ #${order.id}</span>
+                        <span class="order-status">${order.status}</span>
+                        <span class="delivery-date">📅 ${order.estimated_date}</span>
+                        <span class="order-total">${order.total_price} Галлеонов</span>
                     </div>
-                `;
-            });
-            
-            html += `</div>`;
-        }
-        
+                    <div class="products-grid">
+                        ${renderOrderItems(order.items, icon)}
+                    </div>
+                </div>
+            `;
+        });
+
         html += `</div>`;
     });
-    
+
     container.innerHTML = html;
-    
-    // Обработчики клика на карточки
-    document.querySelectorAll('.order-product-card').forEach(card => {
-        card.addEventListener('click', function() {
+
+    // Клик по карточке товара - страница продукта
+    document.querySelectorAll('.order-product-card[data-product-id]').forEach(card => {
+        card.addEventListener('click', function () {
             const productId = this.getAttribute('data-product-id');
-            if (productId) {
-                window.location.href = `product.html?id=${productId}`;
-            }
+            if (productId) window.location.href = `product.html?id=${productId}`;
         });
     });
 }

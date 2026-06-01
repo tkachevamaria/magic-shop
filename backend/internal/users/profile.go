@@ -18,10 +18,11 @@ func NewProfileHandler(db *sql.DB) *ProfileHandler {
 }
 
 type UserProfile struct {
-	ID          int     `json:"id"`
-	FirstName   string  `json:"first_name"`
-	AccessLevel int     `json:"access_level"`
-	TotalSpent  float64 `json:"total_spent"`
+	ID              int     `json:"id"`
+	FirstName       string  `json:"first_name"`
+	AccessLevel     int     `json:"access_level"`
+	TotalSpent      float64 `json:"total_spent"`
+	DeliveryAddress string  `json:"delivery_address"`
 }
 
 func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -33,8 +34,9 @@ func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	var profile UserProfile
 	err := h.db.QueryRowContext(r.Context(), `
-		SELECT UserID, FirstName, AccessLevel, TotalSpent FROM Users WHERE UserID=?`, uid).
-		Scan(&profile.ID, &profile.FirstName, &profile.AccessLevel, &profile.TotalSpent)
+		SELECT UserID, FirstName, AccessLevel, TotalSpent, DeliveryAddress
+		FROM Users WHERE UserID = ?`, uid).
+		Scan(&profile.ID, &profile.FirstName, &profile.AccessLevel, &profile.TotalSpent, &profile.DeliveryAddress)
 
 	if err == sql.ErrNoRows {
 		http.Error(w, "User not found", http.StatusNotFound)

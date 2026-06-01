@@ -1,16 +1,4 @@
-// sidebar-panel.js - функционал левой панели
-
-// Данные пользователя
-const userData = {
-    name: "Волшебник",
-    avatar: "🧙‍♂️",
-    level: 3,
-    levelName: "Мастер волшебства",
-    address: "Хогвартс, Башня Гриффиндора, комната 7",
-    pendingPurchases: 3
-};
-
-// Функция красивого модального окна для адреса
+// модальное окна для адреса
 function showAddressModal() {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
@@ -23,7 +11,7 @@ function showAddressModal() {
             </div>
             <div class="modal-body">
                 <label>Адрес доставки:</label>
-                <input type="text" id="modalAddressInput" value="${userData.address.replace(/"/g, '&quot;')}" placeholder="Введите ваш адрес">
+                <input type="text" id="modalAddressInput" value="${userAddress.replace(/"/g, '&quot;')}" placeholder="Введите ваш адрес">
             </div>
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">Отмена</button>
@@ -54,20 +42,48 @@ function showAddressModal() {
     
     cancelBtn.addEventListener('click', () => closeModal(modal));
     
-    confirmBtn.addEventListener('click', () => {
+    confirmBtn.addEventListener('click', async () => {
         const newAddress = addressInput.value.trim();
-        if (newAddress) {
-            userData.address = newAddress;
+
+        if (!newAddress) {
+            addressInput.style.borderColor = '#e74c3c';
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+
+            const res = await fetch(
+                'http://localhost:8080/api/users/profile/me/address',
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        delivery_address: newAddress
+                    })
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error('Ошибка обновления адреса');
+            }
+
+            userAddress = newAddress;
+
             const addressEl = document.getElementById('userAddress');
-            if (addressEl) addressEl.textContent = userData.address;
-            localStorage.setItem('userAddress', userData.address);
+            if (addressEl) {
+                addressEl.textContent = userAddress;
+            }
+
             showToast('📍 Адрес доставки обновлён');
             closeModal(modal);
-        } else {
-            addressInput.style.borderColor = '#e74c3c';
-            setTimeout(() => {
-                addressInput.style.borderColor = 'var(--gold-glow)';
-            }, 1500);
+
+        } catch (err) {
+            console.error(err);
+            showToast('❌ Не удалось обновить адрес');
         }
     });
     
@@ -89,11 +105,10 @@ function renderSidebarPanel() {
     container.innerHTML = `
         <div class="sidebar-panel" id="sidebarPanel">
             <div class="user-profile">
-                <div class="user-avatar">${userData.avatar}</div>
-                <div class="user-name">${userData.name}</div>
+                <div class="user-name">${userName}</div>
                 <div class="user-level">
-                    <span>🎓 Уровень ${userData.level}</span>
-                    <span class="level-badge">${userData.levelName}</span>
+                    <span>🎓 Уровень ${userLevel}</span>
+                    <span class="level-badge">${userLevelName}</span>
                 </div>
             </div>
             
@@ -112,7 +127,7 @@ function renderSidebarPanel() {
                 <div class="label">
                     <span>🦉</span> Адрес доставки по умолчанию:
                 </div>
-                <div class="address" id="userAddress">${userData.address}</div>
+                <div class="address" id="userAddress">${userAddress}</div>
                 <button class="edit-address" id="editAddressBtn">✎ Изменить</button>
             </div>
             
@@ -191,13 +206,6 @@ function renderSidebarPanel() {
     });
 }
 
-function loadUserAddress() {
-    const savedAddress = localStorage.getItem('userAddress');
-    if (savedAddress) {
-        userData.address = savedAddress;
-    }
-}
-
 async function initSidebarPanel() {
     const currentPage = window.location.pathname.split('/').pop();
     const isIndexPage = currentPage === 'index.html' || currentPage === '' || currentPage === '/';
@@ -220,15 +228,14 @@ async function initSidebarPanel() {
             return;
         }
         const profile = await res.json();
-        // Перезаписываем моки реальными данными
-        userData.name = profile.first_name;
-        userData.level = profile.access_level;
-        userData.levelName = levelName(profile.access_level);
+        userName = profile.first_name;
+        userLevel = profile.access_level;
+        userLevelName = levelName(profile.access_level);
+        userAddress = profile.delivery_address || 'Адрес не указан';
     } catch (err) {
         console.error('Ошибка загрузки профиля:', err);
     }
 
-    loadUserAddress();
     renderSidebarPanel();
     document.body.classList.add('has-sidebar');
 }

@@ -89,11 +89,13 @@ func main() {
 	r.Get("/api/products/{id}", productHandler.GetProductByID)
 
 	// Защищенные маршруты
+	//сколько живет токен?
 	r.Group(func(r chi.Router) {
 		r.Use(auth.Middleware)
 
 		// Профиль
 		r.Get("/api/users/profile/me", profileHandler.GetProfile)
+		r.Put("/api/users/profile/me/address", authHandler.UpdateDeliveryAddress)
 
 		// Корзина
 		r.Get("/api/cart", cartHandler.GetCart)
@@ -102,6 +104,7 @@ func main() {
 		r.Delete("/api/cart/{itemID}", cartHandler.DeleteItem)
 
 		// Заказы
+		r.Post("/api/orders", orderHandler.CreateOrder)
 		r.Get("/api/orders", orderHandler.GetActiveOrders)
 		r.Get("/api/purchases", orderHandler.GetPurchases)
 		r.Get("/api/orders/{orderID}", orderHandler.GetOrderDetails)
