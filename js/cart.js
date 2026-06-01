@@ -81,9 +81,9 @@ function showCartToast(message) {
 async function updateCartCount() {
   try {
     const cart = await getCart();
-    const count = cart?.items?.length ?? 0;
-    const icon = document.querySelector(
-      '#header-container .icon-btn[title="Корзина"]',
+    const count = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
+    const cartIcon = document.querySelector(
+      '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
     );
     if (!icon) return;
     icon.querySelector(".cart-badge")?.remove();
@@ -244,13 +244,56 @@ async function renderCart() {
     });
   });
 
-  document
-    .querySelector(".order-btn")
-    ?.addEventListener("click", () => showToast("Оформление в разработке"));
-}
+  // ЛОГИКА ОФОРМЛЕНИЯ ЗАКАЗА
+  document.querySelector(".order-btn")?.addEventListener("click", async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", renderCart);
-} else {
-  renderCart();
+      if (res.status === 401) {
+        window.location.href = "auth.html";
+        return;
+      }
+
+      if (!res.ok) {
+        showCartToast("Ошибка оформления заказа");
+        return;
+      }
+
+      await res.json(); // можно не использовать, но пусть будет
+
+      showCartToast("Заказ успешно оформлен!");
+
+      // просто очищаем UI корзины
+      const container = document.getElementById("cart-content");
+      if (container) {
+        container.innerHTML = `
+        <div class="empty-cart">
+          <div class="empty-cart-icon">Корзина пуста</div>
+          <h2>Заказ оформлен 🎉</h2>
+          <p>Спасибо за покупку!</p>
+          <a href="index.html" class="back-to-shop">Вернуться в магазин</a>
+        </div>
+      `;
+      }
+      // обновляем счетчик корзины в шапке
+      updateCartCount();
+    } catch (err) {
+      console.error(err);
+      showCartToast("Ошибка оформления заказа");
+    }
+  });
+
+  function recalcTotal() {
+    let sum = 0;
+    document.querySelectorAll(".cart-item").forEach((r) => {
+      sum +=
+        parseFloat(r.dataset.price) *
+        parseInt(r.querySelector(".cart-qty-display").textContent);
+    });
+    const totalEl = document.querySelector(".total-price");
+    if (totalEl) totalEl.textContent = `${sum.toFixed(0)} Галлеонов`;
+  }
 }
