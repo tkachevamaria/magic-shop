@@ -1,4 +1,30 @@
 const API_URL = "http://localhost:8080";
+const magicSelect = document.getElementById('reg-role');
+const selected = magicSelect.querySelector('.magic-select__selected');
+const options = magicSelect.querySelectorAll('.magic-select__option');
+const hiddenInput = document.getElementById('reg-role-value');
+
+selected.addEventListener('click', () => {
+    magicSelect.classList.toggle('open');
+});
+
+options.forEach(option => {
+    option.addEventListener('click', () => {
+        const value = option.dataset.value;
+        const text = option.textContent;
+
+        selected.textContent = text;
+        hiddenInput.value = value;
+
+        magicSelect.classList.remove('open');
+    });
+});
+
+document.addEventListener('click', (e) => {
+    if (!magicSelect.contains(e.target)) {
+        magicSelect.classList.remove('open');
+    }
+});
 
         // Если уже залогинен — сразу на главную
         if (localStorage.getItem('token')) {
@@ -12,8 +38,6 @@ const API_URL = "http://localhost:8080";
 
             document.querySelector(`.auth-tab[data-tab="${tabName}"]`).classList.add('active');
             document.getElementById(`panel-${tabName}`).classList.add('active');
-
-            clearMessage();
         }
 
         document.querySelectorAll('.auth-tab').forEach(tab => {
@@ -46,13 +70,6 @@ const API_URL = "http://localhost:8080";
             }, 2000);
         }
 
-        function clearMessage() {
-            const toast = document.querySelector('.toast');
-            if (toast) {
-                toast.remove();
-            }
-        }
-
         // ─── Вход 
         document.getElementById('login-btn').addEventListener('click', async () => {
             const email = document.getElementById('login-email').value.trim();
@@ -66,7 +83,6 @@ const API_URL = "http://localhost:8080";
 
             btn.disabled = true;
             btn.textContent = 'Входим...';
-            clearMessage();
 
             try {
                 const res = await fetch(`${API_URL}/auth/login`, {
@@ -100,7 +116,7 @@ const API_URL = "http://localhost:8080";
             const surname = document.getElementById('reg-surname').value.trim();
             const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
-            const role = document.getElementById('reg-role').value;
+            const role = document.getElementById('reg-role-value').value;
             const deliveryAddress = document.getElementById('reg-delivery-address').value.trim();
             const btn = document.getElementById('register-btn');
 
@@ -115,7 +131,6 @@ const API_URL = "http://localhost:8080";
 
             btn.disabled = true;
             btn.textContent = 'Регистрируем...';
-            clearMessage();
 
             try {
                 const res = await fetch(`${API_URL}/auth/register`, {

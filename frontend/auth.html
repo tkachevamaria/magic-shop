@@ -63,11 +63,17 @@
                 </div>
                 <div class="form-group">
                     <label for="reg-role">Роль</label>
-                    <select id="reg-role">
-                        <option value="professional">Профессионал</option>
-                        <option value="mage">Маг</option>
-                        <option value="student">Студент</option>
-                    </select>
+                    <div class="magic-select" id="reg-role">
+                        <div class="magic-select__selected">Выберите роль</div>
+
+                        <div class="magic-select__dropdown">
+                            <div class="magic-select__option" data-value="professional">Профессионал</div>
+                            <div class="magic-select__option" data-value="mage">Маг</div>
+                            <div class="magic-select__option" data-value="student">Студент</div>
+                        </div>
+
+                        <input type="hidden" id="reg-role-value">
+                    </div>
                 </div>
 
                 <div class="form-group">
