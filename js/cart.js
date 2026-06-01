@@ -50,10 +50,10 @@ async function removeFromCart(itemID) {
 }
 
 function showCartToast(message) {
-  const old = document.querySelector(".cart-toast");
+  const old = document.querySelector(".toast");
   if (old) old.remove();
   const toast = document.createElement("div");
-  toast.className = "cart-toast";
+  toast.className = "toast";
   toast.style.cssText = `
     position: fixed; bottom: 20px; right: 20px; 
     background: #1e293b; color: #fff; padding: 12px 24px; 

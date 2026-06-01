@@ -1,6 +1,4 @@
-/* components.css - общие компоненты: тосты, уведомления */
-
-.cart-toast {
+.toast {
     position: fixed;
     bottom: 30px;
     left: 50%;
@@ -18,27 +16,12 @@
     font-family: 'HarryPotter', 'Times New Roman', serif;
 }
 
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-    85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
+.toast.error {
+    border-color: #d9534f;
+    color: #ffb3b3;
 }
 
-@media (max-width: 800px) {
-    .cart-toast {
-        font-size: 16px;
-        white-space: nowrap;
-    }
-}
-
-.no-results {
-    grid-column: 1 / -1;
-    text-align: center;
-    font-size: 36px;
-    padding: 60px 20px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 56px;
-    backdrop-filter: blur(8px);
-    color: var(--gold-bright);
+.toast.success {
+    border-color: #28a745;
+    color: #b8ffca;
 }

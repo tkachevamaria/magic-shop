@@ -29,16 +29,28 @@ const API_URL = "http://localhost:8080";
         });
 
         // ─── Сообщения 
-        function showMessage(text, type) {
-            const el = document.getElementById('auth-message');
-            el.textContent = text;
-            el.className = `auth-message ${type}`;
+        function showMessage(text, type = 'error') {
+            const oldToast = document.querySelector('.toast');
+            if (oldToast) {
+                oldToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = text;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
         }
 
         function clearMessage() {
-            const el = document.getElementById('auth-message');
-            el.textContent = '';
-            el.className = 'auth-message';
+            const toast = document.querySelector('.toast');
+            if (toast) {
+                toast.remove();
+            }
         }
 
         // ─── Вход 
