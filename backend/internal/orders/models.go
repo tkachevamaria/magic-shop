@@ -27,7 +27,7 @@ type OrderDetails struct {
 	Items []OrderItemDetail `json:"items"`
 }
 
-// CreateOrderResponse — список созданных заказов (один на каждый метод доставки).
+// список созданных заказов (один на каждый метод доставки).
 type CreateOrderResponse struct {
 	Orders []CreatedOrder `json:"orders"`
 }

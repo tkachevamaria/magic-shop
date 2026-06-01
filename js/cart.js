@@ -227,9 +227,48 @@ async function renderCart() {
     });
   });
 
-  document.querySelector(".order-btn")?.addEventListener("click", () => {
-    showCartToast("Оформление заказа в разработке");
-  });
+  // ЛОГИКА ОФОРМЛЕНИЯ ЗАКАЗА
+  document.querySelector(".order-btn")?.addEventListener("click", async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/orders`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+
+    if (res.status === 401) {
+      window.location.href = "auth.html";
+      return;
+    }
+
+    if (!res.ok) {
+      showCartToast("Ошибка оформления заказа");
+      return;
+    }
+
+    await res.json(); // можно не использовать, но пусть будет
+
+    showCartToast("Заказ успешно оформлен!");
+
+    // просто очищаем UI корзины
+    const container = document.getElementById("cart-content");
+    if (container) {
+      container.innerHTML = `
+        <div class="empty-cart">
+          <div class="empty-cart-icon">Корзина пуста</div>
+          <h2>Заказ оформлен 🎉</h2>
+          <p>Спасибо за покупку!</p>
+          <a href="index.html" class="back-to-shop">Вернуться в магазин</a>
+        </div>
+      `;
+    }
+    // обновляем счетчик корзины в шапке
+    updateCartCount();
+
+  } catch (err) {
+    console.error(err);
+    showCartToast("Ошибка оформления заказа");
+  }
+});
 
   function recalcTotal() {
     let sum = 0;
@@ -241,11 +280,4 @@ async function renderCart() {
     const totalEl = document.querySelector(".total-price");
     if (totalEl) totalEl.textContent = `${sum.toFixed(0)} Галлеонов`;
   }
-}
-
-// Запуск при загрузке
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", renderCart);
-} else {
-  renderCart();
 }
