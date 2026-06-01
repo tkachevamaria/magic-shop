@@ -46,14 +46,6 @@
     margin-bottom: 60px;
 }
 
-/* ЗОЛОТАЯ ЛИНИЯ НА ВСЮ ШИРИНУ (СВЕРХУ) */
-.delivery-line {
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, var(--gold-glow) 0%, var(--gold-glow) 40%, rgba(201, 160, 84, 0.3) 70%, transparent 100%);
-    box-shadow: 0 0 5px rgba(201, 160, 84, 0.6);
-    margin-bottom: 25px;
-}
 
 /* КОНТЕНТ ПОД ЛИНИЕЙ */
 .delivery-content {
@@ -64,33 +56,11 @@
     flex-wrap: wrap;
 }
 
-.delivery-icon {
-    font-size: 55px;
-    background: rgba(14, 18, 30, 0.7);
-    border-radius: 50%;
-    padding: 12px;
-    border: 2px solid var(--gold-glow);
-    width: 90px;
-    height: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .delivery-title {
     flex: 1;
 }
 
-.delivery-title h2 {
-    font-size: 32px;
-    color: var(--gold-bright);
-    margin-bottom: 5px;
-}
-
-.delivery-title p {
-    font-size: 14px;
-    color: #a0a0a0;
-}
 
 /* МАЛЕНЬКИЕ КАРТОЧКИ ТОВАРОВ */
 .products-grid {
@@ -152,7 +122,7 @@
 }
 
 .delivery-date {
-    font-size: 12px;
+    font-size: 18px;
     color: #a0a0a0;
     display: block;
     margin-top: 6px;
@@ -178,10 +148,6 @@
     }
     .total-stats {
         text-align: center;
-    }
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 15px;
     }
     .card-image {
         font-size: 40px;
