@@ -111,7 +111,6 @@ async function renderOrdersPage() {
                 <div class="delivery-icon">${icon}</div>
                 <div class="delivery-title">
                     <h2>${deliveryName}</h2>
-                    <p>${description}</p>
                 </div>
             </div>
         `;

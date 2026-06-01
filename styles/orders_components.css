@@ -86,7 +86,7 @@
 
 .order-id {
     color: var(--gold-bright);
-    font-size: 22px;
+    font-size: 26px;
 }
 
 .order-status {
@@ -118,25 +118,6 @@
 /* =========================
    Карточка товара
    ========================= */
-
-.order-product-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    overflow: hidden;
-    transition: 0.25s ease;
-}
-
-.order-product-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(201, 160, 84, 0.5);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.3);
-}
-
-.card-image-wrap {
-    position: relative;
-    height: 220px;
-}
 
 .card-img {
     width: 100%;
@@ -174,24 +155,17 @@
 }
 
 .product-name {
-    font-size: 18px;
+    font-size: 22px;
     color: var(--gold-bright);
+    margin-bottom: 0px;
 }
 
 .product-meta {
-    font-size: 14px;
+    font-size: 20px;
     color: rgba(255,255,255,0.65);
 }
 
 .product-price {
-    font-size: 16px;
+    font-size: 18px;
     color: #fff;
-}
-
-.clickable-card {
-    cursor: pointer;
-}
-
-.card-image-wrap {
-    position: relative;
 }
