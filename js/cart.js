@@ -62,15 +62,20 @@ async function removeFromCart(itemID) {
   if (!res.ok) throw new Error(`Сервер: ${res.status}`);
 }
 
-function showToast(msg) {
-  const old = document.querySelector(".cart-toast");
+function showCartToast(message) {
+  const old = document.querySelector(".toast");
   if (old) old.remove();
-  const t = document.createElement("div");
-  t.className = "cart-toast";
-  t.style.cssText = `position:fixed; bottom:20px; right:20px; background:#1e293b; color:#fff; padding:12px 24px; border-radius:12px; border:1px solid var(--gold-glow); z-index:9999; transition:0.3s;`;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.style.cssText = `
+    position: fixed; bottom: 20px; right: 20px; 
+    background: #1e293b; color: #fff; padding: 12px 24px; 
+    border-radius: 12px; border: 1px solid var(--gold-glow);
+    z-index: 1000; transition: 0.3s;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
 }
 
 async function updateCartCount() {

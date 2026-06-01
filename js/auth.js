@@ -1,4 +1,30 @@
 const API_URL = "http://localhost:8080";
+const magicSelect = document.getElementById('reg-role');
+const selected = magicSelect.querySelector('.magic-select__selected');
+const options = magicSelect.querySelectorAll('.magic-select__option');
+const hiddenInput = document.getElementById('reg-role-value');
+
+selected.addEventListener('click', () => {
+    magicSelect.classList.toggle('open');
+});
+
+options.forEach(option => {
+    option.addEventListener('click', () => {
+        const value = option.dataset.value;
+        const text = option.textContent;
+
+        selected.textContent = text;
+        hiddenInput.value = value;
+
+        magicSelect.classList.remove('open');
+    });
+});
+
+document.addEventListener('click', (e) => {
+    if (!magicSelect.contains(e.target)) {
+        magicSelect.classList.remove('open');
+    }
+});
 
 // Если уже залогинен — сразу на главную
 if (localStorage.getItem("token")) {
@@ -14,6 +40,7 @@ function switchTab(tabName) {
     .querySelectorAll(".auth-panel")
     .forEach((p) => p.classList.remove("active"));
 
+<<<<<<< HEAD
   document
     .querySelector(`.auth-tab[data-tab="${tabName}"]`)
     .classList.add("active");
@@ -21,6 +48,11 @@ function switchTab(tabName) {
 
   clearMessage();
 }
+=======
+            document.querySelector(`.auth-tab[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`panel-${tabName}`).classList.add('active');
+        }
+>>>>>>> f9e48df67d068da4c2e6645acca74f349647bf0e
 
 document.querySelectorAll(".auth-tab").forEach((tab) => {
   tab.addEventListener("click", () => switchTab(tab.dataset.tab));
@@ -34,6 +66,7 @@ document.querySelectorAll("a[data-tab]").forEach((link) => {
   });
 });
 
+<<<<<<< HEAD
 // ─── Сообщения
 function showMessage(text, type) {
   const el = document.getElementById("auth-message");
@@ -46,6 +79,25 @@ function clearMessage() {
   el.textContent = "";
   el.className = "auth-message";
 }
+=======
+        // ─── Сообщения 
+        function showMessage(text, type = 'error') {
+            const oldToast = document.querySelector('.toast');
+            if (oldToast) {
+                oldToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = text;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+>>>>>>> f9e48df67d068da4c2e6645acca74f349647bf0e
 
 // ─── Вход
 document.getElementById("login-btn").addEventListener("click", async () => {
@@ -58,9 +110,8 @@ document.getElementById("login-btn").addEventListener("click", async () => {
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = "Входим...";
-  clearMessage();
+            btn.disabled = true;
+            btn.textContent = 'Входим...';
 
   try {
     const res = await fetch(`${API_URL}/auth/login`, {
@@ -88,6 +139,7 @@ document.getElementById("login-btn").addEventListener("click", async () => {
   }
 });
 
+<<<<<<< HEAD
 // ─── Регистрация
 document.getElementById("register-btn").addEventListener("click", async () => {
   const firstName = document.getElementById("reg-first-name").value.trim();
@@ -99,6 +151,17 @@ document.getElementById("register-btn").addEventListener("click", async () => {
     .getElementById("reg-delivery-address")
     .value.trim();
   const btn = document.getElementById("register-btn");
+=======
+        // ─── Регистрация
+        document.getElementById('register-btn').addEventListener('click', async () => {
+            const firstName = document.getElementById('reg-first-name').value.trim();
+            const surname = document.getElementById('reg-surname').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const role = document.getElementById('reg-role-value').value;
+            const deliveryAddress = document.getElementById('reg-delivery-address').value.trim();
+            const btn = document.getElementById('register-btn');
+>>>>>>> f9e48df67d068da4c2e6645acca74f349647bf0e
 
   if (
     !firstName ||
@@ -116,9 +179,14 @@ document.getElementById("register-btn").addEventListener("click", async () => {
     return;
   }
 
+<<<<<<< HEAD
   btn.disabled = true;
   btn.textContent = "Регистрируем...";
   clearMessage();
+=======
+            btn.disabled = true;
+            btn.textContent = 'Регистрируем...';
+>>>>>>> f9e48df67d068da4c2e6645acca74f349647bf0e
 
   try {
     const res = await fetch(`${API_URL}/auth/register`, {

@@ -6,7 +6,7 @@ fetch("header.html")
   .then((data) => {
     document.getElementById("header-container").innerHTML = data;
 
-    // ✅ ЛОГОТИП
+    // ОБРАБОТЧИК ДЛЯ ЛОГОТИПА
     setTimeout(function () {
       const logo = document.querySelector("#header-container .logo");
       if (logo) {
@@ -18,7 +18,7 @@ fetch("header.html")
       }
     }, 100);
 
-    // ✅ ИКОНКИ ШАПКИ
+    // ОБРАБОТЧИКИ ДЛЯ ИКОНОК ШАПКИ
     setTimeout(function () {
       // Корзина
       const cartBtn = document.querySelector(
@@ -32,7 +32,7 @@ fetch("header.html")
         cartBtn.style.cursor = "pointer";
       }
 
-      // История заказов
+      // История заказов (если есть)
       const ordersBtn = document.querySelector(
         '#header-container .icon-btn[title="История заказов"], #header-container a[title="История заказов"]',
       );
@@ -44,35 +44,14 @@ fetch("header.html")
         ordersBtn.style.cursor = "pointer";
       }
 
-      // Уведомления
-      const notificationsBtn = document.querySelector(
-        '#header-container .icon-btn[title="Уведомления"]',
-      );
-      if (notificationsBtn) {
-        notificationsBtn.addEventListener("click", function (e) {
-          e.preventDefault();
-          showToast("🔔 У вас нет новых уведомлений");
-        });
-        notificationsBtn.style.cursor = "pointer";
-      }
-
-      // 🔍 ФИЛЬТР (исправлено: теперь открывает панель, а не показывает тост)
+      // Фильтр
       const filterBtn = document.querySelector(
         '#header-container .icon-btn[title="Фильтр"]',
       );
       if (filterBtn) {
         filterBtn.addEventListener("click", function (e) {
           e.preventDefault();
-          e.stopPropagation();
-          const panel = document.getElementById("mini-filter-panel");
-          if (panel) {
-            panel.classList.toggle("open");
-          } else {
-            // Если панель ещё не создана catalog.js, можно показать подсказку
-            console.warn(
-              "mini-filter-panel не найден. Убедитесь, что catalog.js загружен.",
-            );
-          }
+          showToast("⏳ Фильтр скоро появится");
         });
         filterBtn.style.cursor = "pointer";
       }
@@ -80,57 +59,16 @@ fetch("header.html")
   })
   .catch((err) => {
     document.getElementById("header-container").innerHTML = `
-        <div class="header-content">
-            <div class="logo" id="fallbackLogo" style="cursor: pointer;">DA <span class="logo-sub">Logo</span></div>
-            <div class="search-container">
-                <input type="text" placeholder="ПОИСК..." class="search-input">
-                <span class="search-arrow">🔍</span>
+            <div class="header-content">
+                <div class="logo" id="fallbackLogo" style="cursor: pointer;">DA <span class="logo-sub">Logo</span></div>
+                <div class="search-container">
+                    <input type="text" placeholder="ПОИСК..." class="search-input">
+                    <span class="search-arrow">🔍</span>
+                </div>
+                <div class="header-icons">
+                    <button class="icon-btn" id="fallbackCart" title="Корзина">🛒</button>
+                    <button class="icon-btn" id="fallbackOrders" title="История заказов">📜</button>
+                </div>
             </div>
-            <div class="header-icons">
-                <button class="icon-btn" id="fallbackCart" title="Корзина">🛒</button>
-                <button class="icon-btn" id="fallbackOrders" title="История заказов">📜</button>
-                <button class="icon-btn" id="fallbackNotifications" title="Уведомления">🔔</button>
-            </div>
-        </div>
-    `;
-
-    const fallbackLogo = document.getElementById("fallbackLogo");
-    if (fallbackLogo)
-      fallbackLogo.addEventListener(
-        "click",
-        () => (window.location.href = "index.html"),
-      );
-
-    const fallbackCart = document.getElementById("fallbackCart");
-    if (fallbackCart)
-      fallbackCart.addEventListener(
-        "click",
-        () => (window.location.href = "cart.html"),
-      );
-
-    const fallbackOrders = document.getElementById("fallbackOrders");
-    if (fallbackOrders)
-      fallbackOrders.addEventListener(
-        "click",
-        () => (window.location.href = "orders.html"),
-      );
-
-    const fallbackNotifications = document.getElementById(
-      "fallbackNotifications",
-    );
-    if (fallbackNotifications)
-      fallbackNotifications.addEventListener("click", () =>
-        showToast("🔔 У вас нет новых уведомлений"),
-      );
+        `;
   });
-
-// Функция уведомлений
-function showToast(message) {
-  const oldToast = document.querySelector(".cart-toast");
-  if (oldToast) oldToast.remove();
-  const toast = document.createElement("div");
-  toast.className = "cart-toast";
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2000);
-}
