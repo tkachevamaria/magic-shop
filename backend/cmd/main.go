@@ -89,6 +89,7 @@ func main() {
 	r.Get("/api/products/{id}", productHandler.GetProductByID)
 
 	// Защищенные маршруты
+	//сколько живет токен
 	r.Group(func(r chi.Router) {
 		r.Use(auth.Middleware)
 
