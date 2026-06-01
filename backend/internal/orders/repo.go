@@ -22,14 +22,27 @@ func NewRepo(db *sql.DB) *Repo {
 	return &Repo{db: db}
 }
 
+// parseDate пробует несколько форматов SQLite и возвращает отформатированную строку.
+func parseDate(s string) string {
+	formats := []string{
+		"2006-01-02 15:04:05",
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05",
+		"2006-01-02",
+	}
+	for _, f := range formats {
+		if t, err := time.Parse(f, s); err == nil {
+			return t.Format("02 Jan 15:04")
+		}
+	}
+	return s // вернём как есть, чтобы хоть что-то показать
+}
+
 // getOrdersByStatus — универсальный метод для заказов/покупок
 func (r *Repo) getOrdersByStatus(ctx context.Context, userID int, statusCondition string) ([]OrderSummary, error) {
 	query := `
 		SELECT o.OrderID, o.Status, dm.Name, o.EstimatedDeliveryDate, o.ActualDeliveryDate,
-		       o.ItemID, o.DeliveryAddress,
-		       (SELECT SUM(p.Price) FROM Items i
-		        JOIN Products p ON i.ProductID = p.ProductID
-		        WHERE i.ItemID IN (SELECT value FROM json_each('["' || REPLACE(o.ItemID, ';', '","') || '"]'))) as total
+		       o.ItemID, o.DeliveryAddress
 		FROM Orders o
 		JOIN DeliveryMethods dm ON o.DeliveryMethodID = dm.DeliveryMethodID
 		WHERE o.UserID = ? AND ` + statusCondition + `
@@ -46,19 +59,15 @@ func (r *Repo) getOrdersByStatus(ctx context.Context, userID int, statusConditio
 	for rows.Next() {
 		var o OrderSummary
 		var itemIDsStr, estDateStr, actDateStr sql.NullString
-		if err := rows.Scan(&o.OrderID, &o.Status, &o.DeliveryName, &estDateStr, &actDateStr, &itemIDsStr, &o.DeliveryAddress, &o.TotalPrice); err != nil {
+		if err := rows.Scan(&o.OrderID, &o.Status, &o.DeliveryName, &estDateStr, &actDateStr, &itemIDsStr, &o.DeliveryAddress); err != nil {
 			return nil, err
 		}
 
-		if estDateStr.Valid {
-			if t, err := time.Parse("2006-01-02 15:04:05", estDateStr.String); err == nil {
-				o.EstimatedDate = t.Format("02 Jan 15:04")
-			}
+		if estDateStr.Valid && estDateStr.String != "" {
+			o.EstimatedDate = parseDate(estDateStr.String)
 		}
 		if actDateStr.Valid && actDateStr.String != "" {
-			if t, err := time.Parse("2006-01-02 15:04:05", actDateStr.String); err == nil {
-				o.ActualDate = t.Format("02 Jan 15:04")
-			}
+			o.ActualDate = parseDate(actDateStr.String)
 		}
 
 		if itemIDsStr.Valid && itemIDsStr.String != "" {
@@ -67,7 +76,8 @@ func (r *Repo) getOrdersByStatus(ctx context.Context, userID int, statusConditio
 				return nil, err
 			}
 			o.Items = items
-			o.ItemsCount = len(items)
+			o.ItemsCount = calcItemsCount(items)
+			o.TotalPrice = calcTotal(items)
 		}
 
 		orders = append(orders, o)
@@ -124,6 +134,24 @@ func (r *Repo) loadItems(ctx context.Context, itemIDsStr string) ([]OrderItemDet
 	return items, rows.Err()
 }
 
+// calcTotal считает сумму с учётом quantity каждого товара.
+func calcTotal(items []OrderItemDetail) float64 {
+	var total float64
+	for _, item := range items {
+		total += item.Price * float64(item.Quantity)
+	}
+	return total
+}
+
+// calcItemsCount считает общее количество товаров с учётом quantity.
+func calcItemsCount(items []OrderItemDetail) int {
+	var count int
+	for _, item := range items {
+		count += item.Quantity
+	}
+	return count
+}
+
 func (r *Repo) GetActiveOrders(ctx context.Context, userID int) ([]OrderSummary, error) {
 	return r.getOrdersByStatus(ctx, userID, "o.Status != 'DELIVERED'")
 }
@@ -138,14 +166,11 @@ func (r *Repo) GetOrderDetails(ctx context.Context, orderID int) (*OrderDetails,
 
 	err := r.db.QueryRowContext(ctx, `
 		SELECT o.OrderID, o.Status, dm.Name, o.EstimatedDeliveryDate, o.ActualDeliveryDate,
-		       o.ItemID, o.DeliveryAddress,
-		       (SELECT SUM(p.Price) FROM Items i
-		        JOIN Products p ON i.ProductID = p.ProductID
-		        WHERE i.ItemID IN (SELECT value FROM json_each('["' || REPLACE(o.ItemID, ';', '","') || '"]')))
+		       o.ItemID, o.DeliveryAddress
 		FROM Orders o
 		JOIN DeliveryMethods dm ON o.DeliveryMethodID = dm.DeliveryMethodID
 		WHERE o.OrderID = ?
-	`, orderID).Scan(&od.OrderID, &od.Status, &od.DeliveryName, &estDateStr, &actDateStr, &itemIDsStr, &od.DeliveryAddress, &od.TotalPrice)
+	`, orderID).Scan(&od.OrderID, &od.Status, &od.DeliveryName, &estDateStr, &actDateStr, &itemIDsStr, &od.DeliveryAddress)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -154,15 +179,11 @@ func (r *Repo) GetOrderDetails(ctx context.Context, orderID int) (*OrderDetails,
 		return nil, err
 	}
 
-	if estDateStr.Valid {
-		if t, err := time.Parse("2006-01-02 15:04:05", estDateStr.String); err == nil {
-			od.EstimatedDate = t.Format("02 Jan 15:04")
-		}
+	if estDateStr.Valid && estDateStr.String != "" {
+		od.EstimatedDate = parseDate(estDateStr.String)
 	}
 	if actDateStr.Valid && actDateStr.String != "" {
-		if t, err := time.Parse("2006-01-02 15:04:05", actDateStr.String); err == nil {
-			od.ActualDate = t.Format("02 Jan 15:04")
-		}
+		od.ActualDate = parseDate(actDateStr.String)
 	}
 
 	if itemIDsStr.Valid && itemIDsStr.String != "" {
@@ -171,7 +192,8 @@ func (r *Repo) GetOrderDetails(ctx context.Context, orderID int) (*OrderDetails,
 			return nil, err
 		}
 		od.Items = items
-		od.ItemsCount = len(items)
+		od.ItemsCount = calcItemsCount(items)
+		od.TotalPrice = calcTotal(items)
 	}
 
 	return &od, nil
