@@ -1,0 +1,49 @@
+/* main.css - глобальные стили и переменные */
+
+@font-face {
+    font-family: 'HarryPotter';
+    src: url('Harry Potter.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --gold-glow: #c9a054;
+    --gold-bright: #ffdf9e;
+    --bg-dark: #090b10;
+    --card-bg: rgba(22, 27, 38, 0.55);
+    --wb-purple: #a124db;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'HarryPotter', 'Times New Roman', 'Georgia', serif;
+    color: #ffffff;
+    background-color: #090b10;
+    background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=1920');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    letter-spacing: 0.8px;
+}
+
+.page-container {
+    max-width: 1440px;
+    margin: 50px auto;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 48px;
+}
+
+@media (max-width: 900px) {
+    .page-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}

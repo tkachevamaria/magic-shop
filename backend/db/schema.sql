@@ -8,6 +8,12 @@ CREATE TABLE IF NOT EXISTS Categories (
     CategoryName TEXT
 );
 
+CREATE TABLE IF NOT EXISTS DeliveryMethods (
+    DeliveryMethodID INTEGER PRIMARY KEY,
+    Name TEXT NOT NULL,
+    DurationDays INTEGER NOT NULL DEFAULT 1
+);
+
 CREATE TABLE IF NOT EXISTS Users (
     UserID INTEGER PRIMARY KEY,
     FirstName TEXT,
@@ -22,14 +28,13 @@ CREATE TABLE IF NOT EXISTS Products (
     ProductID INTEGER PRIMARY KEY,
     ProductName TEXT,
     Price REAL,
-    Description TEXT DEFAULT '',
-    ImageURL TEXT DEFAULT '',
     CategoryID INTEGER,
     RequiredLevel INTEGER,
-    DeliveryType TEXT,
+    DeliveryMethodID INTEGER,
     ShopID INTEGER,
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID),
-    FOREIGN KEY (ShopID) REFERENCES Shops(ShopID)
+    FOREIGN KEY (ShopID) REFERENCES Shops(ShopID),
+    FOREIGN KEY (DeliveryMethodID) REFERENCES DeliveryMethods(DeliveryMethodID)
 );
 
 CREATE TABLE IF NOT EXISTS Items (
@@ -63,7 +68,9 @@ CREATE TABLE IF NOT EXISTS Orders (
     ItemID TEXT,
     OrderDate DATETIME DEFAULT (datetime('now')),
     Status TEXT DEFAULT 'PENDING',
-    DeliveryType TEXT,
+    DeliveryMethodID INTEGER,
+    EstimatedDeliveryDate DATETIME,
     DeliveryAddress TEXT,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (DeliveryMethodID) REFERENCES DeliveryMethods(DeliveryMethodID)
 );

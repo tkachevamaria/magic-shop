@@ -1,0 +1,25 @@
+package orders
+
+type OrderSummary struct {
+	OrderID         int    `json:"id"`
+	Status          string `json:"status"`
+	DeliveryName    string `json:"delivery_name"`
+	EstimatedDate   string `json:"estimated_date"`
+	ItemsCount      int    `json:"items_count"`
+	DeliveryAddress string `json:"delivery_address"`
+}
+
+type OrderItemDetail struct {
+	ProductID int     `json:"product_id"`
+	Name      string  `json:"name"`
+	Price     float64 `json:"price"`
+	ImageURL  string  `json:"image_url"`
+	Quantity  int     `json:"quantity"`
+	Color     string  `json:"color"`
+	Size      string  `json:"size"`
+}
+
+type OrderDetails struct {
+	OrderSummary
+	Items []OrderItemDetail `json:"items"`
+}
