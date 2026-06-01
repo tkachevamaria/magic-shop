@@ -1,0 +1,162 @@
+/* mini-filter.css */
+.mini-filter-panel {
+  display: none;
+  position: fixed;
+  top: 85px; /* Отступ под шапку */
+  right: 20px;
+  width: 340px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: rgba(14, 18, 30, 0.96);
+  backdrop-filter: blur(16px);
+  border: 2px solid var(--gold-glow);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-glow) transparent;
+}
+
+/* Кастомный скролл для Chrome/Safari */
+.mini-filter-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.mini-filter-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mini-filter-panel::-webkit-scrollbar-thumb {
+  background: var(--gold-glow);
+  border-radius: 3px;
+}
+
+.mini-filter-panel.open {
+  display: block;
+  animation: mf-slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes mf-slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Секции */
+.mini-filter-section {
+  margin-bottom: 18px;
+}
+.mini-filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.mf-label {
+  font-size: 16px;
+  color: var(--gold-bright);
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  text-shadow: 0 0 4px var(--gold-glow);
+  letter-spacing: 0.5px;
+}
+
+.mf-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Кнопки размеров */
+.mf-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 160, 84, 0.4);
+  background: rgba(20, 24, 33, 0.6);
+  color: #e2e8f0;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+.mf-btn:hover {
+  border-color: var(--gold-glow);
+  background: rgba(201, 160, 84, 0.15);
+}
+.mf-btn.active {
+  background: var(--gold-glow);
+  color: #0f0b1c;
+  border-color: #fff;
+  box-shadow: 0 0 8px var(--gold-bright);
+}
+
+/* Кружочки цветов */
+.mf-color {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  padding: 0;
+  border: 2px solid var(--gold-glow);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mf-color:hover {
+  transform: scale(1.15);
+}
+.mf-color.active {
+  border-color: #fff;
+  transform: scale(1.2);
+  box-shadow: 0 0 8px var(--gold-bright);
+}
+
+/* Доставка */
+.mf-delivery {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.mf-delivery .d-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Кнопка сброса */
+#mf-clear {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+#mf-clear:hover {
+  background: #7f1d1d;
+  color: #fff;
+  border-color: #f87171;
+}
+
+/* Активное состояние иконки фильтра в шапке */
+.filter-icon-active {
+  color: var(--gold-bright) !important;
+  text-shadow: 0 0 10px var(--gold-glow);
+  filter: drop-shadow(0 0 5px var(--gold-glow));
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 480px) {
+  .mini-filter-panel {
+    width: calc(100% - 24px);
+    right: 12px;
+    top: 75px;
+  }
+}

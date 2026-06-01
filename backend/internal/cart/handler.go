@@ -60,8 +60,19 @@ func (h *Handler) IncrementItem(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
+	// Замените блок обработки ErrInsufficientStock на:
 	if errors.Is(err, ErrInsufficientStock) {
-		http.Error(w, err.Error(), http.StatusConflict)
+		writeJSON(w, http.StatusConflict, map[string]string{
+			"error":   "insufficient_stock",
+			"message": "Недостаточно товара на складе или лимит корзины достигнут",
+		})
+		return
+	}
+	if errors.Is(err, ErrAccessDenied) {
+		writeJSON(w, http.StatusForbidden, map[string]string{
+			"error":   "access_denied",
+			"message": "Требуется более высокий уровень доступа",
+		})
 		return
 	}
 	if err != nil {

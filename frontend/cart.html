@@ -1,31 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PotterShop — Корзина</title>
     <script src="../js/auth-guard.js"></script>
-    <link rel="stylesheet" href="../styles/main.css">
-    <link rel="stylesheet" href="../styles/header.css">
-    <link rel="stylesheet" href="../styles/cart.css">
-    <link rel="stylesheet" href="../styles/components.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../styles/main.css" />
+    <link rel="stylesheet" href="../styles/header.css" />
+    <link rel="stylesheet" href="../styles/cart.css" />
+    <link rel="stylesheet" href="../styles/components.css" />
+  </head>
+  <body>
     <div class="stars-overlay"></div>
     <header class="main-header" id="header-container"></header>
 
     <div class="cart-container">
-        <div id="cart-content">
-            <div style="text-align: center; padding: 100px; font-size: 28px;">Загрузка...</div>
+      <div id="cart-content">
+        <div style="text-align: center; padding: 100px; font-size: 28px">
+          Загрузка...
         </div>
+      </div>
     </div>
 
     <script src="../js/loadHeader.js"></script>
     <script src="../js/cart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            await renderCart();
-        });
+      document.addEventListener("DOMContentLoaded", async () => {
+        await renderCart();
+      });
     </script>
-</body>
+  </body>
 </html>
