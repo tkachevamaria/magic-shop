@@ -39,10 +39,22 @@
 }
 
 .product-title {
-  font-size: 42px;
+  font-size: 47px;
   color: var(--gold-bright);
   margin-bottom: 12px;
   line-height: 1.2;
+}
+
+.product-required-level {
+    margin-top: 10px;
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(201, 160, 84, 0.12);
+    border: 1px solid var(--gold-glow);
+    color: var(--gold-bright);
+    font-size: 20px;
+    backdrop-filter: blur(6px);
 }
 
 /* Доставка + Цена в одной строке */
@@ -50,7 +62,7 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 0px;
   flex-wrap: wrap;
 }
 
