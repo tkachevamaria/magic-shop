@@ -72,11 +72,6 @@ func (h *Handler) GetOrderDetails(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, details)
 }
 
-// CreateOrder godoc
-// POST /api/orders
-// Тело запроса не нужно — всё берётся из профиля пользователя и товаров в корзине.
-// Товары группируются по методу доставки, создаётся отдельный заказ на каждую группу.
-// Ответ: { "orders": [{ "order_id": 1, "delivery_name": "СДЭК", "estimated_date": "03 Jun 14:00" }] }
 func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(auth.CtxUserID).(int)
 	if !ok {
