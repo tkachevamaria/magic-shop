@@ -126,6 +126,11 @@ func (h *ProductHandler) SearchProducts(w http.ResponseWriter, r *http.Request) 
 	if sizeStr := q.Get("size"); sizeStr != "" {
 		filter.Size = &sizeStr
 	}
+	if dmStr := q.Get("delivery"); dmStr != "" {
+		if id, err := strconv.Atoi(dmStr); err == nil {
+			filter.DeliveryMethodID = &id
+		}
+	}
 
 	if p := q.Get("page"); p != "" {
 		if v, err := strconv.Atoi(p); err == nil && v > 0 {

@@ -4,6 +4,7 @@ type CartItem struct {
 	CartItemID  int     `json:"cart_item_id"`
 	ItemID      int     `json:"item_id"`
 	ProductName string  `json:"product_name"`
+	ImageURL    string  `json:"image_url"`
 	Color       string  `json:"color"`
 	Size        string  `json:"size"`
 	Price       float64 `json:"price"`
