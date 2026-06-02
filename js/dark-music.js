@@ -6,7 +6,7 @@
   const MUSIC_VOLUME = 0.5;
 
   let musicPlayer = null;
-  let musicStarted = false;
+  let isMusicPlaying = false;
 
   // Инициализация плеера (без воспроизведения)
   function initPlayer() {
@@ -43,7 +43,7 @@
 
     // Запускаем
     musicPlayer.play().catch((e) => {
-      console.log("🎵 Не удалось запустить музыку автоматически");
+      console.log("🎵 Не удалось запустить музыку автоматически", e);
     });
   }
 
