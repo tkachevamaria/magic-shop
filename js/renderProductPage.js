@@ -79,11 +79,15 @@
           </div>
         </div>
 
-        ${product.required_level ? `
+        ${
+          product.required_level
+            ? `
           <div class="product-required-level">
             Требуемый уровень доступа: ${product.required_level}
           </div>
-        ` : ""}
+        `
+            : ""
+        }
 
         <div class="product-description">${product.description || "Описание отсутствует"}</div>
 
@@ -295,6 +299,20 @@
       showToast("Выберите цвет и размер");
       return;
     }
+
+    // 🔮 ПРОВЕРКА НА ТЁМНЫЙ ТОВАР
+    const productId = new URLSearchParams(window.location.search).get("id");
+    if (window.checkDarkProductAccess) {
+      try {
+        await window.checkDarkProductAccess(productId);
+      } catch (error) {
+        if (error.blocked) {
+          showDarkBlockModal(error.message);
+          return;
+        }
+      }
+    }
+
     try {
       const response = await fetch(
         `${API_URL}/cart/${productState.currentItemId}`,
@@ -306,7 +324,6 @@
 
       if (response.status === 401) return (window.location.href = "/auth.html");
 
-      // ✅ Показываем реальное сообщение от бэкенда
       if (response.status === 409) {
         const errData = await response.json().catch(() => ({}));
         return showToast(
@@ -326,6 +343,39 @@
       console.error(err);
       showToast("Не удалось добавить в корзину");
     }
+  }
+
+  // Добавьте эту функцию для красивого модального окна
+  function showDarkBlockModal(message) {
+    const modal = document.createElement("div");
+    modal.className = "modal-overlay";
+    modal.innerHTML = `
+    <div class="modal-container" style="text-align: center; max-width: 400px;">
+      <div style="font-size: 48px; margin-bottom: 10px;">🌑</div>
+      <h3>Тёмный товар</h3>
+      <p style="margin: 15px 0;">${message}</p>
+      <p style="color: #d8b4fe; font-size: 14px;">🔮 Нажмите 6 раз на свой уровень доступа в боковом меню</p>
+      <div class="modal-buttons" style="justify-content: center;">
+        <button class="modal-btn modal-btn-confirm" id="darkModalCloseBtn">Понял</button>
+      </div>
+    </div>
+  `;
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add("active"), 10);
+
+    document
+      .getElementById("darkModalCloseBtn")
+      .addEventListener("click", () => {
+        modal.classList.remove("active");
+        setTimeout(() => modal.remove(), 300);
+      });
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("active");
+        setTimeout(() => modal.remove(), 300);
+      }
+    });
   }
 
   function showToast(message) {

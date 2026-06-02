@@ -1,0 +1,447 @@
+/* dark-mode.css - полная версия с туманом и медленной пульсацией */
+
+/* Сброс стандартных стилей кнопки, чтобы она выглядела как обычный бейдж */
+button.level-badge {
+  background: rgba(201, 160, 84, 0.2);
+  border: 1px solid var(--gold-glow);
+  border-radius: 40px;
+  padding: 4px 12px;
+  font-size: 22px;
+  color: var(--gold-glow);
+  font-family: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+
+  /* Скрываем, что это кнопка */
+  cursor: default !important;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+
+  transition: all 0.4s ease;
+}
+
+/* Убираем стандартные эффекты нажатия и фокуса у кнопки */
+button.level-badge:focus,
+button.level-badge:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button.level-badge:active {
+  transform: none !important;
+  background: rgba(201, 160, 84, 0.2) !important;
+  scale: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Дополнительная защита от любых эффектов */
+button.level-badge {
+  cursor: pointer !important; /* Меняем на pointer, чтобы пользователь знал, что кликабельно */
+}
+
+/* Стиль ПОСЛЕ активации тёмного режима */
+button.level-badge.dark-activated {
+  background: linear-gradient(135deg, #2d1b4e, #1a1a2e) !important;
+  border-color: #c084fc !important;
+  color: #d8b4fe !important;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+  animation: darkBadgeGlow 0.5s ease;
+}
+
+/* Стиль ссылки на тёмную категорию в меню */
+.filter-link.dark-category {
+  color: #d8b4fe;
+  background: rgba(45, 27, 78, 0.6);
+  border: 1px solid #9333ea;
+  border-radius: 8px;
+  margin-top: 8px;
+  text-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.filter-link.dark-category:hover {
+  background: rgba(147, 51, 234, 0.2);
+  box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
+  transform: translateX(5px);
+}
+
+.filter-link.dark-category.active {
+  background: #9333ea;
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.6);
+}
+
+/* 🌑 МЕДЛЕННАЯ ПУЛЬСАЦИЯ ПО ПЕРИМЕТРУ (основной эффект) 🌑 */
+.purple-pulse-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.purple-pulse-overlay.active {
+  animation: slowPerimeterPulse 2.5s ease-out forwards;
+}
+
+@keyframes slowPerimeterPulse {
+  0% {
+    box-shadow:
+      inset 0 0 0 0 rgba(147, 51, 234, 0),
+      inset 0 0 0 0 rgba(168, 85, 247, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  40% {
+    box-shadow:
+      inset 0 0 0 30px rgba(147, 51, 234, 0.5),
+      inset 0 0 80px 40px rgba(168, 85, 247, 0.3);
+    opacity: 1;
+  }
+  70% {
+    box-shadow:
+      inset 0 0 0 10px rgba(147, 51, 234, 0.7),
+      inset 0 0 120px 60px rgba(139, 92, 246, 0.4);
+    opacity: 0.9;
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 0 rgba(147, 51, 234, 0),
+      inset 0 0 150px 80px rgba(139, 92, 246, 0);
+    opacity: 0;
+  }
+}
+
+/* 🌫 ЭФФЕКТ ТУМАНА 🌫 */
+.mist-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(88, 28, 135, 0) 0%,
+    rgba(88, 28, 135, 0.2) 50%,
+    rgba(49, 46, 129, 0.4) 100%
+  );
+  opacity: 0;
+  animation: mistRise 3s ease-out forwards;
+}
+
+@keyframes mistRise {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  30% {
+    opacity: 0.6;
+    backdrop-filter: blur(2px);
+  }
+  60% {
+    opacity: 0.3;
+    backdrop-filter: blur(1px);
+  }
+  100% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* 🌑 ЗАТЕМНЕНИЕ ЭКРАНА (для атмосферы) 🌑 */
+.darkness-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  z-index: 9997;
+  animation: darknessDescend 1.8s ease-out forwards;
+}
+
+@keyframes darknessDescend {
+  0% {
+    background: rgba(0, 0, 0, 0);
+  }
+  25% {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    background: rgba(0, 0, 0, 0.15);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0);
+  }
+}
+
+/* ✨ ЗЛОВЕЩИЙ ТОСТ С МЕРЦАНИЕМ ✨ */
+.epic-toast {
+  animation:
+    slideIn 0.3s ease,
+    ominousGlow 3s ease-in-out infinite !important;
+}
+
+@keyframes ominousGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
+    border-color: #6b21a5;
+  }
+  30% {
+    box-shadow:
+      0 0 35px rgba(168, 85, 247, 0.8),
+      0 0 50px rgba(139, 92, 246, 0.4);
+    border-color: #a855f7;
+  }
+  60% {
+    box-shadow:
+      0 0 20px rgba(147, 51, 234, 0.5),
+      0 0 30px rgba(139, 92, 246, 0.2);
+    border-color: #7e22ce;
+  }
+  80% {
+    box-shadow:
+      0 0 40px rgba(168, 85, 247, 0.7),
+      0 0 55px rgba(139, 92, 246, 0.5);
+    border-color: #c084fc;
+  }
+}
+
+/* Эпический тост — содержимое */
+.epic-toast .epic-toast-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.epic-icon {
+  font-size: 28px;
+  animation: iconSpin 0.5s ease;
+}
+
+@keyframes iconSpin {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+.epic-text {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.epic-sub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* 💜 ЭФФЕКТ РЯБИ ПРИ КЛИКЕ 💜 */
+.ripple-effect {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(147, 51, 234, 0.8) 0%,
+    rgba(168, 85, 247, 0) 70%
+  );
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleExpand 0.6s ease-out forwards;
+  z-index: 10000;
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(15);
+    opacity: 0;
+  }
+}
+
+/* 💫 АНИМАЦИЯ ДЛЯ КНОПКИ УРОВНЯ ПРИ АКТИВАЦИИ 💫 */
+@keyframes darkBadgeGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(168, 85, 247, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+  }
+}
+
+/* 📱 АНИМАЦИЯ ПОЯВЛЕНИЯ ТОСТА */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Клубы дыма */
+
+/* 🌫 КЛУБЫ ДЫМА С АНИМАЦИЕЙ 🌫 */
+.smoke-clouds {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  overflow: hidden;
+}
+
+.smoke {
+  position: absolute;
+  background: radial-gradient(
+    circle,
+    rgba(88, 28, 135, 0.4) 0%,
+    rgba(49, 46, 129, 0.2) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(20px);
+  opacity: 0;
+  animation: smokeRise 4s ease-out forwards;
+}
+
+/* Разные размеры и позиции клубов */
+.smoke-1 {
+  width: 250px;
+  height: 250px;
+  bottom: -100px;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.smoke-2 {
+  width: 350px;
+  height: 350px;
+  bottom: -150px;
+  right: 5%;
+  animation-delay: 0.3s;
+}
+
+.smoke-3 {
+  width: 200px;
+  height: 200px;
+  bottom: -50px;
+  left: 30%;
+  animation-delay: 0.6s;
+}
+
+.smoke-4 {
+  width: 300px;
+  height: 300px;
+  bottom: -120px;
+  right: 25%;
+  animation-delay: 0.9s;
+}
+
+.smoke-5 {
+  width: 180px;
+  height: 180px;
+  bottom: -80px;
+  left: 60%;
+  animation-delay: 1.2s;
+}
+
+.smoke-6 {
+  width: 280px;
+  height: 280px;
+  bottom: -200px;
+  left: 45%;
+  animation-delay: 0.4s;
+}
+
+.smoke-7 {
+  width: 220px;
+  height: 220px;
+  bottom: -60px;
+  right: 45%;
+  animation-delay: 0.8s;
+}
+
+@keyframes smokeRise {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-200px) scale(1.3);
+  }
+  80% {
+    opacity: 0.3;
+    transform: translateY(-400px) scale(1.6);
+  }
+  100% {
+    transform: translateY(-600px) scale(2);
+    opacity: 0;
+  }
+}
+
+/* Вариант с плавающими клубами (медленнее, более зловеще) */
+@keyframes smokeFloat {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.8);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.6;
+  }
+  40% {
+    opacity: 0.4;
+    transform: translateY(-150px) translateX(30px) scale(1.2);
+  }
+  70% {
+    opacity: 0.2;
+    transform: translateY(-350px) translateX(-20px) scale(1.5);
+  }
+  100% {
+    transform: translateY(-500px) translateX(50px) scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Применяем плавающую анимацию к некоторым клубам */
+.smoke-1,
+.smoke-4,
+.smoke-6 {
+  animation: smokeFloat 5s ease-out forwards;
+}

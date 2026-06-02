@@ -13,8 +13,8 @@
     miniFilters: { color: null, size: null, deliveryId: null },
     availableFilters: { colors: [], sizes: [], deliveryMethods: [] },
     page: 1,
-    hasMore: true,      // есть ли ещё страницы
-    isLoading: false,   // идёт ли запрос сейчас
+    hasMore: true, // есть ли ещё страницы
+    isLoading: false, // идёт ли запрос сейчас
   };
 
   // ─── Цвета ────────────────────────────────────────────────────────────────
@@ -24,7 +24,7 @@
     Синий: "#1e3a8a",
     Белый: "#f8fafc",
     Серебристый: "#c0c0c0",
-    Серебряный: "#c0c0c0",   // дубль → один цвет
+    Серебряный: "#c0c0c0", // дубль → один цвет
     Прозрачный: "rgba(255,255,255,0.15)",
     Матовый: "#4b5563",
     Коричневый: "#8B4513",
@@ -32,7 +32,7 @@
     Фиолетовый: "#9333ea",
     "Светло-коричневый": "#D2B48C",
     Золотистый: "#FFD700",
-    Золотой: "#FFD700",      // дубль → один цвет
+    Золотой: "#FFD700", // дубль → один цвет
     Тис: "#5C4033",
     Красный: "#ef4444",
     Оранжевый: "#f97316",
@@ -86,7 +86,7 @@
           loadProducts({ append: true });
         }
       },
-      { rootMargin: "200px" } // начинаем подгрузку за 200px до конца
+      { rootMargin: "200px" }, // начинаем подгрузку за 200px до конца
     );
 
     scrollObserver.observe(sentinel);
@@ -147,7 +147,12 @@
     fetch(`${API}/api/filters`)
       .then((res) => res.json())
       .then((data) => {
-        renderFilterGroup(".categories-menu", data.categories, "category", "data-category-id");
+        renderFilterGroup(
+          ".categories-menu",
+          data.categories,
+          "category",
+          "data-category-id",
+        );
 
         const dropdown = document.querySelector(".shops-dropdown");
         if (dropdown) {
@@ -160,10 +165,46 @@
           // Убираем двойную привязку: вызываем только раз
           renderFilterGroup(".shops-list", data.shops, "shop", "data-shop-id");
         }
+
+        // 👇 ДОБАВИТЬ ЭТО: если режим включен, рисуем тёмную категорию ПОСЛЕ обычных
+        if (sessionStorage.getItem("darkModeUnlocked") === "true") {
+          renderDarkCategory();
+        }
       })
-      .catch((err) => console.error("❌ Ошибка загрузки фильтров:", err));
+      .catch((err) => console.error("❌ Ошибка загрузки фильтров: ", err));
   }
 
+  // 👇 ДОБАВИТЬ ЭТУ ФУНКЦИЮ (например, сразу после loadFilters)
+  function renderDarkCategory() {
+    const container = document.querySelector(".categories-menu");
+    if (!container) return;
+    if (document.querySelector(".filter-link.dark-category")) return; // Уже есть
+
+    const darkLink = document.createElement("div");
+    darkLink.className = "filter-link category dark-category";
+    darkLink.setAttribute("data-category-id", "dark");
+    darkLink.innerHTML = "🌑 Тёмные товары";
+
+    container.appendChild(darkLink);
+
+    // Анимация плавного появления
+    darkLink.style.opacity = "0";
+    darkLink.style.transform = "translateY(-10px)";
+    requestAnimationFrame(() => {
+      darkLink.style.transition = "all 0.5s ease";
+      darkLink.style.opacity = "1";
+      darkLink.style.transform = "translateY(0)";
+    });
+
+    // Обработка клика
+    darkLink.addEventListener("click", (e) => {
+      e.stopPropagation(); // Защита от всплытия
+      e.preventDefault();
+      if (typeof window.applyDarkCategoryFilter === "function") {
+        window.applyDarkCategoryFilter();
+      }
+    });
+  }
   function renderFilterGroup(containerSelector, items, type, attr) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
@@ -171,7 +212,7 @@
     container.innerHTML = items
       .map(
         (item) =>
-          `<div class="filter-link ${type}" ${attr}="${item.id}">${type === "category" ? "⚡ " : "🏪 "}${item.name}</div>`
+          `<div class="filter-link ${type}" ${attr}="${item.id}">${type === "category" ? "⚡ " : "🏪 "}${item.name}</div>`,
       )
       .join("");
 
@@ -198,12 +239,26 @@
   }
 
   function updateActiveUI() {
-    document.querySelectorAll(".filter-link.category").forEach((el) =>
-      el.classList.toggle("active", parseInt(el.dataset.categoryId) === state.category)
-    );
-    document.querySelectorAll(".filter-link.shop").forEach((el) =>
-      el.classList.toggle("active", parseInt(el.dataset.shopId) === state.shop)
-    );
+    document
+      .querySelectorAll(".filter-link.category")
+      .forEach((el) =>
+        el.classList.toggle(
+          "active",
+          parseInt(el.dataset.categoryId) === state.category,
+        ),
+      );
+    document
+      .querySelectorAll(".filter-link.shop")
+      .forEach((el) =>
+        el.classList.toggle(
+          "active",
+          parseInt(el.dataset.shopId) === state.shop,
+        ),
+      );
+
+    document.querySelectorAll(".filter-link.dark-category").forEach((el) => {
+      el.classList.toggle("active", state.category === "dark");
+    });
   }
 
   // ─── ЗАГРУЗКА ТОВАРОВ ─────────────────────────────────────────────────────
@@ -220,23 +275,29 @@
     if (!grid) return;
 
     if (!append) {
-      grid.innerHTML = '<p style="text-align:center; padding:40px;">🔍 Ищем волшебные товары...</p>';
+      grid.innerHTML =
+        '<p style="text-align:center; padding:40px;">🔍 Ищем волшебные товары...</p>';
     } else {
       setLoadingSpinner(true);
     }
 
     const params = new URLSearchParams({ page: state.page, limit: LIMIT });
-    if (state.category)              params.set("category", state.category);
-    if (state.shop)                  params.set("shop", state.shop);
-    if (state.searchQuery)           params.set("q", state.searchQuery);
-    if (state.miniFilters.color)     params.set("color", state.miniFilters.color);
-    if (state.miniFilters.size)      params.set("size", state.miniFilters.size);
-    if (state.miniFilters.deliveryId) params.set("delivery", state.miniFilters.deliveryId);
-    if (state.sort)                  params.set("sort", state.sort);
+    if (state.category) params.set("category", state.category);
+    if (state.shop) params.set("shop", state.shop);
+    if (state.searchQuery) params.set("q", state.searchQuery);
+    if (state.miniFilters.color) params.set("color", state.miniFilters.color);
+    if (state.miniFilters.size) params.set("size", state.miniFilters.size);
+    if (state.miniFilters.deliveryId)
+      params.set("delivery", state.miniFilters.deliveryId);
+    if (state.sort) params.set("sort", state.sort);
 
-    const endpoint = state.searchQuery
-      ? `${API}/api/products/search`
-      : `${API}/api/products`;
+    let endpoint = `${API}/api/products`;
+
+    if (state.category === "dark") {
+      endpoint = `${API}/api/products/dark`;
+    } else if (state.searchQuery) {
+      endpoint = `${API}/api/products/search`;
+    }
 
     fetch(`${endpoint}?${params.toString()}`)
       .then((res) => {
@@ -290,7 +351,8 @@
         // Если товары кончились — показываем сообщение
         if (!state.hasMore) {
           const endMsg = document.createElement("p");
-          endMsg.style.cssText = "text-align:center; padding:20px; opacity:0.5;";
+          endMsg.style.cssText =
+            "text-align:center; padding:20px; opacity:0.5;";
           endMsg.textContent = "✨ Все товары загружены";
           grid.appendChild(endMsg);
         }
@@ -302,7 +364,8 @@
         setLoadingSpinner(false);
         state.isLoading = false;
         if (!append) {
-          grid.innerHTML = '<p style="text-align:center; padding:40px; color:#e74c3c;">⚠️ Ошибка загрузки товаров</p>';
+          grid.innerHTML =
+            '<p style="text-align:center; padding:40px; color:#e74c3c;">⚠️ Ошибка загрузки товаров</p>';
         } else {
           showToast("⚠️ Не удалось загрузить следующую страницу");
         }
@@ -326,7 +389,10 @@
     const { colors, sizes, deliveryMethods } = state.availableFilters;
     if (!colors?.length && !sizes?.length && !deliveryMethods?.length) return;
 
-    const hasActive = state.miniFilters.color || state.miniFilters.size || state.miniFilters.deliveryId;
+    const hasActive =
+      state.miniFilters.color ||
+      state.miniFilters.size ||
+      state.miniFilters.deliveryId;
     let html = "";
 
     if (colors?.length) {
@@ -365,17 +431,27 @@
 
     panel.innerHTML = html;
 
-    panel.querySelectorAll(".mf-color").forEach((btn) =>
-      btn.addEventListener("click", () => toggleMiniFilterValue("color", btn.dataset.value))
-    );
-    panel.querySelectorAll(".mf-btn[data-value]").forEach((btn) =>
-      btn.addEventListener("click", () => toggleMiniFilterValue("size", btn.dataset.value))
-    );
-    panel.querySelectorAll(".mf-btn[data-id]").forEach((btn) =>
-      btn.addEventListener("click", () =>
-        toggleMiniFilterValue("deliveryId", parseInt(btn.dataset.id))
-      )
-    );
+    panel
+      .querySelectorAll(".mf-color")
+      .forEach((btn) =>
+        btn.addEventListener("click", () =>
+          toggleMiniFilterValue("color", btn.dataset.value),
+        ),
+      );
+    panel
+      .querySelectorAll(".mf-btn[data-value]")
+      .forEach((btn) =>
+        btn.addEventListener("click", () =>
+          toggleMiniFilterValue("size", btn.dataset.value),
+        ),
+      );
+    panel
+      .querySelectorAll(".mf-btn[data-id]")
+      .forEach((btn) =>
+        btn.addEventListener("click", () =>
+          toggleMiniFilterValue("deliveryId", parseInt(btn.dataset.id)),
+        ),
+      );
 
     panel.querySelector("#mf-clear")?.addEventListener("click", () => {
       resetMiniFilters();
@@ -470,4 +546,14 @@
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), TOAST_DURATION);
   }
+
+  window.applyDarkCategoryFilter = function () {
+    state.category = state.category === "dark" ? null : "dark";
+    state.shop = null; // Сбрасываем магазин при выборе тёмных товаров
+    state.page = 1;
+    resetMiniFilters();
+    updateFilterIconState();
+    updateActiveUI();
+    loadProducts();
+  };
 })();
