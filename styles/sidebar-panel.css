@@ -54,27 +54,27 @@
 }
 
 .user-name {
-    font-size: 24px;
+    font-size: 34px;
     color: var(--gold-bright);
     margin-bottom: 8px;
 }
 
-.user-level {
-    font-size: 16px;
+/*.user-level {
+    font-size: 22px;
     color: #a0a0a0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-}
+}*/
 
 .level-badge {
     background: rgba(201, 160, 84, 0.2);
     border: 1px solid var(--gold-glow);
     border-radius: 40px;
     padding: 4px 12px;
-    font-size: 14px;
-    color: var(--gold-bright);
+    font-size: 22px;
+    color: var(--gold-glow);
 }
 
 /* Навигационное меню */
@@ -84,18 +84,18 @@
     gap: 8px;
 }
 
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px 15px;
-    border-radius: 15px;
-    color: #e2e8f0;
-    text-decoration: none;
-    font-size: 20px;
-    transition: all 0.2s;
-    cursor: pointer;
-}
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 15px;
+        border-radius: 15px;    
+        color: #e2e8f0;
+        text-decoration: none;
+        font-size: 22px;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
 
 .nav-item:hover {
     background: rgba(201, 160, 84, 0.15);
@@ -109,11 +109,6 @@
     color: var(--gold-bright);
 }
 
-.nav-icon {
-    font-size: 24px;
-    width: 32px;
-    text-align: center;
-}
 
 .nav-text {
     flex: 1;
@@ -139,7 +134,7 @@
 }
 
 .delivery-address-card .label {
-    font-size: 14px;
+    font-size: 18px;
     color: #a0a0a0;
     margin-bottom: 8px;
     display: flex;
@@ -148,7 +143,7 @@
 }
 
 .delivery-address-card .address {
-    font-size: 16px;
+    font-size: 20px;
     color: #fff;
     word-break: break-word;
 }
@@ -157,7 +152,7 @@
     background: none;
     border: none;
     color: var(--gold-glow);
-    font-size: 14px;
+    font-size: 18px;
     cursor: pointer;
     margin-top: 10px;
     font-family: 'HarryPotter', sans-serif;
@@ -169,7 +164,7 @@
 
 /* Кнопка выхода */
 .logout-btn {
-    margin-top: 30px;
+    margin-top: 15px;
     background: rgba(231, 76, 60, 0.15);
     border: 1px solid #e74c3c;
     color: #e74c3c;

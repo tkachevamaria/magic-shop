@@ -107,7 +107,6 @@ function renderSidebarPanel() {
             <div class="user-profile">
                 <div class="user-name">${userName}</div>
                 <div class="user-level">
-                    <span>🎓 Уровень ${userLevel}</span>
                     <span class="level-badge">${userLevelName}</span>
                 </div>
             </div>
@@ -125,7 +124,7 @@ function renderSidebarPanel() {
             
             <div class="delivery-address-card" id="addressCard">
                 <div class="label">
-                    <span>🦉</span> Адрес доставки по умолчанию:
+                    Адрес доставки:
                 </div>
                 <div class="address" id="userAddress">${userAddress}</div>
                 <button class="edit-address" id="editAddressBtn">✎ Изменить</button>
@@ -133,7 +132,6 @@ function renderSidebarPanel() {
             
             <nav class="sidebar-nav">
                 <div class="nav-item logout-btn" data-page="logout">
-                    <span class="nav-icon">🚪</span>
                     <span class="nav-text">Выйти</span>
                 </div>
             </nav>
