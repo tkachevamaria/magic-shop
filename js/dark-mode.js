@@ -169,6 +169,7 @@
     });
   }
 
+  // Проверка корзины — фильтруем по category_id
   async function checkDarkItemsInCart(cartItems) {
     const darkItems = cartItems.filter(item => item.is_dark === true);
     if (darkItems.length > 0 && !isDarkModeActive()) {
@@ -186,6 +187,8 @@
   window.isDarkModeActive       = isDarkModeActive;
   window.getDarkModeTimeLeft    = getDarkModeTimeLeft;
   window.checkDarkProductAccess = checkDarkProductAccess;
+  window.checkDarkItemsInCart = checkDarkItemsInCart;
+  window.DARK_CATEGORY_ID = DARK_CATEGORY_ID;
   window.checkDarkItemsInCart   = checkDarkItemsInCart;
 
   // АКТИВАЦИЯ ЧЕРЕЗ 6 КЛИКОВ
