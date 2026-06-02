@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -33,8 +34,8 @@ func main() {
 	}
 	fmt.Println("DB connection OK\n")
 
-	checkProducts(db)
-	checkItems(db)
+	//createTestDeliveredOrder(db)
+	checkOrders(db)
 }
 
 func checkShops(db *sql.DB) {
@@ -290,4 +291,61 @@ func checkTimeFormat(db *sql.DB) {
 			orderID, status, estDate, actDate)
 	}
 	fmt.Println("-------------------")
+}
+
+func createTestDeliveredOrder(db *sql.DB) {
+	fmt.Println("=== Создание тестового заказа для проверки воркера ===")
+
+	// 1. Создаём тестовый заказ с датой доставки в прошлом
+	fmt.Println("Создаю тестовый заказ с датой доставки час назад...")
+
+	result, err := db.Exec(`
+		INSERT INTO Orders (
+			UserID, 
+			ItemID,
+			Status, 
+			EstimatedDeliveryDate,
+			DeliveryAddress
+		) VALUES (
+			1,
+			'1,2,3',
+			'SHIPPED',
+			datetime('now', '-1 hour'),
+			'Test Address'
+		)
+	`)
+	if err != nil {
+		log.Printf("  ошибка при создании заказа: %v", err)
+		return
+	}
+
+	orderID, _ := result.LastInsertId()
+	fmt.Printf("  ✅ Создан тестовый заказ OrderID=%d\n\n", orderID)
+
+	// 2. Проверяем статус созданного заказа
+	fmt.Println("Проверка статуса созданного заказа:")
+	rows, err := db.Query(`
+		SELECT OrderID, Status, EstimatedDeliveryDate, 
+		       COALESCE(ActualDeliveryDate, '---') as ActualDeliveryDate
+		FROM Orders 
+		WHERE Status = 'SHIPPED'
+	`)
+	if err != nil {
+		log.Printf("  ошибка при запросе: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	fmt.Printf("  %-10s %-12s %-25s %-25s\n", "OrderID", "Status", "EstimatedDeliveryDate", "ActualDeliveryDate")
+	fmt.Println("  " + strings.Repeat("-", 75))
+
+	for rows.Next() {
+		var id int
+		var status, estDelivery, actDelivery string
+		rows.Scan(&id, &status, &estDelivery, &actDelivery)
+		fmt.Printf("  %-10d %-12s %-25s %-25s\n", id, status, estDelivery, actDelivery)
+	}
+
+	fmt.Println("\n💡 Через 15 минут (или после перезапуска сервера) статус изменится на DELIVERED")
+	fmt.Println("=== Готово ===\n")
 }

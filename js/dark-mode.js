@@ -52,13 +52,17 @@
   }
 
   // ОПРЕДЕЛЯЕМ КОНТЕКСТ СТРАНИЦЫ
+<<<<<<< HEAD
 
   const _params = new URLSearchParams(window.location.search);
   const _currentId = parseInt(_params.get("id"), 10);
+=======
+  const _params        = new URLSearchParams(window.location.search);
+  const _currentId     = parseInt(_params.get("id"), 10);
+>>>>>>> 3f8336422b99643159b1b235525e03c650c3b256
   const _isProductPage = !!_currentId && DARK_PRODUCT_IDS.includes(_currentId);
 
   // ХРАНИЛИЩЕ
-
   function unlockDarkMode() {
     sessionStorage.setItem(DARK_MODE_KEY, "true");
     sessionStorage.setItem(DARK_MODE_TIMESTAMP_KEY, Date.now().toString());
@@ -100,7 +104,6 @@
   }
 
   // ГАРД — блокировка при загрузке страницы товара
-
   function runPageGuard() {
     if (!_isProductPage) return;
     if (!isDarkModeActive()) {
@@ -224,9 +227,14 @@
   }
 
   // ПУБЛИЧНОЕ API
+<<<<<<< HEAD
 
   window.isDarkModeActive = isDarkModeActive;
   window.getDarkModeTimeLeft = getDarkModeTimeLeft;
+=======
+  window.isDarkModeActive       = isDarkModeActive;
+  window.getDarkModeTimeLeft    = getDarkModeTimeLeft;
+>>>>>>> 3f8336422b99643159b1b235525e03c650c3b256
   window.checkDarkProductAccess = checkDarkProductAccess;
   window.checkDarkItemsInCart = checkDarkItemsInCart;
 
