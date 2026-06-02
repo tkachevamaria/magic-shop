@@ -105,8 +105,7 @@ document.getElementById("login-btn").addEventListener("click", async () => {
       showMessage("Добро пожаловать! ✨", "success");
       setTimeout(() => (window.location.href = "index.html"), 800);
     } else {
-      const text = await res.text();
-      showMessage(text || "Неверная почта или пароль", "error");
+      showMessage("Неверная почта или пароль", "error");
     }
   } catch (err) {
     showMessage("Не удалось соединиться с сервером", "error");
@@ -117,6 +116,11 @@ document.getElementById("login-btn").addEventListener("click", async () => {
 });
 
 // ─── Регистрация
+const registerErrorMessages = {
+  409: "Такой email уже зарегистрирован",
+  400: null, // текст придёт с сервера (невалидный пароль, роль и т.п.)
+};
+
 document.getElementById("register-btn").addEventListener("click", async () => {
   const firstName = document.getElementById("reg-first-name").value.trim();
   const surname = document.getElementById("reg-surname").value.trim();
@@ -163,20 +167,18 @@ document.getElementById("register-btn").addEventListener("click", async () => {
 
     if (res.ok) {
       showMessage("Аккаунт создан! Теперь войдите ✨", "success");
-      // Очищаем форму и переключаем на вход
       setTimeout(() => {
-        document.getElementById("reg-first-name").value = "";
-        document.getElementById("reg-surname").value = "";
-        document.getElementById("reg-email").value = "";
-        document.getElementById("reg-password").value = "";
-        document.getElementById("reg-delivery-address").value = "";
+        ["reg-first-name", "reg-surname", "reg-email", "reg-password", "reg-delivery-address"]
+          .forEach((id) => (document.getElementById(id).value = ""));
         switchTab("login");
-        // Подставляем email в форму входа
         document.getElementById("login-email").value = email;
       }, 1000);
     } else {
-      const text = await res.text();
-      showMessage(text || "Ошибка регистрации", "error");
+      const friendlyMsg =
+        registerErrorMessages[res.status] ??
+        (await res.text()) ??
+        "Ошибка регистрации";
+      showMessage(friendlyMsg, "error");
     }
   } catch (err) {
     showMessage("Не удалось соединиться с сервером", "error");

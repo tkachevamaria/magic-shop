@@ -14,6 +14,23 @@ var ErrCartEmpty = errors.New("cart is empty")
 var ErrOutOfStock = errors.New("one or more items are out of stock")
 var ErrNoDeliveryAddress = errors.New("delivery address not set in profile")
 
+// StockShortage описывает конкретный товар, которого не хватает.
+type StockShortage struct {
+	ItemID      int    `json:"item_id"`
+	ProductName string `json:"product_name"`
+	Color       string `json:"color"`
+	Size        string `json:"size"`
+	InCart      int    `json:"in_cart"`
+	InStock     int    `json:"in_stock"`
+}
+
+// OutOfStockError возвращается вместо ErrOutOfStock, когда нужны детали нехватки.
+type OutOfStockError struct {
+	Shortages []StockShortage
+}
+
+func (e *OutOfStockError) Error() string { return "insufficient stock" }
+
 type Repo struct {
 	db *sql.DB
 }
@@ -35,7 +52,7 @@ func parseDate(s string) string {
 			return t.Format("02 Jan 15:04")
 		}
 	}
-	return s // вернём как есть, чтобы хоть что-то показать
+	return s
 }
 
 // getOrdersByStatus — универсальный метод для заказов/покупок
@@ -134,7 +151,6 @@ func (r *Repo) loadItems(ctx context.Context, itemIDsStr string) ([]OrderItemDet
 	return items, rows.Err()
 }
 
-// calcTotal считает сумму с учётом quantity каждого товара.
 func calcTotal(items []OrderItemDetail) float64 {
 	var total float64
 	for _, item := range items {
@@ -143,7 +159,6 @@ func calcTotal(items []OrderItemDetail) float64 {
 	return total
 }
 
-// calcItemsCount считает общее количество товаров с учётом quantity.
 func calcItemsCount(items []OrderItemDetail) int {
 	var count int
 	for _, item := range items {
@@ -207,9 +222,6 @@ type CreatedOrderInfo struct {
 }
 
 // CreateOrderFromCart оформляет заказы из корзины пользователя.
-// Товары группируются по DeliveryMethodID продукта — на каждую группу создаётся
-// отдельный заказ. EstimatedDeliveryDate = MAX(DurationDays) в группе.
-// Адрес доставки берётся из Users.DeliveryAddress.
 func (r *Repo) CreateOrderFromCart(ctx context.Context, userID int) ([]CreatedOrderInfo, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -229,9 +241,12 @@ func (r *Repo) CreateOrderFromCart(ctx context.Context, userID int) ([]CreatedOr
 		return nil, ErrNoDeliveryAddress
 	}
 
-	// 2. Товары корзины с методом доставки и его длительностью
+	// 2. Товары корзины — теперь тянем ProductName, Color, Size для ошибки нехватки
 	type cartLine struct {
 		itemID           int
+		productName      string
+		color            string
+		size             string
 		quantity         int
 		inStock          int
 		deliveryMethodID int
@@ -240,13 +255,14 @@ func (r *Repo) CreateOrderFromCart(ctx context.Context, userID int) ([]CreatedOr
 	}
 
 	rows, err := tx.QueryContext(ctx, `
-		SELECT ci.ItemID, ci.Quantity, i.StockQuantity,
+		SELECT ci.ItemID, p.ProductName, i.Color, i.Size,
+		       ci.Quantity, i.StockQuantity,
 		       p.DeliveryMethodID, dm.DurationDays, dm.Name
 		FROM Cart c
-		JOIN CartItems ci ON c.CartID = ci.CartID
-		JOIN Items i      ON ci.ItemID = i.ItemID
-		JOIN Products p   ON i.ProductID = p.ProductID
-		JOIN DeliveryMethods dm ON p.DeliveryMethodID = dm.DeliveryMethodID
+		JOIN CartItems ci        ON c.CartID = ci.CartID
+		JOIN Items i             ON ci.ItemID = i.ItemID
+		JOIN Products p          ON i.ProductID = p.ProductID
+		JOIN DeliveryMethods dm  ON p.DeliveryMethodID = dm.DeliveryMethodID
 		WHERE c.UserID = ?
 	`, userID)
 	if err != nil {
@@ -256,8 +272,11 @@ func (r *Repo) CreateOrderFromCart(ctx context.Context, userID int) ([]CreatedOr
 	var lines []cartLine
 	for rows.Next() {
 		var l cartLine
-		if err := rows.Scan(&l.itemID, &l.quantity, &l.inStock,
-			&l.deliveryMethodID, &l.durationDays, &l.deliveryName); err != nil {
+		if err := rows.Scan(
+			&l.itemID, &l.productName, &l.color, &l.size,
+			&l.quantity, &l.inStock,
+			&l.deliveryMethodID, &l.durationDays, &l.deliveryName,
+		); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -272,11 +291,22 @@ func (r *Repo) CreateOrderFromCart(ctx context.Context, userID int) ([]CreatedOr
 		return nil, ErrCartEmpty
 	}
 
-	// 3. Проверяем наличие
+	// 3. Проверяем наличие — собираем все нехватки сразу, не останавливаясь на первой
+	var shortages []StockShortage
 	for _, l := range lines {
 		if l.inStock < l.quantity {
-			return nil, ErrOutOfStock
+			shortages = append(shortages, StockShortage{
+				ItemID:      l.itemID,
+				ProductName: l.productName,
+				Color:       l.color,
+				Size:        l.size,
+				InCart:      l.quantity,
+				InStock:     l.inStock,
+			})
 		}
+	}
+	if len(shortages) > 0 {
+		return nil, &OutOfStockError{Shortages: shortages}
 	}
 
 	// 4. Группируем по DeliveryMethodID, сохраняем порядок

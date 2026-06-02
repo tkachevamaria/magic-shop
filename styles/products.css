@@ -2,7 +2,7 @@
 
 .products-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 32px;
     align-items: start;
 }
@@ -19,6 +19,7 @@
     position: relative;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     cursor: pointer;
+    align-self: start;
 }
 
 .product-card:hover {
@@ -44,20 +45,14 @@
 }
 
 .card-image-area {
-    flex: 1;
-    min-height: 200px;          /* можно увеличить */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;    /* убираем фон */
-    padding: 0;                 /* убираем отступы */
-    overflow: hidden;           /* чтобы картинка не вылезала за рамки */
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
 }
 
 .card-image-area img {
     width: 100%;
     height: 100%;
-    object-fit: cover;          /* картинка заполнит всю область, возможно обрежется */
+    object-fit: cover;
     display: block;
 }
 
@@ -70,11 +65,14 @@
 
 .product-name {
     font-size: 28px;
-    font-weight: normal;
-    letter-spacing: 1px;
     color: #fff1dd;
-    display: block;
-    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.2;
+
+    min-height: 2.4em;
 }
 
 .product-price {

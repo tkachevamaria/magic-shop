@@ -34,7 +34,7 @@ body {
 
 .page-container {
     max-width: 1440px;
-    margin: 50px auto;
+    margin: 50px auto 20px;
     padding: 0 32px;
     display: grid;
     grid-template-columns: 280px 1fr;
