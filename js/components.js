@@ -1,4 +1,4 @@
-// components.js - общие функции
+//общие функции
 
 function showToast(message) {
     const oldToast = document.querySelector('.cart-toast');
