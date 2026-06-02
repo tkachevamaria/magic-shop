@@ -4,6 +4,7 @@
 
   const DARK_MODE_KEY = "darkModeUnlocked";
   const DARK_MODE_TIMESTAMP_KEY = "darkModeUnlockedAt";
+  const DARK_CATEGORY_ID = 666; // ← ID тёмной категории
 
   function unlockDarkMode() {
     sessionStorage.setItem(DARK_MODE_KEY, "true");
@@ -44,12 +45,14 @@
     return false;
   }
 
+  // Проверка товара по category_id
   function checkDarkProductAccess(productId) {
     return new Promise((resolve, reject) => {
       fetch(`http://localhost:8080/api/products/${productId}`)
         .then((res) => res.json())
         .then((product) => {
-          if (product.is_dark || product.category === "dark") {
+          // Проверяем category_id === 666 (тёмная категория)
+          if (product.category_id === DARK_CATEGORY_ID) {
             if (!isDarkModeActive()) {
               reject({
                 blocked: true,
@@ -68,8 +71,11 @@
     });
   }
 
+  // Проверка корзины — фильтруем по category_id
   async function checkDarkItemsInCart(cartItems) {
-    const darkItems = cartItems.filter((item) => item.is_dark === true);
+    const darkItems = cartItems.filter(
+      (item) => item.category_id === DARK_CATEGORY_ID,
+    );
     if (darkItems.length > 0 && !isDarkModeActive()) {
       return {
         blocked: true,
@@ -84,6 +90,7 @@
   window.isDarkModeActive = isDarkModeActive;
   window.checkDarkProductAccess = checkDarkProductAccess;
   window.checkDarkItemsInCart = checkDarkItemsInCart;
+  window.DARK_CATEGORY_ID = DARK_CATEGORY_ID;
 
   // ================================= Сам Dark-mode =======================================================
 
