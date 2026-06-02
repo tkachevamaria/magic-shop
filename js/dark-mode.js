@@ -1,62 +1,163 @@
-/* dark-mode.js - с секретной активацией (6 кликов) */
+/* dark-mode.js — с истечением сессии, авто-сбросом, защитой страниц и live-выбросом */
 (function () {
-  // ==================================== Защита =========================================================
 
-  const DARK_MODE_KEY = "darkModeUnlocked";
+  // КОНФИГ
+
+  const DARK_MODE_KEY           = "darkModeUnlocked";
   const DARK_MODE_TIMESTAMP_KEY = "darkModeUnlockedAt";
+
+  /** Сколько живёт тёмная сессия */
+  const SESSION_DURATION_MS = 1 * 60 * 1000;
+
+  /**
+   * Как часто фоновый таймер проверяет истечение.
+   * На странице каталога — достаточно раз в минуту.
+   * На странице тёмного товара — переопределяется ниже на 10 сек.
+   */
+  const CHECK_INTERVAL_MS = 60 * 1000;
+
+  /** Как часто проверяем на странице тёмного товара */
+  const PRODUCT_CHECK_INTERVAL_MS = 10 * 1000;
+
+  /** ID тёмных товаров. */
+  const DARK_PRODUCT_IDS = [43, 44, 45]; // нужные ID
+
+  /** Куда редиректить при блокировке. */
+  const REDIRECT_URL = "/frontend/index.html";
+
+  // ОПРЕДЕЛЯЕМ КОНТЕКСТ СТРАНИЦЫ
+
+  const _params        = new URLSearchParams(window.location.search);
+  const _currentId     = parseInt(_params.get("id"), 10);
+  const _isProductPage = !!_currentId && DARK_PRODUCT_IDS.includes(_currentId);
+
+  // ХРАНИЛИЩЕ
 
   function unlockDarkMode() {
     sessionStorage.setItem(DARK_MODE_KEY, "true");
     sessionStorage.setItem(DARK_MODE_TIMESTAMP_KEY, Date.now().toString());
-
-    const encrypted = btoa(
-      JSON.stringify({
-        unlocked: true,
-        timestamp: Date.now(),
-        signature: "magic_dark_shop_2024",
-      }),
-    );
-    localStorage.setItem(DARK_MODE_KEY, encrypted);
   }
 
   function isDarkModeActive() {
-    if (sessionStorage.getItem(DARK_MODE_KEY) === "true") {
-      return true;
-    }
+    if (sessionStorage.getItem(DARK_MODE_KEY) !== "true") return false;
+    const ts = parseInt(sessionStorage.getItem(DARK_MODE_TIMESTAMP_KEY), 10);
+    if (!ts || isNaN(ts)) { _clearDarkMode(); return false; }
+    if (Date.now() - ts > SESSION_DURATION_MS) { _clearDarkMode(); return false; }
+    return true;
+  }
 
-    try {
-      const stored = localStorage.getItem(DARK_MODE_KEY);
-      if (stored) {
-        const decrypted = JSON.parse(atob(stored));
-        if (
-          decrypted.signature === "magic_dark_shop_2024" &&
-          decrypted.unlocked === true
-        ) {
-          sessionStorage.setItem(DARK_MODE_KEY, "true");
-          sessionStorage.setItem(DARK_MODE_TIMESTAMP_KEY, decrypted.timestamp);
-          return true;
+  function getDarkModeTimeLeft() {
+    if (!isDarkModeActive()) return 0;
+    const ts = parseInt(sessionStorage.getItem(DARK_MODE_TIMESTAMP_KEY), 10);
+    return Math.max(0, SESSION_DURATION_MS - (Date.now() - ts));
+  }
+
+  function _clearDarkMode() {
+    sessionStorage.removeItem(DARK_MODE_KEY);
+    sessionStorage.removeItem(DARK_MODE_TIMESTAMP_KEY);
+    _removeBadge();
+  }
+
+  function _removeBadge() {
+    const trigger = document.getElementById("darkModeTrigger");
+    if (trigger && trigger.classList.contains("dark-activated")) {
+      trigger.classList.remove("dark-activated");
+      trigger.textContent = trigger.textContent.replace(/[🌑✨]/g, "").trim();
+    }
+  }
+
+  // ГАРД — блокировка при загрузке страницы товара
+
+  function runPageGuard() {
+    if (!_isProductPage) return;
+    if (!isDarkModeActive()) {
+      document.documentElement.style.visibility = "hidden";
+      sessionStorage.setItem("darkRedirectFrom", window.location.href);
+      window.location.replace(REDIRECT_URL + "?blocked=dark");
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runPageGuard);
+  } else {
+    runPageGuard();
+  }
+
+
+  let _checkTimer = null;
+
+  function startExpiryWatcher() {
+    if (_checkTimer) return;
+
+    const interval = _isProductPage ? PRODUCT_CHECK_INTERVAL_MS : CHECK_INTERVAL_MS;
+
+    _checkTimer = setInterval(() => {
+      const wasActive = sessionStorage.getItem(DARK_MODE_KEY) === "true";
+      if (!wasActive) return; // уже неактивен, нечего делать
+
+      if (!isDarkModeActive()) {
+        // isDarkModeActive() уже вызвал _clearDarkMode()
+        if (_isProductPage) {
+          // ── ВЫБРОС СО СТРАНИЦЫ ТЁМНОГО ТОВАРА ──
+          console.log("🌑 Dark mode expired on product page, redirecting...");
+          setTimeout(() => {
+            window.location.replace(REDIRECT_URL + "?expired=dark");
+          }, 2600);
+        } else {
+          // ── СБРОС ВИЗУАЛА НА КАТАЛОГЕ ──
+          _hideDarkCatalogVisuals();
+          console.log("🌑 Dark mode expired, visuals hidden.");
         }
       }
-    } catch (e) {
-      console.warn("Ошибка проверки dark mode:", e);
-    }
-
-    return false;
+    }, interval);
   }
+
+  /**
+   * Скрывает все визуальные элементы тёмного режима на каталоге.
+   * Вызывается при истечении сессии.
+   *
+   * Логика:
+   *  1. Убирает бейдж с кнопки #darkModeTrigger
+   *  2. Скрывает карточки тёмных товаров (data-dark="true")
+   *  3. Скрывает целые секции/категории с классом .dark-category
+   *  4. Вызывает window.hideDarkCategory(), если она определена в каталоге
+   */
+  function _hideDarkCatalogVisuals() {
+    // 1. Убираем бейдж
+    _removeBadge();
+
+    // 2. Карточки товаров, помеченные как тёмные
+    document.querySelectorAll('[data-dark="true"], .dark-product-card').forEach(el => {
+      el.style.display = "none";
+    });
+
+    // 3. Целые секции тёмного каталога
+    document.querySelectorAll('.dark-category, .dark-section, #dark-catalog').forEach(el => {
+      el.style.display = "none";
+    });
+
+    // 4. Хук для каталога — если там есть своя функция скрытия
+    if (typeof window.hideDarkCategory === "function") {
+      window.hideDarkCategory();
+    }
+  }
+
+  // ============================================================
+  // ПРОВЕРКА ДОСТУПА (API)
+  // ============================================================
 
   function checkDarkProductAccess(productId) {
     return new Promise((resolve, reject) => {
       fetch(`http://localhost:8080/api/products/${productId}`)
-        .then((res) => res.json())
-        .then((product) => {
+        .then(res => res.json())
+        .then(product => {
           if (product.is_dark || product.category === "dark") {
             if (!isDarkModeActive()) {
               reject({
                 blocked: true,
-                message:
-                  "🌑 Это тёмный товар! Вы не можете его заказать, не открыв доступ к тёмному каталогу.",
                 action: "unlock",
               });
+              console.log(`🌑 Доступ к товару ${productId} заблокирован`);
             } else {
               resolve(true);
             }
@@ -69,34 +170,36 @@
   }
 
   async function checkDarkItemsInCart(cartItems) {
-    const darkItems = cartItems.filter((item) => item.is_dark === true);
+    const darkItems = cartItems.filter(item => item.is_dark === true);
     if (darkItems.length > 0 && !isDarkModeActive()) {
       return {
         blocked: true,
-        message: `🌑 В корзине есть тёмные товары (${darkItems.map((i) => i.name).join(", ")}). Откройте доступ к тёмному каталогу, чтобы оформить заказ.`,
-        darkItems: darkItems,
+        darkItems,
       };
+      console.log(`🌑 В корзине есть тёмные товары, доступ заблокирован`);
     }
     return { blocked: false };
   }
 
-  window.unlockDarkMode = unlockDarkMode;
-  window.isDarkModeActive = isDarkModeActive;
+  // ПУБЛИЧНОЕ API
+
+  window.isDarkModeActive       = isDarkModeActive;
+  window.getDarkModeTimeLeft    = getDarkModeTimeLeft;
   window.checkDarkProductAccess = checkDarkProductAccess;
-  window.checkDarkItemsInCart = checkDarkItemsInCart;
+  window.checkDarkItemsInCart   = checkDarkItemsInCart;
 
-  // ================================= Сам Dark-mode =======================================================
-
-  let clickCount = 0;
-  let clickTimer = null;
+  // АКТИВАЦИЯ ЧЕРЕЗ 6 КЛИКОВ
+  let clickCount    = 0;
+  let clickTimer    = null;
   let isInitialized = false;
 
-  // Конфиг
   const REQUIRED_CLICKS = 6;
-  const RESET_TIMEOUT = 2000; // 2 секунды на серию кликов
+  const RESET_TIMEOUT   = 2000;
 
   function init() {
     if (isInitialized) return;
+
+    startExpiryWatcher();
 
     const trigger = document.getElementById("darkModeTrigger");
     if (trigger) {
@@ -104,157 +207,113 @@
       isInitialized = true;
     } else {
       waitForElement("#darkModeTrigger", 5000)
-        .then((element) => {
-          attachClickListener(element);
-          isInitialized = true;
-        })
-        .catch(() => {
-          console.warn("🌑 Кнопка Dark Mode не найдена через 5 секунд");
-        });
+        .then(el => { attachClickListener(el); isInitialized = true; })
+        .catch(() => console.warn("🌑 #darkModeTrigger не найден за 5 сек"));
     }
 
-    // Если режим уже был включён в этой сессии, активируем бейдж при появлении
-    if (sessionStorage.getItem("darkModeUnlocked") === "true") {
-      waitForElement("#darkModeTrigger", 3000).then((element) => {
-        activateBadge(element);
-      });
+    if (isDarkModeActive()) {
+      waitForElement("#darkModeTrigger", 3000).then(activateBadge);
     }
   }
 
   function waitForElement(selector, timeout = 5000) {
     return new Promise((resolve, reject) => {
-      const element = document.querySelector(selector);
-      if (element) {
-        resolve(element);
-        return;
-      }
-
-      const observer = new MutationObserver((mutations, obs) => {
-        const el = document.querySelector(selector);
-        if (el) {
-          obs.disconnect();
-          resolve(el);
-        }
+      const el = document.querySelector(selector);
+      if (el) { resolve(el); return; }
+      const obs = new MutationObserver((_, o) => {
+        const found = document.querySelector(selector);
+        if (found) { o.disconnect(); resolve(found); }
       });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-
-      setTimeout(() => {
-        observer.disconnect();
-        reject(new Error(`Element ${selector} not found`));
-      }, timeout);
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => { obs.disconnect(); reject(new Error(`${selector} not found`)); }, timeout);
     });
   }
 
   function attachClickListener(element) {
     element.removeEventListener("click", handleClick);
     element.addEventListener("click", handleClick);
-    console.log("🌑 Обработчик клика повешен на #darkModeTrigger");
   }
 
   function handleClick(event) {
     event.stopPropagation();
 
-    // Если режим уже активирован, ничего не делаем
-    if (sessionStorage.getItem("darkModeUnlocked") === "true") {
+    if (isDarkModeActive()) {
+      const mins = Math.ceil(getDarkModeTimeLeft() / 60000);
       showRippleEffect(event.clientX, event.clientY);
-      showToast("🌑 Тёмный режим уже активирован!");
+      console.log(`🌑 Тёмный режим уже активен, осталось примерно ${mins} мин`);
       return;
     }
 
-    // Увеличиваем счётчик
     clickCount++;
+    // showClickFeedback(event.currentTarget);
 
-    // Показываем визуальный фидбек (маленькая вспышка на кнопке)
-    showClickFeedback(event.currentTarget);
-
-    console.log(`🌑 Клик ${clickCount} из ${REQUIRED_CLICKS}`);
-
-    // Если достигли нужного количества
     if (clickCount === REQUIRED_CLICKS) {
-      activateDarkMode(event.currentTarget);
+      _doActivate(event.currentTarget);
       resetClickCounter();
     } else {
-      // Сбрасываем счётчик через таймаут
       if (clickTimer) clearTimeout(clickTimer);
-      clickTimer = setTimeout(() => {
-        resetClickCounter();
-      }, RESET_TIMEOUT);
+      clickTimer = setTimeout(resetClickCounter, RESET_TIMEOUT);
+    }
+  }
 
-      // Показываем подсказку только на предпоследнем клике
-      if (clickCount === REQUIRED_CLICKS - 1) {
-        showToast(
-          `🔮 Ещё один клик... (${REQUIRED_CLICKS - clickCount} осталось)`,
-          1500,
-        );
-      }
+  function _doActivate(button) {
+    console.log("🌑 ТЁМНЫЙ РЕЖИМ АКТИВИРОВАН!");
+    unlockDarkMode();
+    activateBadge(button);
+    showPurplePulse();
+    showEpicToast();
+    if (typeof window.renderDarkCategory === "function") {
+      setTimeout(() => window.renderDarkCategory(), 500);
     }
   }
 
   function resetClickCounter() {
-    if (clickTimer) {
-      clearTimeout(clickTimer);
-      clickTimer = null;
-    }
+    if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
     clickCount = 0;
-    console.log("🌑 Счётчик кликов сброшен");
   }
 
-  function showClickFeedback(button) {
-    button.style.transform = "scale(0.95)";
-    button.style.transition = "transform 0.1s ease";
-    setTimeout(() => {
-      button.style.transform = "";
-    }, 100);
-  }
+  // ============================================================
+  // UI
+  // ============================================================
+
+  // function showClickFeedback(button) {
+  //   button.style.transform = "scale(0.95)";
+  //   button.style.transition = "transform 0.1s ease";
+  //   setTimeout(() => { button.style.transform = ""; }, 100);
+  // }
 
   function showRippleEffect(x, y) {
     const ripple = document.createElement("div");
     ripple.className = "ripple-effect";
     ripple.style.left = `${x}px`;
-    ripple.style.top = `${y}px`;
+    ripple.style.top  = `${y}px`;
     document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
   }
 
-  // 🌟 ГЛАВНОЕ: ФИОЛЕТОВАЯ ПУЛЬСАЦИЯ ПО ПЕРИМЕТРУ 🌟
-  // 🌫 Новая версия с туманом и медленной пульсацией
   function showPurplePulse() {
     playOminousSound();
 
-    // 1. Основная пульсация
     const pulseOverlay = document.createElement("div");
     pulseOverlay.className = "purple-pulse-overlay";
     document.body.appendChild(pulseOverlay);
 
-    // 2. КЛУБЫ ДЫМА (вместо обычного тумана)
     const smokeContainer = document.createElement("div");
     smokeContainer.className = "smoke-clouds";
     smokeContainer.innerHTML = `
-    <div class="smoke smoke-1"></div>
-    <div class="smoke smoke-2"></div>
-    <div class="smoke smoke-3"></div>
-    <div class="smoke smoke-4"></div>
-    <div class="smoke smoke-5"></div>
-    <div class="smoke smoke-6"></div>
-    <div class="smoke smoke-7"></div>
-  `;
+      <div class="smoke smoke-1"></div><div class="smoke smoke-2"></div>
+      <div class="smoke smoke-3"></div><div class="smoke smoke-4"></div>
+      <div class="smoke smoke-5"></div><div class="smoke smoke-6"></div>
+      <div class="smoke smoke-7"></div>
+    `;
     document.body.appendChild(smokeContainer);
 
-    // 3. Лёгкое затемнение
     const darknessOverlay = document.createElement("div");
     darknessOverlay.className = "darkness-overlay";
     document.body.appendChild(darknessOverlay);
 
-    // Запускаем анимации
-    requestAnimationFrame(() => {
-      pulseOverlay.classList.add("active");
-    });
+    requestAnimationFrame(() => pulseOverlay.classList.add("active"));
 
-    // Удаляем все слои
     setTimeout(() => {
       pulseOverlay.classList.remove("active");
       setTimeout(() => {
@@ -265,119 +324,57 @@
     }, 4000);
   }
 
-  // 🎵 ЗЛОВЕЩИЙ МЕДЛЕННЫЙ ЗВУК (низкий, мрачный)
   function playOminousSound() {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       const audioCtx = new AudioContext();
 
-      // Основной низкий гул
       const osc1 = audioCtx.createOscillator();
-      const gain1 = audioCtx.createGain();
       osc1.type = "sine";
-      osc1.frequency.setValueAtTime(110, audioCtx.currentTime); // A2 — низкий
-      osc1.frequency.exponentialRampToValueAtTime(
-        55,
-        audioCtx.currentTime + 2.5,
-      ); // спуск до A1
+      osc1.frequency.setValueAtTime(110, audioCtx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(55, audioCtx.currentTime + 2.5);
 
-      // Второй осциллятор — добавляет "зловещесть" (пила)
       const osc2 = audioCtx.createOscillator();
-      const gain2 = audioCtx.createGain();
       osc2.type = "sawtooth";
       osc2.frequency.setValueAtTime(165, audioCtx.currentTime);
-      osc2.frequency.exponentialRampToValueAtTime(
-        82.5,
-        audioCtx.currentTime + 2,
-      );
+      osc2.frequency.exponentialRampToValueAtTime(82.5, audioCtx.currentTime + 2);
 
-      // Третий осциллятор — тихий фон (создаёт "дрожь")
       const osc3 = audioCtx.createOscillator();
-      const gain3 = audioCtx.createGain();
       osc3.type = "triangle";
       osc3.frequency.setValueAtTime(55, audioCtx.currentTime);
-      osc3.frequency.exponentialRampToValueAtTime(
-        27.5,
-        audioCtx.currentTime + 3,
-      );
+      osc3.frequency.exponentialRampToValueAtTime(27.5, audioCtx.currentTime + 3);
 
-      // Фильтр низких частот (чтобы звук был глубже)
       const filter = audioCtx.createBiquadFilter();
       filter.type = "lowpass";
       filter.frequency.setValueAtTime(400, audioCtx.currentTime);
-      filter.frequency.exponentialRampToValueAtTime(
-        150,
-        audioCtx.currentTime + 2,
-      );
+      filter.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 2);
       filter.Q.value = 3;
 
-      // Подключаем
-      osc1.connect(filter);
-      osc2.connect(filter);
-      osc3.connect(filter);
-      filter.connect(gain1);
-      gain1.connect(audioCtx.destination);
+      const gain1 = audioCtx.createGain();
+      const gain2 = audioCtx.createGain();
+      const gain3 = audioCtx.createGain();
 
-      // Настройка громкости (главная)
+      osc1.connect(filter); osc2.connect(filter); osc3.connect(filter);
+      filter.connect(gain1); gain1.connect(audioCtx.destination);
       gain1.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(
-        0.0001,
-        audioCtx.currentTime + 3.2,
-      );
+      gain1.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.2);
 
-      // Громкость второго — тише, как эхо
+      osc2.connect(gain2); gain2.connect(audioCtx.destination);
       gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(
-        0.0001,
-        audioCtx.currentTime + 2.5,
-      );
-      osc2.connect(gain2);
-      gain2.connect(audioCtx.destination);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.5);
 
-      // Громкость третьего — едва слышно
+      osc3.connect(gain3); gain3.connect(audioCtx.destination);
       gain3.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain3.gain.exponentialRampToValueAtTime(
-        0.0001,
-        audioCtx.currentTime + 3.5,
-      );
-      osc3.connect(gain3);
-      gain3.connect(audioCtx.destination);
+      gain3.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.5);
 
-      // Запуск
-      osc1.start();
-      osc2.start();
-      osc3.start();
-
+      osc1.start(); osc2.start(); osc3.start();
       osc1.stop(audioCtx.currentTime + 3.2);
       osc2.stop(audioCtx.currentTime + 2.8);
       osc3.stop(audioCtx.currentTime + 3.8);
 
-      // Возобновляем AudioContext, если он на паузе
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
     } catch (e) {
-      console.log("🔇 Ошибка воспроизведения зловещего звука:", e);
-    }
-  }
-
-  function activateDarkMode(button) {
-    console.log("🌑 ТЁМНЫЙ РЕЖИМ АКТИВИРОВАН! (6 кликов)");
-    sessionStorage.setItem("darkModeUnlocked", "true");
-    activateBadge(button);
-
-    // 🔥 ЭФФЕКТНАЯ ПУЛЬСАЦИЯ ПО ПЕРИМЕТРУ
-    showPurplePulse();
-
-    // Показываем эпичное сообщение
-    showEpicToast();
-
-    // Если мы на странице каталога, просим его отрисовать категорию
-    if (typeof window.renderDarkCategory === "function") {
-      // Небольшая задержка для эпичности
-      setTimeout(() => {
-        window.renderDarkCategory();
-      }, 500);
+      console.log("🔇 Ошибка звука:", e);
     }
   }
 
@@ -391,34 +388,25 @@
       <div class="epic-toast-content">
         <span class="epic-icon">🌑✨</span>
         <span class="epic-text">Тёмные силы призваны!</span>
-        <span class="epic-sub">Скрытые товары теперь доступны</span>
       </div>
     `;
     toast.style.cssText = `
-      position: fixed; bottom: 20px; right: 20px; 
+      position: fixed; bottom: 20px; right: 20px;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: #d8b4fe; 
-      padding: 16px 28px; 
-      border-radius: 20px; 
-      border: 2px solid #9333ea; 
-      z-index: 1000; 
+      color: #d8b4fe; padding: 16px 28px; border-radius: 20px;
+      border: 2px solid #9333ea; z-index: 1000;
       animation: slideIn 0.3s ease, epicGlow 2s ease-in-out infinite;
-      box-shadow: 0 0 30px rgba(147, 51, 234, 0.7);
-      font-weight: bold;
+      box-shadow: 0 0 30px rgba(147, 51, 234, 0.7); font-weight: bold;
     `;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
   }
 
   function activateBadge(element) {
-    if (!element) return;
-    if (!element.classList.contains("dark-activated")) {
-      element.classList.add("dark-activated");
-      const currentText = element.textContent.trim();
-      // Убираем старый эмодзи, если был
-      const cleanText = currentText.replace(/[🌑✨]/g, "").trim();
-      element.textContent = `🌑 ${cleanText}`;
-    }
+    if (!element || element.classList.contains("dark-activated")) return;
+    element.classList.add("dark-activated");
+    const cleanText = element.textContent.trim().replace(/[🌑✨]/g, "").trim();
+    element.textContent = `🌑 ${cleanText}`;
   }
 
   function showToast(message, duration = 2000) {
@@ -428,11 +416,11 @@
     const toast = document.createElement("div");
     toast.className = "cart-toast";
     toast.style.cssText = `
-      position: fixed; bottom: 20px; right: 20px; 
-      background: #1e293b; color: #d8b4fe; 
-      padding: 12px 24px; border-radius: 12px; 
-      border: 1px solid #9333ea; z-index: 1000; 
-      animation: slideIn 0.3s ease; 
+      position: fixed; bottom: 20px; right: 20px;
+      background: #1e293b; color: #d8b4fe;
+      padding: 12px 24px; border-radius: 12px;
+      border: 1px solid #9333ea; z-index: 1000;
+      animation: slideIn 0.3s ease;
       box-shadow: 0 0 15px rgba(147, 51, 234, 0.5);
     `;
     toast.textContent = message;
@@ -440,24 +428,14 @@
     setTimeout(() => toast.remove(), duration);
   }
 
-  window.activateDarkMode = function () {
-    if (sessionStorage.getItem("darkModeUnlocked") === "true") return;
-    console.log("🌑 Ручная активация тёмного режима");
-    sessionStorage.setItem("darkModeUnlocked", "true");
-    const trigger = document.getElementById("darkModeTrigger");
-    if (trigger) {
-      activateBadge(trigger);
-    }
-    showPurplePulse();
-    showEpicToast();
-    if (typeof window.renderDarkCategory === "function") {
-      setTimeout(() => window.renderDarkCategory(), 500);
-    }
-  };
+  // ============================================================
+  // СТАРТ
+  // ============================================================
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
+
 })();

@@ -12,10 +12,8 @@ options.forEach((option) => {
   option.addEventListener("click", () => {
     const value = option.dataset.value;
     const text = option.textContent;
-
     selected.textContent = text;
     hiddenInput.value = value;
-
     magicSelect.classList.remove("open");
   });
 });
@@ -26,32 +24,59 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Если уже залогинен — сразу на главную
-if (localStorage.getItem("token")) {
+// ─── TTL сессии пользователя (должен совпадать с auth-guard.js)
+const USER_SESSION_TTL_MS = 1 * 60 * 60 * 1000; // 1 час
+
+/**
+ * Сохраняет данные сессии в localStorage с меткой времени.
+ * Все данные пишутся за один вызов — легко найти и изменить TTL.
+ */
+function saveUserSession(data) {
+  localStorage.setItem("token",        data.token);
+  localStorage.setItem("user_id",      data.user_id);
+  localStorage.setItem("access_level", data.access_level);
+  localStorage.setItem("login_time",   Date.now().toString()); // ← метка времени
+}
+
+/**
+ * Проверяет токен и TTL. Используется для редиректа на главную,
+ * если пользователь уже залогинен.
+ */
+function isSessionValid() {
+  const token     = localStorage.getItem("token");
+  const loginTime = parseInt(localStorage.getItem("login_time"), 10);
+
+  if (!token) return false;
+  if (!loginTime || isNaN(loginTime)) return false; // нет метки — считаем невалидным
+  if (Date.now() - loginTime > USER_SESSION_TTL_MS) {
+    // Сессия истекла — чистим сами, чтобы не было мусора
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("access_level");
+    localStorage.removeItem("login_time");
+    return false;
+  }
+  return true;
+}
+
+// Если уже залогинен и сессия ещё живая — сразу на главную
+if (isSessionValid()) {
   window.location.href = "index.html";
 }
 
 // ─── Переключение вкладок
 function switchTab(tabName) {
-  document
-    .querySelectorAll(".auth-tab")
-    .forEach((t) => t.classList.remove("active"));
-  document
-    .querySelectorAll(".auth-panel")
-    .forEach((p) => p.classList.remove("active"));
-
-  document
-    .querySelector(`.auth-tab[data-tab="${tabName}"]`)
-    .classList.add("active");
+  document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".auth-panel").forEach(p => p.classList.remove("active"));
+  document.querySelector(`.auth-tab[data-tab="${tabName}"]`).classList.add("active");
   document.getElementById(`panel-${tabName}`).classList.add("active");
 }
 
-document.querySelectorAll(".auth-tab").forEach((tab) => {
+document.querySelectorAll(".auth-tab").forEach(tab => {
   tab.addEventListener("click", () => switchTab(tab.dataset.tab));
 });
 
-// Ссылки внутри форм ("Нет аккаунта?" и т.п.)
-document.querySelectorAll("a[data-tab]").forEach((link) => {
+document.querySelectorAll("a[data-tab]").forEach(link => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
     switchTab(link.dataset.tab);
@@ -61,26 +86,20 @@ document.querySelectorAll("a[data-tab]").forEach((link) => {
 // ─── Сообщения
 function showMessage(text, type = "error") {
   const oldToast = document.querySelector(".toast");
-  if (oldToast) {
-    oldToast.remove();
-  }
+  if (oldToast) oldToast.remove();
 
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   toast.textContent = text;
-
   document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 2000);
+  setTimeout(() => toast.remove(), 2000);
 }
 
 // ─── Вход
 document.getElementById("login-btn").addEventListener("click", async () => {
-  const email = document.getElementById("login-email").value.trim();
+  const email    = document.getElementById("login-email").value.trim();
   const password = document.getElementById("login-password").value;
-  const btn = document.getElementById("login-btn");
+  const btn      = document.getElementById("login-btn");
 
   if (!email || !password) {
     showMessage("Заполните все поля", "error");
@@ -99,9 +118,7 @@ document.getElementById("login-btn").addEventListener("click", async () => {
 
     if (res.ok) {
       const data = await res.json();
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user_id", data.user_id);
-      localStorage.setItem("access_level", data.access_level);
+      saveUserSession(data); // ← сохраняем с TTL
       showMessage("Добро пожаловать! ✨", "success");
       setTimeout(() => (window.location.href = "index.html"), 800);
     } else {
@@ -118,28 +135,19 @@ document.getElementById("login-btn").addEventListener("click", async () => {
 // ─── Регистрация
 const registerErrorMessages = {
   409: "Такой email уже зарегистрирован",
-  400: null, // текст придёт с сервера (невалидный пароль, роль и т.п.)
+  400: null,
 };
 
 document.getElementById("register-btn").addEventListener("click", async () => {
-  const firstName = document.getElementById("reg-first-name").value.trim();
-  const surname = document.getElementById("reg-surname").value.trim();
-  const email = document.getElementById("reg-email").value.trim();
-  const password = document.getElementById("reg-password").value;
-  const role = document.getElementById("reg-role-value").value;
-  const deliveryAddress = document
-    .getElementById("reg-delivery-address")
-    .value.trim();
-  const btn = document.getElementById("register-btn");
+  const firstName       = document.getElementById("reg-first-name").value.trim();
+  const surname         = document.getElementById("reg-surname").value.trim();
+  const email           = document.getElementById("reg-email").value.trim();
+  const password        = document.getElementById("reg-password").value;
+  const role            = document.getElementById("reg-role-value").value;
+  const deliveryAddress = document.getElementById("reg-delivery-address").value.trim();
+  const btn             = document.getElementById("register-btn");
 
-  if (
-    !firstName ||
-    !surname ||
-    !email ||
-    !password ||
-    !role ||
-    !deliveryAddress
-  ) {
+  if (!firstName || !surname || !email || !password || !role || !deliveryAddress) {
     showMessage("Заполните все поля", "error");
     return;
   }
@@ -169,7 +177,7 @@ document.getElementById("register-btn").addEventListener("click", async () => {
       showMessage("Аккаунт создан! Теперь войдите ✨", "success");
       setTimeout(() => {
         ["reg-first-name", "reg-surname", "reg-email", "reg-password", "reg-delivery-address"]
-          .forEach((id) => (document.getElementById(id).value = ""));
+          .forEach(id => (document.getElementById(id).value = ""));
         switchTab("login");
         document.getElementById("login-email").value = email;
       }, 1000);
@@ -189,7 +197,7 @@ document.getElementById("register-btn").addEventListener("click", async () => {
 });
 
 // Enter в полях логина
-["login-email", "login-password"].forEach((id) => {
+["login-email", "login-password"].forEach(id => {
   document.getElementById(id).addEventListener("keydown", (e) => {
     if (e.key === "Enter") document.getElementById("login-btn").click();
   });
