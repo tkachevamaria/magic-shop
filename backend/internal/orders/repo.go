@@ -128,7 +128,7 @@ func (r *Repo) loadItems(ctx context.Context, itemIDsStr string) ([]OrderItemDet
 	}
 
 	rows, err := r.db.QueryContext(ctx, `
-		SELECT i.ItemID, p.ProductID, p.ProductName, p.Price, p.ImageURL, i.Color, i.Size
+		SELECT i.ItemID, p.ProductID, p.ProductName, p.Price, p.ImageURL, i.Color, i.Size, p.CategoryID
 		FROM Items i
 		JOIN Products p ON i.ProductID = p.ProductID
 		WHERE i.ItemID IN (`+strings.Join(ph, ",")+`)
@@ -142,7 +142,7 @@ func (r *Repo) loadItems(ctx context.Context, itemIDsStr string) ([]OrderItemDet
 	for rows.Next() {
 		var item OrderItemDetail
 		var itemID int
-		if err := rows.Scan(&itemID, &item.ProductID, &item.Name, &item.Price, &item.ImageURL, &item.Color, &item.Size); err != nil {
+		if err := rows.Scan(&itemID, &item.ProductID, &item.Name, &item.Price, &item.ImageURL, &item.Color, &item.Size, &item.CategoryID,); err != nil {
 			continue
 		}
 		item.Quantity = quantityMap[itemID]

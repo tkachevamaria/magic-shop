@@ -2,6 +2,16 @@
 const API_URL = "http://localhost:8080";
 const processing = new Set();
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.replace(/[&<>]/g, function (m) {
+    if (m === "&") return "&amp;";
+    if (m === "<") return "&lt;";
+    if (m === ">") return "&gt;";
+    return m;
+  });
+}
+
 if (window.__cartInitialized) {
   console.warn("⚠️ cart.js уже загружен. Пропускаю.");
 }
@@ -118,31 +128,35 @@ async function renderCart() {
   // ✅ ОДИН цикл, с отрисовкой картинки
   let html = "";
   cart.items.forEach((item) => {
-    // Маска
+    // 🔮 ПРИМЕНЯЕМ МАСКУ
     const displayItem = window.DarkMask
       ? window.DarkMask.maskDarkItem(item)
       : item;
 
     const isMax = item.quantity >= (item.stock_quantity || 999);
-    const imgSrc = item.image_url ? `${API_URL}${item.image_url}` : "";
+    const imgSrc = displayItem.image_url
+      ? displayItem.image_url.startsWith("http")
+        ? displayItem.image_url
+        : `${API_URL}${displayItem.image_url}`
+      : "";
 
     html += `
-      <div class="cart-item" data-id="${item.item_id}" data-max="${item.stock_quantity || 999}" data-price="${item.price}">
-        <div class="cart-item-image">
-          ${imgSrc ? `<img src="${imgSrc}" alt="${item.product_name}">` : `<div class="cart-item-image-fallback">🧙‍♂️</div>`}
-        </div>
-        <div class="cart-item-info">
-          <div class="cart-item-name">${item.product_name}</div>
-          <div class="cart-item-details">${item.color} / ${item.size}</div>
-          <div class="cart-item-price">${item.price} Галлеонов</div>
-        </div>
-        <div class="cart-item-controls">
-          <button class="option-btn cart-btn-minus">−</button>
-          <span class="cart-qty-display" style="font-size:22px; min-width:30px; text-align:center; color:#fff;">${item.quantity}</span>
-          <button class="option-btn cart-btn-plus" ${isMax ? "disabled" : ""}>+</button>
-          <button class="cart-item-remove cart-btn-delete">×</button>
-        </div>
-      </div>`;
+    <div class="cart-item" data-id="${item.item_id}" data-category-id="${item.category_id}" data-max="${item.stock_quantity || 999}" data-price="${item.price}">
+      <div class="cart-item-image">
+        ${imgSrc ? `<img src="${imgSrc}" alt="${displayItem.product_name}">` : `<div class="cart-item-image-fallback">${displayItem._masked ? "🌑" : "🧙‍♂️"}</div>`}
+      </div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${escapeHtml(displayItem.product_name)}</div>
+        <div class="cart-item-details">${escapeHtml(displayItem.color || "???")} / ${escapeHtml(displayItem.size || "???")}</div>
+        <div class="cart-item-price">${item.price} Галлеонов</div>
+      </div>
+      <div class="cart-item-controls">
+        <button class="option-btn cart-btn-minus">−</button>
+        <span class="cart-qty-display">${item.quantity}</span>
+        <button class="option-btn cart-btn-plus" ${isMax ? "disabled" : ""}>+</button>
+        <button class="cart-item-remove cart-btn-delete">×</button>
+      </div>
+    </div>`;
   });
 
   container.innerHTML = `
