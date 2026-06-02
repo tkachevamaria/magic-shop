@@ -68,15 +68,22 @@
         <img src="${PHOTO_URL}${product.image_url || ""}" alt="${product.name}">
       </div>
       <div class="product-info">
+
         <h1 class="product-title">${product.name}</h1>
-        
+
         <div class="product-meta">
           <div class="product-price">${product.price} Галлеонов</div>
-          <div class="product-delivery-compact">
+              <div class="product-delivery-compact">
             <span class="delivery-icon">${icon}</span>
             <span class="delivery-text">${name} · ${product.delivery_days} дн.</span>
           </div>
         </div>
+
+        ${product.required_level ? `
+          <div class="product-required-level">
+            Требуемый уровень доступа: ${product.required_level}
+          </div>
+        ` : ""}
 
         <div class="product-description">${product.description || "Описание отсутствует"}</div>
 

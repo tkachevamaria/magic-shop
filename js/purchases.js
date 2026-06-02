@@ -45,10 +45,10 @@ function renderPurchasesPage() {
 
         let html = `
             <div class="stats-header">
-                <h1>🛍️ Мои покупки</h1>
+                <h1>Мои покупки</h1>
                 <div class="total-stats">
                     <div class="total-amount">💰 ${totalAmount} Галлеонов</div>
-                    <div class="total-orders-count">📦 Всего товаров: ${totalItems}</div>
+                    <div class="total-orders-count">Всего товаров: ${totalItems}</div>
                 </div>
             </div>
             <div class="products-grid">
@@ -76,7 +76,7 @@ function renderPurchasesPage() {
                             <span class="product-name" title="${item.name}">${item.name}</span>
                             ${item.color ? `<span class="product-meta">${item.color}${item.size ? `, ${item.size}` : ''}</span>` : ''}
                             <span class="product-price">${item.price} Галлеонов</span>
-                            <span class="delivery-date">📅 Доставлено: ${order.actual_date || order.estimated_date}</span>
+                            <span class="delivery-date">Доставлено: ${order.actual_date || order.estimated_date}</span>
                         </div>
                     </div>
                 `;
