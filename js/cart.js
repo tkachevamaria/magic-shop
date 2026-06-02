@@ -73,29 +73,6 @@ function showCartToast(message) {
   setTimeout(() => toast.remove(), 2500);
 }
 
-// async function updateCartCount() {
-//   try {
-//     const cart = await getCart();
-//     const count = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
-//     const cartIcon = document.querySelector(
-//       '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
-//     );
-//     if (!cartIcon) return;
-
-//     cartIcon.querySelector(".cart-badge")?.remove();
-//     if (count > 0) {
-//       const b = document.createElement("span");
-//       b.className = "cart-badge";
-//       b.textContent = count;
-//       b.style.cssText = `position:absolute; top:-8px; right:-8px; background:#e74c3c; color:#fff; font-size:12px; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center;`;
-//       cartIcon.style.position = "relative";
-//       cartIcon.appendChild(b);
-//     }
-//   } catch (e) {
-//     console.error("Счётчик: ", e);
-//   }
-// }
-
 function recalcTotal() {
   let sum = 0;
   let totalItems = 0;
@@ -158,7 +135,7 @@ async function renderCart() {
           <div class="cart-item-price">${item.price} Галлеонов</div>
         </div>
         <div class="cart-item-controls">
-          <button class="option-btn cart-btn-minus" ${item.quantity <= 1 ? "disabled" : ""}>−</button>
+          <button class="option-btn cart-btn-minus">−</button>
           <span class="cart-qty-display" style="font-size:22px; min-width:30px; text-align:center; color:#fff;">${item.quantity}</span>
           <button class="option-btn cart-btn-plus" ${isMax ? "disabled" : ""}>+</button>
           <button class="cart-item-remove cart-btn-delete">×</button>
