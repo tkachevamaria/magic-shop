@@ -18,6 +18,7 @@
   border-radius: 30px;
   padding: 30px;
   border: 1px solid rgba(201, 160, 84, 0.4);
+  align-self: start;
 }
 
 .cart-items h2 {
@@ -364,10 +365,8 @@
   justify-content: space-between;
   font-size: 28px;
   color: #fff;
-  margin: 25px 0;
-  padding: 15px 0;
-  border-top: 2px solid var(--gold-glow);
-  border-bottom: 2px solid var(--gold-glow);
+  margin: 10px 0;
+  padding: 8px 0;
 }
 
 .total-price {
@@ -436,17 +435,3 @@
   transform: scale(1.05);
 }
 
-@media (max-width: 800px) {
-  .cart-layout {
-    grid-template-columns: 1fr;
-  }
-  .cart-summary {
-    position: static;
-  }
-  .cart-item-name {
-    font-size: 18px;
-  }
-  .cart-item-price {
-    font-size: 18px;
-  }
-}

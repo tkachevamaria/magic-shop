@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -28,7 +29,16 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Register(req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		switch {
+		case errors.Is(err, ErrEmailTaken):
+			http.Error(w, "email already taken", http.StatusConflict) // 409
+		case errors.Is(err, ErrInvalidRole):
+			http.Error(w, "invalid role", http.StatusBadRequest)
+		case errors.Is(err, ErrInvalidPassword):
+			http.Error(w, "password must be at least 6 characters", http.StatusBadRequest)
+		default:
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -71,7 +81,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.Login(req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, "invalid email or password", http.StatusUnauthorized) // 401
 		return
 	}
 

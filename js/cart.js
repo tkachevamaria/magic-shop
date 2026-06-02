@@ -73,38 +73,29 @@ function showCartToast(message) {
   setTimeout(() => toast.remove(), 2500);
 }
 
-async function updateCartCount() {
-  try {
-    const cart = await getCart();
-    const count = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
-    const cartIcon = document.querySelector(
-      '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
-    );
-    if (!cartIcon) return;
-
-    cartIcon.querySelector(".cart-badge")?.remove();
-    if (count > 0) {
-      const b = document.createElement("span");
-      b.className = "cart-badge";
-      b.textContent = count;
-      b.style.cssText = `position:absolute; top:-8px; right:-8px; background:#e74c3c; color:#fff; font-size:12px; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center;`;
-      cartIcon.style.position = "relative";
-      cartIcon.appendChild(b);
-    }
-  } catch (e) {
-    console.error("Счётчик: ", e);
-  }
-}
-
 function recalcTotal() {
   let sum = 0;
+  let totalItems = 0;
+
   document.querySelectorAll(".cart-item").forEach((r) => {
-    sum +=
-      parseFloat(r.dataset.price) *
-      parseInt(r.querySelector(".cart-qty-display").textContent);
+    const qty = parseInt(
+      r.querySelector(".cart-qty-display").textContent,
+      10,
+    );
+
+    totalItems += qty;
+    sum += parseFloat(r.dataset.price) * qty;
   });
-  const totalEl = document.querySelector(".total-price");
-  if (totalEl) totalEl.textContent = `${sum.toFixed(0)} Галлеонов`;
+
+  const totalPriceEl = document.querySelector(".total-price");
+  if (totalPriceEl) {
+    totalPriceEl.textContent = `${sum.toFixed(0)} Галлеонов`;
+  }
+
+  const totalItemsEl = document.querySelector(".total-items");
+  if (totalItemsEl) {
+    totalItemsEl.textContent = totalItems;
+  }
 }
 
 async function renderCart() {
@@ -144,7 +135,7 @@ async function renderCart() {
           <div class="cart-item-price">${item.price} Галлеонов</div>
         </div>
         <div class="cart-item-controls">
-          <button class="option-btn cart-btn-minus" ${item.quantity <= 1 ? "disabled" : ""}>−</button>
+          <button class="option-btn cart-btn-minus">−</button>
           <span class="cart-qty-display" style="font-size:22px; min-width:30px; text-align:center; color:#fff;">${item.quantity}</span>
           <button class="option-btn cart-btn-plus" ${isMax ? "disabled" : ""}>+</button>
           <button class="cart-item-remove cart-btn-delete">×</button>
@@ -158,18 +149,24 @@ async function renderCart() {
         <h2>Ваша корзина</h2>
         ${html}
       </div>
-      <div class="cart-summary">
+          <div class="cart-summary">
         <h2>Итого</h2>
+
+        <div class="summary-total">
+          <span>Товаров:</span>
+          <span class="total-items">0</span>
+        </div>
+
         <div class="summary-total">
           <span>Сумма:</span>
           <span class="total-price">0 Галлеонов</span>
         </div>
+
         <button class="order-btn">Оформить заказ</button>
       </div>
     </div>`;
 
   recalcTotal();
-  updateCartCount();
   bindCartEvents();
 }
 
@@ -210,7 +207,6 @@ function bindCartEvents() {
         processing.delete(id);
         if (row.isConnected) lock(false);
         recalcTotal();
-        updateCartCount();
       }
     });
 
@@ -244,7 +240,6 @@ function bindCartEvents() {
         processing.delete(id);
         if (row.isConnected) lock(false);
         recalcTotal();
-        updateCartCount();
       }
     });
 
@@ -268,29 +263,55 @@ function bindCartEvents() {
       } finally {
         processing.delete(id);
         recalcTotal();
-        updateCartCount();
       }
     });
   });
 
   document.querySelector(".order-btn")?.addEventListener("click", async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/orders`, {
-        method: "POST",
-        headers: authHeaders(),
-      });
-      if (res.status === 401) {
-        window.location.href = "auth.html";
-        return;
-      }
-      if (!res.ok) {
-        showCartToast("Ошибка оформления заказа");
-        return;
-      }
-      await res.json();
-      showCartToast("Заказ успешно оформлен! 🎉");
+  try {
+    const res = await fetch(`${API_URL}/api/orders`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    if (res.status === 401) {
+      window.location.href = "auth.html";
+      return;
+    }
 
-      const container = document.getElementById("cart-content");
+    if (!res.ok) {
+      let message = "Ошибка оформления заказа";
+      // Всегда читаем как текст, чтобы не зависеть от заголовка Content-Type
+      const text = await res.text();
+      if (text) {
+        // Пробуем распарсить JSON
+        try {
+          const body = JSON.parse(text);
+          // Проверяем, есть ли детали нехватки
+          if (res.status === 409 && body) {
+            const shortages = body.Shortages || body.shortages; // поддержка обоих вариантов
+            if (Array.isArray(shortages) && shortages.length > 0) {
+              const parts = shortages.map(
+                s => `${s.product_name} (${s.color}/${s.size}): в корзине ${s.in_cart}, на складе ${s.in_stock}`
+              );
+              message = `Не хватает товаров:\n${parts.join("\n")}`;
+            }
+          }
+          else if (body.error) {
+            message = body.error;
+          }
+        } catch {
+          // Не JSON – используем текст как есть
+          message = text;
+        }
+      }
+      showCartToast(message);
+      return;
+    }
+
+    // Успех (201)
+    await res.json(); // прочитаем, чтобы не было утечки
+    showCartToast("Заказ успешно оформлен! 🎉");
+    const container = document.getElementById("cart-content");
       if (container) {
         container.innerHTML = `
           <div class="empty-cart">
@@ -300,12 +321,11 @@ function bindCartEvents() {
             <a href="index.html" class="back-to-shop">Вернуться в магазин</a>
           </div>`;
       }
-      updateCartCount();
-    } catch (err) {
-      console.error(err);
-      showCartToast("Ошибка оформления заказа");
-    }
-  });
+  } catch (err) {
+    console.error(err);
+    showCartToast("Ошибка оформления заказа");
+  }
+});
 }
 
 document.addEventListener("DOMContentLoaded", renderCart);

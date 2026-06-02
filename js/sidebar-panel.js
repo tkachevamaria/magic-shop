@@ -188,7 +188,7 @@ function renderSidebarPanel() {
                     break;
                 default:
                     if (page === 'address') showAddressModal();
-                    else showToast('⏳ Скоро появится');
+                    else showToast('Скоро появится');
             }
         });
     });
