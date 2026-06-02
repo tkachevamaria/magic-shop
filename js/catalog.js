@@ -276,6 +276,7 @@
     if (!grid) return;
 
     if (!append) {
+      document.getElementById("end-of-catalog")?.remove();
       grid.innerHTML =
         '<p style="text-align:center; padding:40px;">🔍 Ищем волшебные товары...</p>';
     } else {
@@ -351,11 +352,14 @@
 
         // Если товары кончились — показываем сообщение
         if (!state.hasMore) {
-          const endMsg = document.createElement("p");
-          endMsg.style.cssText =
-            "text-align:center; padding:20px; opacity:0.5;";
-          endMsg.textContent = "✨ Все товары загружены";
-          grid.appendChild(endMsg);
+          let endMsg = document.getElementById("end-of-catalog");
+          if (!endMsg) {
+            endMsg = document.createElement("p");
+            endMsg.id = "end-of-catalog";
+            endMsg.style.cssText = "text-align:center; padding-bottom:30px; opacity:0.5; width:100%; margin: 0 auto;";
+            endMsg.textContent = "✨ Все товары загружены";
+            grid.parentNode.parentNode.insertBefore(endMsg, grid.parentNode.nextSibling);
+          }
         }
 
         state.isLoading = false;
