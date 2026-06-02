@@ -3,6 +3,7 @@ package cart
 import (
 	"context"
 	"database/sql"
+	"log"
 )
 
 type Repo struct {
@@ -40,88 +41,102 @@ func (r *Repo) GetOrCreateCart(ctx context.Context, userID int) (int, error) {
 }
 
 func (r *Repo) GetCart(ctx context.Context, userID int) (*Cart, error) {
+    log.Println("[DEBUG] GetCart started for userID:", userID)
 
-	var exists int
-	err := r.db.QueryRowContext(ctx,
-		`SELECT COUNT(*) FROM Users WHERE UserID = ?`, userID).Scan(&exists)
-	if err != nil {
-		return nil, err
-	}
-	if exists == 0 {
-		return nil, ErrUserNotFound
-	}
+    var exists int
+    err := r.db.QueryRowContext(ctx,
+        `SELECT COUNT(*) FROM Users WHERE UserID = ?`, userID).Scan(&exists)
+    if err != nil {
+        log.Println("[ERROR] checking user exists:", err)
+        return nil, err
+    }
+    if exists == 0 {
+        log.Println("[ERROR] user not found")
+        return nil, ErrUserNotFound
+    }
 
-	var cart Cart
-	err = r.db.QueryRowContext(
-		ctx,
-		`SELECT CartID, UserID
-		 FROM Cart
-		 WHERE UserID = ?`,
-		userID,
-	).Scan(&cart.CartID, &cart.UserID)
+    var cart Cart
+    err = r.db.QueryRowContext(
+        ctx,
+        `SELECT CartID, UserID
+         FROM Cart
+         WHERE UserID = ?`,
+        userID,
+    ).Scan(&cart.CartID, &cart.UserID)
 
-	if err == sql.ErrNoRows {
-		return &Cart{
-			UserID: userID,
-			Items:  []CartItem{},
-		}, nil
-	}
+    if err == sql.ErrNoRows {
+        log.Println("[DEBUG] no cart found, returning empty cart")
+        return &Cart{
+            UserID: userID,
+            Items:  []CartItem{},
+        }, nil
+    }
 
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        log.Println("[ERROR] getting cart:", err)
+        return nil, err
+    }
 
-	rows, err := r.db.QueryContext(
-		ctx,
-		`
-		SELECT
-			ci.CartItemID,
-			ci.ItemID,
-			p.ProductName,
-			p.ImageURL,
-			i.Color,
-			i.Size,
-			p.Price,
-			ci.Quantity
-		FROM CartItems ci
-		JOIN Items i ON ci.ItemID = i.ItemID
-		JOIN Products p ON i.ProductID = p.ProductID
-		WHERE ci.CartID = ?
-		`,
-		cart.CartID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+    log.Println("[DEBUG] cart found, CartID:", cart.CartID)
 
-	cart.Items = []CartItem{}
+    // ✅ ПРОБНЫЙ ЗАПРОС ТОЛЬКО С category_id (БЕЗ stock_quantity)
+    query := `
+        SELECT
+            ci.CartItemID,
+            ci.ItemID,
+            p.ProductName,
+            p.ImageURL,
+            i.Color,
+            i.Size,
+            p.Price,
+            ci.Quantity,
+            p.CategoryID
+        FROM CartItems ci
+        JOIN Items i ON ci.ItemID = i.ItemID
+        JOIN Products p ON i.ProductID = p.ProductID
+        WHERE ci.CartID = ?
+    `
 
-	for rows.Next() {
-		var item CartItem
+    log.Println("[DEBUG] executing query:", query)
+    log.Println("[DEBUG] with cartID:", cart.CartID)
 
-		err := rows.Scan(
-			&item.CartItemID,
-			&item.ItemID,
-			&item.ProductName,	
-			&item.ImageURL,
-			&item.Color,
-			&item.Size,
-			&item.Price,
-			&item.Quantity,
-		)
-		if err != nil {
-			return nil, err
-		}
+    rows, err := r.db.QueryContext(ctx, query, cart.CartID)
+    if err != nil {
+        log.Println("[ERROR] query failed:", err)
+        return nil, err
+    }
+    defer rows.Close()
 
-		cart.Items = append(cart.Items, item)
-	}
+    cart.Items = []CartItem{}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+    for rows.Next() {
+        var item CartItem
+        err := rows.Scan(
+            &item.CartItemID,
+            &item.ItemID,
+            &item.ProductName,
+            &item.ImageURL,
+            &item.Color,
+            &item.Size,
+            &item.Price,
+            &item.Quantity,
+            &item.CategoryID,
+        )
+        if err != nil {
+            log.Println("[ERROR] scanning row:", err)
+            return nil, err
+        }
+        log.Printf("[DEBUG] scanned item: ID=%d, Name=%s, CategoryID=%d", item.ItemID, item.ProductName, item.CategoryID)
+        cart.Items = append(cart.Items, item)
+    }
 
-	return &cart, nil
+    if err := rows.Err(); err != nil {
+        log.Println("[ERROR] rows error:", err)
+        return nil, err
+    }
+
+    log.Println("[DEBUG] GetCart completed successfully, items count:", len(cart.Items))
+    return &cart, nil
 }
 
 func (r *Repo) IncrementItem(ctx context.Context, cartID, userID, itemID int) error {
