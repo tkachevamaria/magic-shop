@@ -73,38 +73,52 @@ function showCartToast(message) {
   setTimeout(() => toast.remove(), 2500);
 }
 
-async function updateCartCount() {
-  try {
-    const cart = await getCart();
-    const count = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
-    const cartIcon = document.querySelector(
-      '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
-    );
-    if (!cartIcon) return;
+// async function updateCartCount() {
+//   try {
+//     const cart = await getCart();
+//     const count = cart?.items?.reduce((sum, i) => sum + i.quantity, 0) ?? 0;
+//     const cartIcon = document.querySelector(
+//       '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
+//     );
+//     if (!cartIcon) return;
 
-    cartIcon.querySelector(".cart-badge")?.remove();
-    if (count > 0) {
-      const b = document.createElement("span");
-      b.className = "cart-badge";
-      b.textContent = count;
-      b.style.cssText = `position:absolute; top:-8px; right:-8px; background:#e74c3c; color:#fff; font-size:12px; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center;`;
-      cartIcon.style.position = "relative";
-      cartIcon.appendChild(b);
-    }
-  } catch (e) {
-    console.error("Счётчик: ", e);
-  }
-}
+//     cartIcon.querySelector(".cart-badge")?.remove();
+//     if (count > 0) {
+//       const b = document.createElement("span");
+//       b.className = "cart-badge";
+//       b.textContent = count;
+//       b.style.cssText = `position:absolute; top:-8px; right:-8px; background:#e74c3c; color:#fff; font-size:12px; border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center;`;
+//       cartIcon.style.position = "relative";
+//       cartIcon.appendChild(b);
+//     }
+//   } catch (e) {
+//     console.error("Счётчик: ", e);
+//   }
+// }
 
 function recalcTotal() {
   let sum = 0;
+  let totalItems = 0;
+
   document.querySelectorAll(".cart-item").forEach((r) => {
-    sum +=
-      parseFloat(r.dataset.price) *
-      parseInt(r.querySelector(".cart-qty-display").textContent);
+    const qty = parseInt(
+      r.querySelector(".cart-qty-display").textContent,
+      10,
+    );
+
+    totalItems += qty;
+    sum += parseFloat(r.dataset.price) * qty;
   });
-  const totalEl = document.querySelector(".total-price");
-  if (totalEl) totalEl.textContent = `${sum.toFixed(0)} Галлеонов`;
+
+  const totalPriceEl = document.querySelector(".total-price");
+  if (totalPriceEl) {
+    totalPriceEl.textContent = `${sum.toFixed(0)} Галлеонов`;
+  }
+
+  const totalItemsEl = document.querySelector(".total-items");
+  if (totalItemsEl) {
+    totalItemsEl.textContent = totalItems;
+  }
 }
 
 async function renderCart() {
@@ -158,18 +172,24 @@ async function renderCart() {
         <h2>Ваша корзина</h2>
         ${html}
       </div>
-      <div class="cart-summary">
+          <div class="cart-summary">
         <h2>Итого</h2>
+
+        <div class="summary-total">
+          <span>Товаров:</span>
+          <span class="total-items">0</span>
+        </div>
+
         <div class="summary-total">
           <span>Сумма:</span>
           <span class="total-price">0 Галлеонов</span>
         </div>
+
         <button class="order-btn">Оформить заказ</button>
       </div>
     </div>`;
 
   recalcTotal();
-  updateCartCount();
   bindCartEvents();
 }
 
@@ -210,7 +230,6 @@ function bindCartEvents() {
         processing.delete(id);
         if (row.isConnected) lock(false);
         recalcTotal();
-        updateCartCount();
       }
     });
 
@@ -244,7 +263,6 @@ function bindCartEvents() {
         processing.delete(id);
         if (row.isConnected) lock(false);
         recalcTotal();
-        updateCartCount();
       }
     });
 
@@ -268,7 +286,6 @@ function bindCartEvents() {
       } finally {
         processing.delete(id);
         recalcTotal();
-        updateCartCount();
       }
     });
   });
@@ -300,7 +317,6 @@ function bindCartEvents() {
             <a href="index.html" class="back-to-shop">Вернуться в магазин</a>
           </div>`;
       }
-      updateCartCount();
     } catch (err) {
       console.error(err);
       showCartToast("Ошибка оформления заказа");
