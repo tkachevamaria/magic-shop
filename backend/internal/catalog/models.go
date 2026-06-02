@@ -55,7 +55,7 @@ type ProductFilter struct {
 type AvailableFilters struct {
 	Colors          []string       `json:"colors"`
 	Sizes           []string       `json:"sizes"`
-	DeliveryMethods []FilterOption `json:"delivery_methods"`
+	DeliveryMethods []FilterOption `json:"deliveryMethods"`
 }
 
 type CatalogResponse struct {

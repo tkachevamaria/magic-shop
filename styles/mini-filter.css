@@ -147,43 +147,69 @@
   }
 }
 
+/* ================= УПРАВЛЕНИЕ (КНОПКИ) ================= */
 .mf-controls {
-  grid-column: 1 / -1;
+  width: 100%; /* ГАРАНТИРУЕТ, что блок займет всю ширину и всегда будет снизу */
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
+  justify-content: flex-end; /* Кнопки прижаты к правому краю (можно поменять на space-between) */
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid rgba(201, 160, 84, 0.3);
 }
+
+/* Кнопка "Применить" - делаем крупнее и выразительнее */
 .mf-apply {
-  background: var(--gold-glow);
+  background: var(--gold-glow, #c9a054);
   color: #090b10;
   font-weight: bold;
-  padding: 10px 24px;
-  border-radius: 20px;
+  padding: 12px 32px; /* Увеличенные отступы */
+  font-size: 1rem; /* Чуть крупнее текст */
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
   box-shadow: 0 4px 12px rgba(201, 160, 84, 0.3);
 }
+
 .mf-apply:hover {
-  background: var(--gold-bright);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(201, 160, 84, 0.5);
+  background: var(--gold-bright, #e6c888);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(201, 160, 84, 0.6);
 }
+
+/* Кнопка "Сбросить" - тоже делаем крупнее */
 #mf-clear {
   background: transparent;
   border: 1px solid #ef4444;
   color: #ef4444;
-  padding: 10px 16px;
-  border-radius: 20px;
+  padding: 12px 24px; /* Увеличенные отступы */
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
 }
+
 #mf-clear:hover {
   background: #ef4444;
   color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Адаптив для мобильных: кнопки на всю ширину для удобства нажатия */
+@media (max-width: 768px) {
+  .mf-controls {
+    flex-direction: column-reverse; /* Сбросить сверху, применить снизу */
+    width: 100%;
+  }
+  .mf-apply,
+  #mf-clear {
+    width: 100%;
+    text-align: center;
+    padding: 14px;
+  }
 }
 
 /* Скрываем панель при загрузке */

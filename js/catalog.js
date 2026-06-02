@@ -265,9 +265,10 @@
     if (state.availableFilters.deliveryMethods?.length) {
       html += `<div class="mini-filter-section"><span class="section-label">Доставка</span><div class="mini-filter-options">`;
       state.availableFilters.deliveryMethods.forEach((d) => {
-        const meta = deliveryMeta[d.Name] || { icon: "📦", name: d.Name };
-        const active = state.miniFilters.deliveryId === d.ID ? "active" : "";
-        html += `<button class="mf-btn mf-delivery ${active}" data-id="${d.ID}"><span class="d-icon">${meta.icon}</span>${meta.name}</button>`;
+        // ВАЖНО: используем d.name и d.id (с маленькой буквы), как отдаёт Go
+        const meta = deliveryMeta[d.name] || { icon: "📦", name: d.name };
+        const active = state.miniFilters.deliveryId === d.id ? "active" : "";
+        html += `<button class="mf-btn mf-delivery ${active}" data-id="${d.id}"> <span class="d-icon">${meta.icon}</span>${meta.name}</button>`;
       });
       html += `</div></div>`;
     }
@@ -275,7 +276,7 @@
     // Кнопки управления
     html += `<div class="mf-controls">`;
     if (hasActive) html += `<button id="mf-clear">Сбросить</button>`;
-    html += `<button id="mf-apply" class="mf-btn mf-apply">✨ Применить</button>`;
+    html += `<button id="mf-apply" class="mf-btn mf-apply"> Применить</button>`;
     html += `</div>`;
 
     panel.innerHTML = html;
@@ -318,6 +319,7 @@
     state.miniFilters[type] = state.miniFilters[type] === value ? null : value;
     state.page = 1;
     renderMiniFilterOptions();
+    updateFilterIconState();
   }
 
   function resetMiniFilters() {
@@ -328,14 +330,21 @@
 
   function updateFilterIconState() {
     const icon = document.querySelector(
-      '.icon-btn[title="Фильтr"], .header-icons button.filter-toggle',
+      '.icon-btn[title="Фильтр"], .header-icons button.filter-toggle',
     );
     if (!icon) return;
 
-    const hasMainFilter = state.category || state.shop || state.searchQuery;
-    icon.style.opacity = hasMainFilter ? "1" : "0.4";
-    icon.style.pointerEvents = hasMainFilter ? "auto" : "none";
-    icon.classList.toggle("filter-icon-active", !!hasMainFilter);
+    const hasAnyFilter =
+      state.category ||
+      state.shop ||
+      state.searchQuery ||
+      state.miniFilters.color ||
+      state.miniFilters.size ||
+      state.miniFilters.deliveryId;
+
+    icon.style.opacity = hasAnyFilter ? "1" : "0.4";
+    icon.style.pointerEvents = hasAnyFilter ? "auto" : "none";
+    icon.classList.toggle("filter-icon-active", !!hasAnyFilter);
   }
 
   function toggleMiniPanel(show) {
@@ -369,7 +378,7 @@
     });
   }
 
-  /* 📊 СОРТИРОВКА */
+  /* СОРТИРОВКА */
   function setupSort() {
     const sortSelect = document.getElementById("sort-select");
     if (!sortSelect) return;
@@ -380,7 +389,7 @@
     });
   }
 
-  /* 🍞 TOAST */
+  /*  TOAST */
   function showToast(message) {
     const old = document.querySelector(".cart-toast");
     if (old) old.remove();
