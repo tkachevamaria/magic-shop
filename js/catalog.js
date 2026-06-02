@@ -12,43 +12,43 @@
 
   const API = "http://localhost:8080";
 
- const colorMap = {
-  // Было
-  Чёрный: "#1a1a1a",
-  Черный: "#1a1a1a",
-  Синий: "#1e3a8a",
-  Белый: "#f8fafc",
-  Серебристый: "#c0c0c0",
-  Прозрачный: "rgba(255,255,255,0.15)",
-  Матовый: "#4b5563",
-  Коричневый: "#8B4513",
-  Зелёный: "#22c55e",
-  Фиолетовый: "#9333ea",
-  "Светло-коричневый": "#D2B48C",
-  Золотистый: "#FFD700",
-  Тис: "#5C4033",       
-  Красный: "#ef4444",
-  Оранжевый: "#f97316",
-  Серый: "#6b7280",
-  Жёлтый: "#eab308",
-  "Тёмно-синий": "#1e3a5f",
-  Золотой: "#FFD700",
-  Серебряный: "#C0C0C0",
-  Стеклянный: "rgba(200,230,255,0.4)",
-  Хрустальный: "rgba(230,245,255,0.6)",
-  Бежевый: "#f5f5dc",
-  Старинный: "#D4C4A8",
-  Подарочный: "#E8D8B0",   // праздничный золотисто-бежевый
-  "Тёмный дуб": "#5C3A1E",
-  "Светлый дуб": "#B8860B",
-  "Красное дерево": "#800000",
-  "Тёмный": "#2d2d2d",     // универсальный темный
-  Янтарный: "#FFBF00",
-  Розовый: "#f472b6",
-  Оловянный: "#A9A9A9",
-  Медный: "#B87333",
-  "Тёмно-красный": "#991b1b",
-};
+  const colorMap = {
+    // Было
+    Чёрный: "#1a1a1a",
+    Черный: "#1a1a1a",
+    Синий: "#1e3a8a",
+    Белый: "#f8fafc",
+    Серебристый: "#c0c0c0",
+    Прозрачный: "rgba(255,255,255,0.15)",
+    Матовый: "#4b5563",
+    Коричневый: "#8B4513",
+    Зелёный: "#22c55e",
+    Фиолетовый: "#9333ea",
+    "Светло-коричневый": "#D2B48C",
+    Золотистый: "#FFD700",
+    Тис: "#5C4033",
+    Красный: "#ef4444",
+    Оранжевый: "#f97316",
+    Серый: "#6b7280",
+    Жёлтый: "#eab308",
+    "Тёмно-синий": "#1e3a5f",
+    Золотой: "#FFD700",
+    Серебряный: "#C0C0C0",
+    Стеклянный: "rgba(200,230,255,0.4)",
+    Хрустальный: "rgba(230,245,255,0.6)",
+    Бежевый: "#f5f5dc",
+    Старинный: "#D4C4A8",
+    Подарочный: "#E8D8B0", // праздничный золотисто-бежевый
+    "Тёмный дуб": "#5C3A1E",
+    "Светлый дуб": "#B8860B",
+    "Красное дерево": "#800000",
+    Тёмный: "#2d2d2d", // универсальный темный
+    Янтарный: "#FFBF00",
+    Розовый: "#f472b6",
+    Оловянный: "#A9A9A9",
+    Медный: "#B87333",
+    "Тёмно-красный": "#991b1b",
+  };
 
   const deliveryMeta = {
     Сова: { icon: "🦉", name: "Совиная почта" },
@@ -90,6 +90,7 @@
   }
 
   /* 📥 БОЛЬШИЕ ФИЛЬТРЫ */
+  /* 📥 БОЛЬШИЕ ФИЛЬТРЫ */
   function loadFilters() {
     fetch(`${API}/api/filters`)
       .then((res) => res.json())
@@ -110,10 +111,46 @@
           }
           renderFilterGroup(".shops-list", data.shops, "shop", "data-shop-id");
         }
+
+        // 👇 ДОБАВИТЬ ЭТО: если режим включен, рисуем тёмную категорию ПОСЛЕ обычных
+        if (sessionStorage.getItem("darkModeUnlocked") === "true") {
+          renderDarkCategory();
+        }
       })
-      .catch((err) => console.error("❌ Ошибка загрузки фильтров:", err));
+      .catch((err) => console.error("❌ Ошибка загрузки фильтров: ", err));
   }
 
+  // 👇 ДОБАВИТЬ ЭТУ ФУНКЦИЮ (например, сразу после loadFilters)
+  function renderDarkCategory() {
+    const container = document.querySelector(".categories-menu");
+    if (!container) return;
+    if (document.querySelector(".filter-link.dark-category")) return; // Уже есть
+
+    const darkLink = document.createElement("div");
+    darkLink.className = "filter-link category dark-category";
+    darkLink.setAttribute("data-category-id", "dark");
+    darkLink.innerHTML = "🌑 Тёмные товары";
+
+    container.appendChild(darkLink);
+
+    // Анимация плавного появления
+    darkLink.style.opacity = "0";
+    darkLink.style.transform = "translateY(-10px)";
+    requestAnimationFrame(() => {
+      darkLink.style.transition = "all 0.5s ease";
+      darkLink.style.opacity = "1";
+      darkLink.style.transform = "translateY(0)";
+    });
+
+    // Обработка клика
+    darkLink.addEventListener("click", (e) => {
+      e.stopPropagation(); // Защита от всплытия
+      e.preventDefault();
+      if (typeof window.applyDarkCategoryFilter === "function") {
+        window.applyDarkCategoryFilter();
+      }
+    });
+  }
   function renderFilterGroup(containerSelector, items, type, attr) {
     const container = document.querySelector(containerSelector);
     if (!container) return;
@@ -164,6 +201,10 @@
           parseInt(el.dataset.shopId) === state.shop,
         ),
       );
+
+    document.querySelectorAll(".filter-link.dark-category").forEach((el) => {
+      el.classList.toggle("active", state.category === "dark");
+    });
   }
 
   /* 📦 ЗАГРУЗКА ТОВАРОВ + ФАСЕТЫ */
@@ -186,9 +227,13 @@
       params.set("delivery", state.miniFilters.deliveryId);
     if (state.sort) params.set("sort", state.sort);
 
-    const endpoint = state.searchQuery
-      ? `${API}/api/products/search`
-      : `${API}/api/products`;
+    let endpoint = `${API}/api/products`;
+
+    if (state.category === "dark") {
+      endpoint = `${API}/api/products/dark`;
+    } else if (state.searchQuery) {
+      endpoint = `${API}/api/products/search`;
+    }
 
     fetch(`${endpoint}?${params.toString()}`)
       .then((res) => {
@@ -408,4 +453,14 @@
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 2500);
   }
+
+  window.applyDarkCategoryFilter = function () {
+    state.category = state.category === "dark" ? null : "dark";
+    state.shop = null; // Сбрасываем магазин при выборе тёмных товаров
+    state.page = 1;
+    resetMiniFilters();
+    updateFilterIconState();
+    updateActiveUI();
+    loadProducts();
+  };
 })();
