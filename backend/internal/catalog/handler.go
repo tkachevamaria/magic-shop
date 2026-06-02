@@ -40,6 +40,13 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if colorStr := q.Get("color"); colorStr != "" {
+		filter.Color = &colorStr
+	}
+	if sizeStr := q.Get("size"); sizeStr != "" {
+		filter.Size = &sizeStr
+	}
+
 	if p := q.Get("page"); p != "" {
 		if v, err := strconv.Atoi(p); err == nil && v > 0 {
 			filter.Pagination.Page = v
@@ -112,6 +119,14 @@ func (h *ProductHandler) SearchProducts(w http.ResponseWriter, r *http.Request) 
 			filter.ShopID = &id
 		}
 	}
+
+	if colorStr := q.Get("color"); colorStr != "" {
+		filter.Color = &colorStr
+	}
+	if sizeStr := q.Get("size"); sizeStr != "" {
+		filter.Size = &sizeStr
+	}
+
 	if p := q.Get("page"); p != "" {
 		if v, err := strconv.Atoi(p); err == nil && v > 0 {
 			filter.Pagination.Page = v

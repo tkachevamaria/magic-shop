@@ -6,69 +6,69 @@ fetch("header.html")
   .then((data) => {
     document.getElementById("header-container").innerHTML = data;
 
-    // ОБРАБОТЧИК ДЛЯ ЛОГОТИПА
-    setTimeout(function () {
-      const logo = document.querySelector("#header-container .logo");
-      if (logo) {
-        logo.addEventListener("click", function (e) {
-          e.preventDefault();
-          window.location.href = "index.html";
-        });
-        logo.style.cursor = "pointer";
-      }
-    }, 100);
+    // Логотип
+    const logo = document.querySelector("#header-container .logo");
+    if (logo) {
+      logo.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.href = "index.html";
+      });
+      logo.style.cursor = "pointer";
+    }
 
-    // ОБРАБОТЧИКИ ДЛЯ ИКОНОК ШАПКИ
-    setTimeout(function () {
-      // Корзина
-      const cartBtn = document.querySelector(
-        '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
-      );
-      if (cartBtn) {
-        cartBtn.addEventListener("click", function (e) {
-          e.preventDefault();
-          window.location.href = "cart.html";
-        });
-        cartBtn.style.cursor = "pointer";
-      }
+    // Иконки шапки
+    const cartBtn = document.querySelector(
+      '#header-container .icon-btn[title="Корзина"], #header-container a[title="Корзина"]',
+    );
+    if (cartBtn) {
+      cartBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.href = "cart.html";
+      });
+      cartBtn.style.cursor = "pointer";
+    }
 
-      // История заказов (если есть)
-      const ordersBtn = document.querySelector(
-        '#header-container .icon-btn[title="История заказов"], #header-container a[title="История заказов"]',
-      );
-      if (ordersBtn) {
-        ordersBtn.addEventListener("click", function (e) {
-          e.preventDefault();
-          window.location.href = "orders.html";
-        });
-        ordersBtn.style.cursor = "pointer";
-      }
-
-      // Фильтр
-      const filterBtn = document.querySelector(
-        '#header-container .icon-btn[title="Фильтр"]',
-      );
-      if (filterBtn) {
-        filterBtn.addEventListener("click", function (e) {
-          e.preventDefault();
-          showToast("⏳ Фильтр скоро появится");
-        });
-        filterBtn.style.cursor = "pointer";
-      }
-    }, 100);
+    const ordersBtn = document.querySelector(
+      '#header-container .icon-btn[title="История заказов"], #header-container a[title="История заказов"]',
+    );
+    if (ordersBtn) {
+      ordersBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.href = "orders.html";
+      });
+      ordersBtn.style.cursor = "pointer";
+    }
   })
   .catch((err) => {
+    console.warn("Header fallback:", err);
     document.getElementById("header-container").innerHTML = `
-            <div class="header-content">
-                <div class="logo" id="fallbackLogo" style="cursor: pointer;">DA <span class="logo-sub">Logo</span></div>
-                <div class="search-container">
-                    <input type="text" placeholder="ПОИСК..." class="search-input">
-                    <span class="search-arrow">🔍</span>
-                </div>
-                <div class="header-icons">
-                    <button class="icon-btn" id="fallbackCart" title="Корзина">🛒</button>
-                    <button class="icon-btn" id="fallbackOrders" title="История заказов">📜</button>
-                </div>
-            </div>
-        `;
+      <div class="header-content">
+        <div class="logo" id="fallbackLogo" style="cursor:pointer;">DA <span class="logo-sub">Logo</span></div>
+        <div class="search-container">
+          <input type="text" placeholder="ПОИСК..." class="search-input">
+          <span class="search-arrow">🔍</span>
+        </div>
+        <div class="header-icons">
+          <button class="icon-btn" id="fallbackCart" title="Корзина">🛒</button>
+          <button class="icon-btn" id="fallbackOrders" title="История заказов">📜</button>
+        </div>
+      </div>`;
   });
+
+// ✅ Единый обработчик для кнопки фильтра (делегирование)
+(function () {
+  if (window._miniFilterListener) return;
+  window._miniFilterListener = true;
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest('.icon-btn[title="Фильтр"]');
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation(); // Останавливаем всплытие, чтобы не срабатывали другие клики
+
+    if (typeof window.toggleMiniFilter === "function") {
+      window.toggleMiniFilter();
+    }
+  });
+})();
