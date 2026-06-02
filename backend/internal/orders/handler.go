@@ -84,11 +84,18 @@ func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, ErrCartEmpty):
 			http.Error(w, "Cart is empty", http.StatusBadRequest)
-		case errors.Is(err, ErrOutOfStock):
-			http.Error(w, "One or more items are out of stock", http.StatusConflict)
 		case errors.Is(err, ErrNoDeliveryAddress):
 			http.Error(w, "Delivery address not set in profile", http.StatusUnprocessableEntity)
 		default:
+			var outOfStock *OutOfStockError
+			if errors.As(err, &outOfStock) {
+				// Возвращаем JSON с деталями нехватки и статусом 409 Conflict
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusConflict)
+				json.NewEncoder(w).Encode(outOfStock)
+				return
+			}
+			// Неизвестная ошибка – логируем и отдаём 500
 			log.Printf("Ошибка создания заказа: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}

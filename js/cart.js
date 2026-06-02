@@ -268,23 +268,50 @@ function bindCartEvents() {
   });
 
   document.querySelector(".order-btn")?.addEventListener("click", async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/orders`, {
-        method: "POST",
-        headers: authHeaders(),
-      });
-      if (res.status === 401) {
-        window.location.href = "auth.html";
-        return;
-      }
-      if (!res.ok) {
-        showCartToast("Ошибка оформления заказа");
-        return;
-      }
-      await res.json();
-      showCartToast("Заказ успешно оформлен! 🎉");
+  try {
+    const res = await fetch(`${API_URL}/api/orders`, {
+      method: "POST",
+      headers: authHeaders(),
+    });
+    if (res.status === 401) {
+      window.location.href = "auth.html";
+      return;
+    }
 
-      const container = document.getElementById("cart-content");
+    if (!res.ok) {
+      let message = "Ошибка оформления заказа";
+      // Всегда читаем как текст, чтобы не зависеть от заголовка Content-Type
+      const text = await res.text();
+      if (text) {
+        // Пробуем распарсить JSON
+        try {
+          const body = JSON.parse(text);
+          // Проверяем, есть ли детали нехватки
+          if (res.status === 409 && body) {
+            const shortages = body.Shortages || body.shortages; // поддержка обоих вариантов
+            if (Array.isArray(shortages) && shortages.length > 0) {
+              const parts = shortages.map(
+                s => `${s.product_name} (${s.color}/${s.size}): в корзине ${s.in_cart}, на складе ${s.in_stock}`
+              );
+              message = `Не хватает товаров:\n${parts.join("\n")}`;
+            }
+          }
+          else if (body.error) {
+            message = body.error;
+          }
+        } catch {
+          // Не JSON – используем текст как есть
+          message = text;
+        }
+      }
+      showCartToast(message);
+      return;
+    }
+
+    // Успех (201)
+    await res.json(); // прочитаем, чтобы не было утечки
+    showCartToast("Заказ успешно оформлен! 🎉");
+    const container = document.getElementById("cart-content");
       if (container) {
         container.innerHTML = `
           <div class="empty-cart">
@@ -294,11 +321,11 @@ function bindCartEvents() {
             <a href="index.html" class="back-to-shop">Вернуться в магазин</a>
           </div>`;
       }
-    } catch (err) {
-      console.error(err);
-      showCartToast("Ошибка оформления заказа");
-    }
-  });
+  } catch (err) {
+    console.error(err);
+    showCartToast("Ошибка оформления заказа");
+  }
+});
 }
 
 document.addEventListener("DOMContentLoaded", renderCart);
