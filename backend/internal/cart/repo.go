@@ -78,6 +78,7 @@ func (r *Repo) GetCart(ctx context.Context, userID int) (*Cart, error) {
 			ci.CartItemID,
 			ci.ItemID,
 			p.ProductName,
+			p.ImageURL,
 			i.Color,
 			i.Size,
 			p.Price,
@@ -102,7 +103,8 @@ func (r *Repo) GetCart(ctx context.Context, userID int) (*Cart, error) {
 		err := rows.Scan(
 			&item.CartItemID,
 			&item.ItemID,
-			&item.ProductName,
+			&item.ProductName,	
+			&item.ImageURL,
 			&item.Color,
 			&item.Size,
 			&item.Price,
