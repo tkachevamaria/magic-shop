@@ -12,12 +12,13 @@ button.level-badge {
   font-weight: inherit;
   line-height: inherit;
 
-  /* Скрываем, что это кнопка */
+  /* Полностью скрываем, что это кнопка */
   cursor: default !important;
   outline: none !important;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
 
-  transition: all 0.4s ease;
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease; 
 }
 
 /* Убираем стандартные эффекты нажатия и фокуса у кнопки */
@@ -27,16 +28,12 @@ button.level-badge:focus-visible {
   box-shadow: none !important;
 }
 
+/* Полностью убиваем любое поведение при нажатии */
 button.level-badge:active {
   transform: none !important;
   background: rgba(201, 160, 84, 0.2) !important;
   scale: 1 !important;
   box-shadow: none !important;
-}
-
-/* Дополнительная защита от любых эффектов */
-button.level-badge {
-  cursor: pointer !important; /* Меняем на pointer, чтобы пользователь знал, что кликабельно */
 }
 
 /* Стиль ПОСЛЕ активации тёмного режима */
@@ -308,8 +305,6 @@ button.level-badge.dark-activated {
     opacity: 1;
   }
 }
-
-/* Клубы дыма */
 
 /* 🌫 КЛУБЫ ДЫМА С АНИМАЦИЕЙ 🌫 */
 .smoke-clouds {
