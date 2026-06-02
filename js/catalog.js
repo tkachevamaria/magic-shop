@@ -90,7 +90,6 @@
   }
 
   /* 📥 БОЛЬШИЕ ФИЛЬТРЫ */
-  /* 📥 БОЛЬШИЕ ФИЛЬТРЫ */
   function loadFilters() {
     fetch(`${API}/api/filters`)
       .then((res) => res.json())
