@@ -13,13 +13,14 @@ type OrderSummary struct {
 }
 
 type OrderItemDetail struct {
-	ProductID int     `json:"product_id"`
-	Name      string  `json:"name"`
-	Price     float64 `json:"price"`
-	ImageURL  string  `json:"image_url"`
-	Quantity  int     `json:"quantity"`
-	Color     string  `json:"color"`
-	Size      string  `json:"size"`
+	ProductID  int     `json:"product_id"`
+	Name       string  `json:"name"`
+	CategoryID int     `json:"category_id"`
+	Price      float64 `json:"price"`
+	ImageURL   string  `json:"image_url"`
+	Quantity   int     `json:"quantity"`
+	Color      string  `json:"color"`
+	Size       string  `json:"size"`
 }
 
 type OrderDetails struct {
