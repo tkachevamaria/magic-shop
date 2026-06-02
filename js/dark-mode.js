@@ -188,7 +188,6 @@
   window.getDarkModeTimeLeft    = getDarkModeTimeLeft;
   window.checkDarkProductAccess = checkDarkProductAccess;
   window.checkDarkItemsInCart = checkDarkItemsInCart;
-  window.DARK_CATEGORY_ID = DARK_CATEGORY_ID;
   window.checkDarkItemsInCart   = checkDarkItemsInCart;
 
   // АКТИВАЦИЯ ЧЕРЕЗ 6 КЛИКОВ
