@@ -78,10 +78,7 @@ function recalcTotal() {
   let totalItems = 0;
 
   document.querySelectorAll(".cart-item").forEach((r) => {
-    const qty = parseInt(
-      r.querySelector(".cart-qty-display").textContent,
-      10,
-    );
+    const qty = parseInt(r.querySelector(".cart-qty-display").textContent, 10);
 
     totalItems += qty;
     sum += parseFloat(r.dataset.price) * qty;
@@ -121,6 +118,11 @@ async function renderCart() {
   // ✅ ОДИН цикл, с отрисовкой картинки
   let html = "";
   cart.items.forEach((item) => {
+    // Маска
+    const displayItem = window.DarkMask
+      ? window.DarkMask.maskDarkItem(item)
+      : item;
+
     const isMax = item.quantity >= (item.stock_quantity || 999);
     const imgSrc = item.image_url ? `${API_URL}${item.image_url}` : "";
 
@@ -268,64 +270,71 @@ function bindCartEvents() {
   });
 
   document.querySelector(".order-btn")?.addEventListener("click", async () => {
-  try {
-    const res = await fetch(`${API_URL}/api/orders`, {
-      method: "POST",
-      headers: authHeaders(),
-    });
-    if (res.status === 401) {
-      window.location.href = "auth.html";
-      return;
-    }
+    // 🔮 ПРОВЕРКА НА ТЁМНЫЕ ТОВАРЫ В КОРЗИНЕ
+    // Сначала получаем текущую корзину для проверки
+    try {
+      const cartForCheck = await getCart();
+      if (cartForCheck && cartForCheck.items && window.checkDarkItemsInCart) {
+        // Преобразуем items в нужный формат для проверки
+        const itemsForCheck = cartForCheck.items.map((item) => ({
+          is_dark: item.categoty_id || false,
+          name: item.product_name,
+          id: item.item_id,
+        }));
 
-    if (!res.ok) {
-      let message = "Ошибка оформления заказа";
-      // Всегда читаем как текст, чтобы не зависеть от заголовка Content-Type
-      const text = await res.text();
-      if (text) {
-        // Пробуем распарсить JSON
-        try {
-          const body = JSON.parse(text);
-          // Проверяем, есть ли детали нехватки
-          if (res.status === 409 && body) {
-            const shortages = body.Shortages || body.shortages; // поддержка обоих вариантов
-            if (Array.isArray(shortages) && shortages.length > 0) {
-              const parts = shortages.map(
-                s => `${s.product_name} (${s.color}/${s.size}): в корзине ${s.in_cart}, на складе ${s.in_stock}`
-              );
-              message = `Не хватает товаров:\n${parts.join("\n")}`;
+        const check = await window.checkDarkItemsInCart(itemsForCheck);
+        if (check.blocked) {
+          showCartToast(check.message);
+          // Подсвечиваем тёмные товары
+          document.querySelectorAll(".cart-item").forEach((row) => {
+            const itemId = parseInt(row.dataset.id);
+            if (check.darkItems.some((dark) => dark.id === itemId)) {
+              row.style.border = "2px solid #9333ea";
+              row.style.boxShadow = "0 0 10px rgba(147, 51, 234, 0.5)";
             }
-          }
-          else if (body.error) {
-            message = body.error;
-          }
-        } catch {
-          // Не JSON – используем текст как есть
-          message = text;
+          });
+          return;
         }
       }
-      showCartToast(message);
-      return;
+    } catch (err) {
+      console.error("Ошибка проверки dark mode:", err);
+      // Продолжаем оформление, если проверка не удалась
     }
 
-    // Успех (201)
-    await res.json(); // прочитаем, чтобы не было утечки
-    showCartToast("Заказ успешно оформлен! 🎉");
-    const container = document.getElementById("cart-content");
+    // Оригинальный код оформления заказа
+    try {
+      const res = await fetch(`${API_URL}/api/orders`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      if (res.status === 401) {
+        window.location.href = "auth.html";
+        return;
+      }
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        showCartToast(errorData.message || "Ошибка оформления заказа");
+        return;
+      }
+      await res.json();
+      showCartToast("Заказ успешно оформлен! 🎉");
+
+      const container = document.getElementById("cart-content");
       if (container) {
         container.innerHTML = `
-          <div class="empty-cart">
-            <div class="empty-cart-icon">🎉</div>
-            <h2>Заказ оформлен</h2>
-            <p>Спасибо за покупку!</p>
-            <a href="index.html" class="back-to-shop">Вернуться в магазин</a>
-          </div>`;
+        <div class="empty-cart">
+          <div class="empty-cart-icon">🎉</div>
+          <h2>Заказ оформлен</h2>
+          <p>Спасибо за покупку!</p>
+          <a href="index.html" class="back-to-shop">Вернуться в магазин</a>
+        </div>`;
       }
-  } catch (err) {
-    console.error(err);
-    showCartToast("Ошибка оформления заказа");
-  }
-});
+      updateCartCount();
+    } catch (err) {
+      console.error(err);
+      showCartToast("Ошибка оформления заказа");
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", renderCart);

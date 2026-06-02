@@ -3,6 +3,7 @@
   const API = "http://localhost:8080";
   const LIMIT = 12;
   const TOAST_DURATION = 2500;
+  const DARK_CATEGORY_ID = 666;
 
   // ─── Состояние ────────────────────────────────────────────────────────────
   const state = {

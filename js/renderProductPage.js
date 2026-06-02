@@ -407,6 +407,12 @@
       if (!response.ok) throw new Error("Ошибка загрузки");
 
       const product = await response.json();
+
+      // ПРИМЕНЯЕМ МАСКУ
+      const displayProduct = window.DarkMask
+        ? window.DarkMask.maskDarkItem(product)
+        : product;
+
       productState.product = product;
       productState.items = product.items || [];
 
