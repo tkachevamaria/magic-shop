@@ -112,6 +112,7 @@ async function renderOrdersPage() {
   try {
     orders = await loadOrders();
   } catch (err) {
+    logError("Не удалось загрузить заказы", err.message);
     container.innerHTML = `<div style="text-align:center; padding:100px; font-size:24px; color:#ff6b6b;">⚠️ Не удалось загрузить заказы</div>`;
     return;
   }

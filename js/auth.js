@@ -125,6 +125,7 @@ document.getElementById("login-btn").addEventListener("click", async () => {
       showMessage("Неверная почта или пароль", "error");
     }
   } catch (err) {
+    logError("Ошибка сети при входе", err.message);
     showMessage("Не удалось соединиться с сервером", "error");
   } finally {
     btn.disabled = false;
@@ -189,6 +190,7 @@ document.getElementById("register-btn").addEventListener("click", async () => {
       showMessage(friendlyMsg, "error");
     }
   } catch (err) {
+    logError("Ошибка сети при регистрации", err.message);
     showMessage("Не удалось соединиться с сервером", "error");
   } finally {
     btn.disabled = false;

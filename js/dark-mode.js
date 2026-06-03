@@ -255,7 +255,7 @@
     }
 
     if (isDarkModeActive()) {
-      waitForElement("#darkModeTrigger", 3000).then(activateBadge);
+      waitForElement("#darkModeTrigger", 3000).then(activateBadge).catch(() => {});
       startDarkMusic(); // ВКЛЮЧАЕМ МУЗЫКУ, ЕСЛИ РЕЖИМ УЖЕ АКТИВЕН
     }
   }
@@ -314,6 +314,7 @@
     activateBadge(button);
     showPurplePulse();
     showEpicToast();
+    logInfo("Тёмный режим активирован");
     startDarkMusic(); // ВКЛЮЧАЕМ МУЗЫКУ ПРИ АКТИВАЦИИ
     if (typeof window.renderDarkCategory === "function") {
       setTimeout(() => window.renderDarkCategory(), 500);

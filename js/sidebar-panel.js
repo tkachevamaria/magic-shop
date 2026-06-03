@@ -81,7 +81,7 @@ function showAddressModal() {
       showToast("📍 Адрес доставки обновлён");
       closeModal(modal);
     } catch (err) {
-      console.error(err);
+      logError("Не удалось обновить адрес доставки", err.message);
       showToast("❌ Не удалось обновить адрес");
     }
   });
@@ -176,6 +176,7 @@ function renderSidebarPanel() {
           break;
         case "logout":
           if (confirm("Вы уверены, что хотите выйти?")) {
+            logInfo("Пользователь вышел из аккаунта");
             localStorage.removeItem("token");
             localStorage.removeItem("user_id");
             localStorage.removeItem("access_level");
@@ -238,7 +239,7 @@ async function initSidebarPanel() {
     userLevelName = levelName(profile.access_level);
     userAddress = profile.delivery_address || "Адрес не указан";
   } catch (err) {
-    console.error("Ошибка загрузки профиля:", err);
+    logError("Ошибка загрузки профиля", err.message);
   }
 
   renderSidebarPanel();

@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`Ошибка регистрации: ${errorText || response.statusText}`);
             }
         } catch (error) {
-            console.error('Network error:', error);
+            logError("Ошибка сети при регистрации", error.message);
             alert('Не удалось соединиться с сервером. Убедитесь, что сервер запущен (go run main.go)');
         }
     });
