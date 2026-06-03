@@ -25,26 +25,26 @@
     Синий: "#1e3a8a",
     Белый: "#f8fafc",
     Серебристый: "#c0c0c0",
-    Серебряный: "#c0c0c0", // дубль → один цвет
+    Серебряный: "#c0c0c0",
     Прозрачный: "rgba(255,255,255,0.15)",
-    Матовый: "#4b5563",
+    Матовый: "#6a7f8f",
     Коричневый: "#8B4513",
-    Зелёный: "#22c55e",
+    Зелёный: "#1aad50",
     Фиолетовый: "#9333ea",
-    "Светло-коричневый": "#D2B48C",
+    "Светло-коричневый": "#d2b48c",
     Золотистый: "#FFD700",
-    Золотой: "#FFD700", // дубль → один цвет
+    Золотой: "#FFD700",
     Тис: "#5C4033",
     Красный: "#ef4444",
     Оранжевый: "#f97316",
     Серый: "#6b7280",
-    Жёлтый: "#eab308",
+    Жёлтый: "rgb(248, 245, 46)",
     "Тёмно-синий": "#1e3a5f",
     Стеклянный: "rgba(200,230,255,0.4)",
     Хрустальный: "rgba(230,245,255,0.6)",
     Бежевый: "#f5f5dc",
-    Старинный: "#D4C4A8",
-    Подарочный: "#E8D8B0",
+    Старинный: "#095029",
+    Подарочный: "rgb(228, 62, 104)",
     "Тёмный дуб": "#5C3A1E",
     "Светлый дуб": "#B8860B",
     "Красное дерево": "#800000",
@@ -53,7 +53,7 @@
     Розовый: "#f472b6",
     Оловянный: "#A9A9A9",
     Медный: "#B87333",
-    "Тёмно-красный": "#991b1b",
+    "Тёмно-красный": "rgb(97, 17, 17)",
   };
 
   // ─── Метаданные доставки ──────────────────────────────────────────────────
@@ -356,9 +356,13 @@
           if (!endMsg) {
             endMsg = document.createElement("p");
             endMsg.id = "end-of-catalog";
-            endMsg.style.cssText = "text-align:center; padding-bottom:30px; opacity:0.5; width:100%; margin: 0 auto;";
+            endMsg.style.cssText =
+              "text-align:center; padding-bottom:30px; opacity:0.5; width:100%; margin: 0 auto;";
             endMsg.textContent = "✨ Все товары загружены";
-            grid.parentNode.parentNode.insertBefore(endMsg, grid.parentNode.nextSibling);
+            grid.parentNode.parentNode.insertBefore(
+              endMsg,
+              grid.parentNode.nextSibling,
+            );
           }
         }
 
@@ -422,16 +426,16 @@
     if (deliveryMethods?.length) {
       html += `<div class="mini-filter-section"><span class="section-label">Доставка</span><div class="mini-filter-options">`;
       deliveryMethods.forEach((d) => {
-        const meta = deliveryMeta[d.Name] || { icon: "📦", name: d.Name };
-        const active = state.miniFilters.deliveryId === d.ID ? "active" : "";
-        html += `<button class="mf-btn mf-delivery ${active}" data-id="${d.ID}"><span class="d-icon">${meta.icon}</span>${meta.name}</button>`;
+        const meta = deliveryMeta[d.name] || { icon: "📦", name: d.name };
+        const active = state.miniFilters.deliveryId === d.id ? "active" : "";
+        html += `<button class="mf-btn mf-delivery ${active}" data-id="${d.id}"><span class="d-icon">${meta.icon}</span>${meta.name}</button>`;
       });
       html += `</div></div>`;
     }
 
     html += `<div class="mf-controls">`;
     if (hasActive) html += `<button id="mf-clear">Сбросить</button>`;
-    html += `<button id="mf-apply" class="mf-btn mf-apply">✨ Применить</button>`;
+    html += `<button id="mf-apply" class="mf-btn mf-apply"> Применить</button>`;
     html += `</div>`;
 
     panel.innerHTML = html;
