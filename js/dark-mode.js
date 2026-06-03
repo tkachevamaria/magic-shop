@@ -1,9 +1,8 @@
-/* dark-mode.js — с истечением сессии, авто-сбросом, защитой страниц и live-выбросом */
+/* dark-mode.js — с истечением сессии, авто-сбросом, защитой страниц, live-выбросом и МУЗЫКОЙ */
 (function () {
-
   // КОНФИГ
 
-  const DARK_MODE_KEY           = "darkModeUnlocked";
+  const DARK_MODE_KEY = "darkModeUnlocked";
   const DARK_MODE_TIMESTAMP_KEY = "darkModeUnlockedAt";
 
   /** Сколько живёт тёмная сессия */
@@ -25,9 +24,37 @@
   /** Куда редиректить при блокировке. */
   const REDIRECT_URL = "/frontend/index.html";
 
+  // ============================================================
+  // МУЗЫКАЛЬНЫЕ ФУНКЦИИ (ДОБАВЛЕНЫ)
+  // ============================================================
+
+  function startDarkMusic() {
+    if (window.DarkMusic && typeof window.DarkMusic.start === "function") {
+      window.DarkMusic.start();
+      console.log("🌑 Тёмная музыка запущена");
+    } else {
+      console.warn(
+        "🌑 DarkMusic не найден, проверь порядок подключения скриптов",
+      );
+      // Пробуем инициализировать музыку, если объект есть
+      if (window.DarkMusic && typeof window.DarkMusic.init === "function") {
+        window.DarkMusic.init();
+        window.DarkMusic.start();
+      }
+    }
+  }
+
+  function stopDarkMusic() {
+    if (window.DarkMusic && typeof window.DarkMusic.stop === "function") {
+      window.DarkMusic.stop();
+      console.log("🌑 Тёмная музыка остановлена");
+    }
+  }
+
   // ОПРЕДЕЛЯЕМ КОНТЕКСТ СТРАНИЦЫ
-  const _params        = new URLSearchParams(window.location.search);
-  const _currentId     = parseInt(_params.get("id"), 10);
+
+  const _params = new URLSearchParams(window.location.search);
+  const _currentId = parseInt(_params.get("id"), 10);
   const _isProductPage = !!_currentId && DARK_PRODUCT_IDS.includes(_currentId);
 
   // ХРАНИЛИЩЕ
@@ -39,8 +66,14 @@
   function isDarkModeActive() {
     if (sessionStorage.getItem(DARK_MODE_KEY) !== "true") return false;
     const ts = parseInt(sessionStorage.getItem(DARK_MODE_TIMESTAMP_KEY), 10);
-    if (!ts || isNaN(ts)) { _clearDarkMode(); return false; }
-    if (Date.now() - ts > SESSION_DURATION_MS) { _clearDarkMode(); return false; }
+    if (!ts || isNaN(ts)) {
+      _clearDarkMode();
+      return false;
+    }
+    if (Date.now() - ts > SESSION_DURATION_MS) {
+      _clearDarkMode();
+      return false;
+    }
     return true;
   }
 
@@ -54,6 +87,7 @@
     sessionStorage.removeItem(DARK_MODE_KEY);
     sessionStorage.removeItem(DARK_MODE_TIMESTAMP_KEY);
     _removeBadge();
+    stopDarkMusic(); // ОСТАНАВЛИВАЕМ МУЗЫКУ ПРИ СБРОСЕ
   }
 
   function _removeBadge() {
@@ -80,13 +114,14 @@
     runPageGuard();
   }
 
-
   let _checkTimer = null;
 
   function startExpiryWatcher() {
     if (_checkTimer) return;
 
-    const interval = _isProductPage ? PRODUCT_CHECK_INTERVAL_MS : CHECK_INTERVAL_MS;
+    const interval = _isProductPage
+      ? PRODUCT_CHECK_INTERVAL_MS
+      : CHECK_INTERVAL_MS;
 
     _checkTimer = setInterval(() => {
       const wasActive = sessionStorage.getItem(DARK_MODE_KEY) === "true";
@@ -123,15 +158,22 @@
     // 1. Убираем бейдж
     _removeBadge();
 
+    // ОСТАНАВЛИВАЕМ МУЗЫКУ
+    stopDarkMusic();
+
     // 2. Карточки товаров, помеченные как тёмные
-    document.querySelectorAll('[data-dark="true"], .dark-product-card').forEach(el => {
-      el.style.display = "none";
-    });
+    document
+      .querySelectorAll('[data-dark="true"], .dark-product-card')
+      .forEach((el) => {
+        el.style.display = "none";
+      });
 
     // 3. Целые секции тёмного каталога
-    document.querySelectorAll('.dark-category, .dark-section, #dark-catalog').forEach(el => {
-      el.style.display = "none";
-    });
+    document
+      .querySelectorAll(".dark-category, .dark-section, #dark-catalog")
+      .forEach((el) => {
+        el.style.display = "none";
+      });
 
     // 4. Хук для каталога — если там есть своя функция скрытия
     if (typeof window.hideDarkCategory === "function") {
@@ -146,8 +188,8 @@
   function checkDarkProductAccess(productId) {
     return new Promise((resolve, reject) => {
       fetch(`http://localhost:8080/api/products/${productId}`)
-        .then(res => res.json())
-        .then(product => {
+        .then((res) => res.json())
+        .then((product) => {
           if (product.is_dark || product.category === "dark") {
             if (!isDarkModeActive()) {
               reject({
@@ -168,31 +210,31 @@
 
   // Проверка корзины — фильтруем по category_id
   async function checkDarkItemsInCart(cartItems) {
-    const darkItems = cartItems.filter(item => item.is_dark === true);
+    const darkItems = cartItems.filter((item) => item.is_dark === true);
     if (darkItems.length > 0 && !isDarkModeActive()) {
+      console.log(`🌑 В корзине есть тёмные товары, доступ заблокирован`);
       return {
         blocked: true,
         darkItems,
       };
-      console.log(`🌑 В корзине есть тёмные товары, доступ заблокирован`);
     }
     return { blocked: false };
   }
 
   // ПУБЛИЧНОЕ API
-  window.isDarkModeActive       = isDarkModeActive;
-  window.getDarkModeTimeLeft    = getDarkModeTimeLeft;
+
+  window.isDarkModeActive = isDarkModeActive;
+  window.getDarkModeTimeLeft = getDarkModeTimeLeft;
   window.checkDarkProductAccess = checkDarkProductAccess;
   window.checkDarkItemsInCart = checkDarkItemsInCart;
-  window.checkDarkItemsInCart   = checkDarkItemsInCart;
 
   // АКТИВАЦИЯ ЧЕРЕЗ 6 КЛИКОВ
-  let clickCount    = 0;
-  let clickTimer    = null;
+  let clickCount = 0;
+  let clickTimer = null;
   let isInitialized = false;
 
   const REQUIRED_CLICKS = 6;
-  const RESET_TIMEOUT   = 2000;
+  const RESET_TIMEOUT = 2000;
 
   function init() {
     if (isInitialized) return;
@@ -205,25 +247,38 @@
       isInitialized = true;
     } else {
       waitForElement("#darkModeTrigger", 5000)
-        .then(el => { attachClickListener(el); isInitialized = true; })
+        .then((el) => {
+          attachClickListener(el);
+          isInitialized = true;
+        })
         .catch(() => console.warn("🌑 #darkModeTrigger не найден за 5 сек"));
     }
 
     if (isDarkModeActive()) {
       waitForElement("#darkModeTrigger", 3000).then(activateBadge).catch(() => {});
+      startDarkMusic(); // ВКЛЮЧАЕМ МУЗЫКУ, ЕСЛИ РЕЖИМ УЖЕ АКТИВЕН
     }
   }
 
   function waitForElement(selector, timeout = 5000) {
     return new Promise((resolve, reject) => {
       const el = document.querySelector(selector);
-      if (el) { resolve(el); return; }
+      if (el) {
+        resolve(el);
+        return;
+      }
       const obs = new MutationObserver((_, o) => {
         const found = document.querySelector(selector);
-        if (found) { o.disconnect(); resolve(found); }
+        if (found) {
+          o.disconnect();
+          resolve(found);
+        }
       });
       obs.observe(document.body, { childList: true, subtree: true });
-      setTimeout(() => { obs.disconnect(); reject(new Error(`${selector} not found`)); }, timeout);
+      setTimeout(() => {
+        obs.disconnect();
+        reject(new Error(`${selector} not found`));
+      }, timeout);
     });
   }
 
@@ -243,7 +298,6 @@
     }
 
     clickCount++;
-    // showClickFeedback(event.currentTarget);
 
     if (clickCount === REQUIRED_CLICKS) {
       _doActivate(event.currentTarget);
@@ -261,13 +315,17 @@
     showPurplePulse();
     showEpicToast();
     logInfo("Тёмный режим активирован");
+    startDarkMusic(); // ВКЛЮЧАЕМ МУЗЫКУ ПРИ АКТИВАЦИИ
     if (typeof window.renderDarkCategory === "function") {
       setTimeout(() => window.renderDarkCategory(), 500);
     }
   }
 
   function resetClickCounter() {
-    if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+    if (clickTimer) {
+      clearTimeout(clickTimer);
+      clickTimer = null;
+    }
     clickCount = 0;
   }
 
@@ -275,17 +333,11 @@
   // UI
   // ============================================================
 
-  // function showClickFeedback(button) {
-  //   button.style.transform = "scale(0.95)";
-  //   button.style.transition = "transform 0.1s ease";
-  //   setTimeout(() => { button.style.transform = ""; }, 100);
-  // }
-
   function showRippleEffect(x, y) {
     const ripple = document.createElement("div");
     ripple.className = "ripple-effect";
     ripple.style.left = `${x}px`;
-    ripple.style.top  = `${y}px`;
+    ripple.style.top = `${y}px`;
     document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
   }
@@ -331,42 +383,70 @@
       const osc1 = audioCtx.createOscillator();
       osc1.type = "sine";
       osc1.frequency.setValueAtTime(110, audioCtx.currentTime);
-      osc1.frequency.exponentialRampToValueAtTime(55, audioCtx.currentTime + 2.5);
+      osc1.frequency.exponentialRampToValueAtTime(
+        55,
+        audioCtx.currentTime + 2.5,
+      );
 
       const osc2 = audioCtx.createOscillator();
       osc2.type = "sawtooth";
       osc2.frequency.setValueAtTime(165, audioCtx.currentTime);
-      osc2.frequency.exponentialRampToValueAtTime(82.5, audioCtx.currentTime + 2);
+      osc2.frequency.exponentialRampToValueAtTime(
+        82.5,
+        audioCtx.currentTime + 2,
+      );
 
       const osc3 = audioCtx.createOscillator();
       osc3.type = "triangle";
       osc3.frequency.setValueAtTime(55, audioCtx.currentTime);
-      osc3.frequency.exponentialRampToValueAtTime(27.5, audioCtx.currentTime + 3);
+      osc3.frequency.exponentialRampToValueAtTime(
+        27.5,
+        audioCtx.currentTime + 3,
+      );
 
       const filter = audioCtx.createBiquadFilter();
       filter.type = "lowpass";
       filter.frequency.setValueAtTime(400, audioCtx.currentTime);
-      filter.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 2);
+      filter.frequency.exponentialRampToValueAtTime(
+        150,
+        audioCtx.currentTime + 2,
+      );
       filter.Q.value = 3;
 
       const gain1 = audioCtx.createGain();
       const gain2 = audioCtx.createGain();
       const gain3 = audioCtx.createGain();
 
-      osc1.connect(filter); osc2.connect(filter); osc3.connect(filter);
-      filter.connect(gain1); gain1.connect(audioCtx.destination);
+      osc1.connect(filter);
+      osc2.connect(filter);
+      osc3.connect(filter);
+      filter.connect(gain1);
+      gain1.connect(audioCtx.destination);
       gain1.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      gain1.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.2);
+      gain1.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioCtx.currentTime + 3.2,
+      );
 
-      osc2.connect(gain2); gain2.connect(audioCtx.destination);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
       gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2.5);
+      gain2.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioCtx.currentTime + 2.5,
+      );
 
-      osc3.connect(gain3); gain3.connect(audioCtx.destination);
+      osc3.connect(gain3);
+      gain3.connect(audioCtx.destination);
       gain3.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain3.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 3.5);
+      gain3.gain.exponentialRampToValueAtTime(
+        0.0001,
+        audioCtx.currentTime + 3.5,
+      );
 
-      osc1.start(); osc2.start(); osc3.start();
+      osc1.start();
+      osc2.start();
+      osc3.start();
       osc1.stop(audioCtx.currentTime + 3.2);
       osc2.stop(audioCtx.currentTime + 2.8);
       osc3.stop(audioCtx.currentTime + 3.8);
@@ -404,7 +484,10 @@
   function activateBadge(element) {
     if (!element || element.classList.contains("dark-activated")) return;
     element.classList.add("dark-activated");
-    const cleanText = element.textContent.trim().replace(/[🌑✨]/g, "").trim();
+    const cleanText = element.textContent
+      .trim()
+      .replace(/[🌑✨]/g, "")
+      .trim();
     element.textContent = `🌑 ${cleanText}`;
   }
 
@@ -436,5 +519,4 @@
   } else {
     init();
   }
-
 })();
