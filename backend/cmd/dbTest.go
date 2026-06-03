@@ -36,6 +36,8 @@ func main() {
 
 	//createTestDeliveredOrder(db)
 	checkOrders(db)
+	UpdateOrderToDelivered(db, 13)
+	checkOrders(db)
 }
 
 func checkShops(db *sql.DB) {
@@ -348,4 +350,32 @@ func createTestDeliveredOrder(db *sql.DB) {
 
 	fmt.Println("\n💡 Через 15 минут (или после перезапуска сервера) статус изменится на DELIVERED")
 	fmt.Println("=== Готово ===\n")
+}
+
+func UpdateOrderToDelivered(db *sql.DB, orderID int) error {
+	query := `
+        UPDATE Orders 
+        SET Status = 'delivered', 
+            ActualDeliveryDate = ?,
+            EstimatedDeliveryDate = ?
+        WHERE OrderID = ? AND Status != 'delivered'
+    `
+
+	now := time.Now().UTC()
+
+	result, err := db.Exec(query, now, now, orderID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

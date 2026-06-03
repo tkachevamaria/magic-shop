@@ -110,7 +110,6 @@ func main() {
 	r.Get("/api/products/{id}", productHandler.GetProductByID)
 
 	// Защищенные маршруты
-	//сколько живет токен?
 	r.Group(func(r chi.Router) {
 		r.Use(auth.Middleware)
 
@@ -135,7 +134,7 @@ func main() {
 	})
 
 	// 6. Запуск воркера доставки
-	go orderRepo.StartDeliveryWorker(appCtx, 15*time.Minute)
+	go orderRepo.StartDeliveryWorker(appCtx, 1*time.Minute)
 
 	// 7. Запуск сервера с graceful shutdown
 	addr := ":8080"
