@@ -26,13 +26,11 @@
   const REDIRECT_URL = "/frontend/index.html";
 
   // ОПРЕДЕЛЯЕМ КОНТЕКСТ СТРАНИЦЫ
-
   const _params        = new URLSearchParams(window.location.search);
   const _currentId     = parseInt(_params.get("id"), 10);
   const _isProductPage = !!_currentId && DARK_PRODUCT_IDS.includes(_currentId);
 
   // ХРАНИЛИЩЕ
-
   function unlockDarkMode() {
     sessionStorage.setItem(DARK_MODE_KEY, "true");
     sessionStorage.setItem(DARK_MODE_TIMESTAMP_KEY, Date.now().toString());
@@ -67,7 +65,6 @@
   }
 
   // ГАРД — блокировка при загрузке страницы товара
-
   function runPageGuard() {
     if (!_isProductPage) return;
     if (!isDarkModeActive()) {
@@ -183,12 +180,10 @@
   }
 
   // ПУБЛИЧНОЕ API
-
   window.isDarkModeActive       = isDarkModeActive;
   window.getDarkModeTimeLeft    = getDarkModeTimeLeft;
   window.checkDarkProductAccess = checkDarkProductAccess;
   window.checkDarkItemsInCart = checkDarkItemsInCart;
-  window.DARK_CATEGORY_ID = DARK_CATEGORY_ID;
   window.checkDarkItemsInCart   = checkDarkItemsInCart;
 
   // АКТИВАЦИЯ ЧЕРЕЗ 6 КЛИКОВ

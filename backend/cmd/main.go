@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"magic-shop/internal/auth"
 	"magic-shop/internal/cart"
@@ -25,7 +30,11 @@ func main() {
 	defer database.Close()
 	log.Println("✅ Подключение к БД установлено")
 
-	// 2. Инициализация модулей
+	// 2. Контекст приложения — отменяется при SIGINT/SIGTERM
+	appCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	// 3. Инициализация модулей
 	//  Каталог
 	productRepo := catalog.NewProductRepo(database)
 	productService := catalog.NewProductService(productRepo)
@@ -49,7 +58,7 @@ func main() {
 	//  Профиль
 	profileHandler := users.NewProfileHandler(database)
 
-	// 3. Настройка роутера
+	// 4. Настройка роутера
 	r := chi.NewRouter()
 
 	//  CORS
@@ -110,10 +119,27 @@ func main() {
 		r.Get("/api/orders/{orderID}", orderHandler.GetOrderDetails)
 	})
 
-	// 4. Запуск сервера
+	// 5. Запуск воркера доставки
+	go orderRepo.StartDeliveryWorker(appCtx, 15*time.Minute)
+
+	// 6. Запуск сервера с graceful shutdown
 	addr := ":8080"
-	log.Printf("Сервер запущен на http://localhost%s", addr)
-	if err := http.ListenAndServe(addr, r); err != nil {
-		log.Fatalf("❌ Ошибка запуска сервера: %v", err)
+	srv := &http.Server{Addr: addr, Handler: r}
+
+	go func() {
+		log.Printf("Сервер запущен на http://localhost%s", addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("❌ Ошибка запуска сервера: %v", err)
+		}
+	}()
+
+	<-appCtx.Done()
+	log.Println("Завершение работы...")
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("❌ Ошибка при остановке сервера: %v", err)
 	}
+	log.Println("Сервер остановлен")
 }
