@@ -17,6 +17,13 @@ if (window.__cartInitialized) {
 }
 window.__cartInitialized = true;
 
+// Заглушка на случай, если updateCartCount не определена во внешнем скрипте
+if (typeof updateCartCount === "undefined") {
+  window.updateCartCount = function () {
+    //logWarn("updateCartCount вызван, но функция не определена во внешнем скрипте");
+  };
+}
+
 function authHeaders() {
   return { Authorization: `Bearer ${localStorage.getItem("token")}` };
 }
@@ -315,22 +322,27 @@ function bindCartEvents() {
       // Продолжаем оформление, если проверка не удалась
     }
 
-    // Оригинальный код оформления заказа
+    // Оформление заказа
+    //logInfo("Попытка оформления заказа");
     try {
       const res = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: authHeaders(),
       });
       if (res.status === 401) {
+        //logWarn("Оформление заказа: не авторизован, редирект на auth.html");
         window.location.href = "auth.html";
         return;
       }
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        showCartToast(errorData.message || "Ошибка оформления заказа");
+        const msg = errorData.message || "Ошибка оформления заказа";
+        logError("Оформление заказа: сервер вернул ошибку", `status=${res.status} message=${msg}`);
+        showCartToast(msg);
         return;
       }
-      await res.json();
+      const orderData = await res.json();
+      logInfo("Заказ успешно оформлен", `order_id=${orderData?.id ?? "unknown"}`);
       showCartToast("Заказ успешно оформлен! 🎉");
 
       const container = document.getElementById("cart-content");
@@ -345,7 +357,7 @@ function bindCartEvents() {
       }
       updateCartCount();
     } catch (err) {
-      console.error(err);
+      logError("Оформление заказа: необработанное исключение", err?.message ?? String(err));
       showCartToast("Ошибка оформления заказа");
     }
   });

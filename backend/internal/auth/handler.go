@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -31,17 +32,20 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	if err := h.service.Register(req); err != nil {
 		switch {
 		case errors.Is(err, ErrEmailTaken):
+			log.Printf("[AUTH] registration failed: email already taken email=%s", req.Email)
 			http.Error(w, "email already taken", http.StatusConflict) // 409
 		case errors.Is(err, ErrInvalidRole):
 			http.Error(w, "invalid role", http.StatusBadRequest)
 		case errors.Is(err, ErrInvalidPassword):
 			http.Error(w, "password must be at least 6 characters", http.StatusBadRequest)
 		default:
+			log.Printf("[AUTH] registration error: %v", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
+	log.Printf("[AUTH] registered email=%s role=%s", req.Email, req.Role)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -81,6 +85,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.Login(req)
 	if err != nil {
+		log.Printf("[AUTH] login failed: invalid credentials email=%s", req.Email)
 		http.Error(w, "invalid email or password", http.StatusUnauthorized) // 401
 		return
 	}
@@ -91,6 +96,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("[AUTH] login success userID=%d email=%s", user.UserID, user.Email)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"token":        token,
@@ -112,5 +118,6 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("[AUTH] deleted userID=%d", userID)
 	w.WriteHeader(http.StatusNoContent)
 }

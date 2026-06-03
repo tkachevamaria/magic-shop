@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"magic-shop/internal/cart"
 	"magic-shop/internal/catalog"
 	"magic-shop/internal/db"
+	"magic-shop/internal/logger"
 	"magic-shop/internal/orders"
 	"magic-shop/internal/users"
 
@@ -30,11 +32,21 @@ func main() {
 	defer database.Close()
 	log.Println("✅ Подключение к БД установлено")
 
-	// 2. Контекст приложения — отменяется при SIGINT/SIGTERM
+	// 2. Настройка логирования
+	logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatalf("Ошибка открытия лог-файла: %v", err)
+	}
+	defer logFile.Close()
+	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.Println("✅ Логирование настроено → app.log")
+
+	// 3. Контекст приложения — отменяется при SIGINT/SIGTERM
 	appCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	// 3. Инициализация модулей
+	// 4. Инициализация модулей
 	//  Каталог
 	productRepo := catalog.NewProductRepo(database)
 	productService := catalog.NewProductService(productRepo)
@@ -58,7 +70,7 @@ func main() {
 	//  Профиль
 	profileHandler := users.NewProfileHandler(database)
 
-	// 4. Настройка роутера
+	// 5. Настройка роутера
 	r := chi.NewRouter()
 
 	//  CORS
@@ -112,6 +124,9 @@ func main() {
 		r.Post("/api/cart/{itemID}/decrement", cartHandler.DecrementItem)
 		r.Delete("/api/cart/{itemID}", cartHandler.DeleteItem)
 
+		// Логи с фронта
+		r.Post("/api/log", logger.HandleFrontendLog)
+
 		// Заказы
 		r.Post("/api/orders", orderHandler.CreateOrder)
 		r.Get("/api/orders", orderHandler.GetActiveOrders)
@@ -119,17 +134,17 @@ func main() {
 		r.Get("/api/orders/{orderID}", orderHandler.GetOrderDetails)
 	})
 
-	// 5. Запуск воркера доставки
+	// 6. Запуск воркера доставки
 	go orderRepo.StartDeliveryWorker(appCtx, 15*time.Minute)
 
-	// 6. Запуск сервера с graceful shutdown
+	// 7. Запуск сервера с graceful shutdown
 	addr := ":8080"
 	srv := &http.Server{Addr: addr, Handler: r}
 
 	go func() {
 		log.Printf("Сервер запущен на http://localhost%s", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("❌ Ошибка запуска сервера: %v", err)
+			log.Fatalf("Ошибка запуска сервера: %v", err)
 		}
 	}()
 
@@ -139,7 +154,7 @@ func main() {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Printf("❌ Ошибка при остановке сервера: %v", err)
+		log.Printf("Ошибка при остановке сервера: %v", err)
 	}
 	log.Println("Сервер остановлен")
 }

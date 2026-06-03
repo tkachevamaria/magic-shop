@@ -210,7 +210,7 @@
     }
 
     if (isDarkModeActive()) {
-      waitForElement("#darkModeTrigger", 3000).then(activateBadge);
+      waitForElement("#darkModeTrigger", 3000).then(activateBadge).catch(() => {});
     }
   }
 
@@ -260,6 +260,7 @@
     activateBadge(button);
     showPurplePulse();
     showEpicToast();
+    logInfo("Тёмный режим активирован");
     if (typeof window.renderDarkCategory === "function") {
       setTimeout(() => window.renderDarkCategory(), 500);
     }
